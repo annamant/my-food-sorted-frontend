@@ -1,7 +1,17 @@
 import { useState } from 'react'
 
-const API = ''
+// Use proxy when both run from monorepo (''), or backend URL when standalone
+const API = import.meta.env.VITE_API_URL || ''
 const USER_ID = 1
+
+async function parseJsonOrThrow(res) {
+  const text = await res.text()
+  try {
+    return text ? JSON.parse(text) : {}
+  } catch {
+    throw new Error(`Server returned non-JSON (status ${res.status}). Ensure backend is running on port 3000. Response: ${text.slice(0, 200)}`)
+  }
+}
 const CONV_ID = 'conv-1'
 
 export default function App() {
@@ -29,7 +39,7 @@ export default function App() {
           user_id: USER_ID,
         }),
       })
-      const data = await res.json()
+      const data = await parseJsonOrThrow(res)
       if (!res.ok) throw new Error(data.error || 'Request failed')
       setMessages((m) => [
         ...m,
@@ -60,7 +70,7 @@ export default function App() {
           recipes: mealPlan.recipes,
         }),
       })
-      const data = await res.json()
+      const data = await parseJsonOrThrow(res)
       if (!res.ok) throw new Error(data.error || 'Save failed')
       setSavedPlanId(data.meal_plan_id)
       alert(`Plan saved (ID: ${data.meal_plan_id})`)
@@ -80,7 +90,7 @@ export default function App() {
     setLoading(true)
     try {
       const res = await fetch(`${API}/shopping-list/${planId}`)
-      const data = await res.json()
+      const data = await parseJsonOrThrow(res)
       if (!res.ok) throw new Error(data.error || 'Request failed')
       setShoppingList(data)
     } catch (err) {
@@ -105,7 +115,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ retailer, search_query: searchQuery }),
       })
-      const data = await res.json()
+      const data = await parseJsonOrThrow(res)
       if (!res.ok) throw new Error(data.error || 'Request failed')
       window.open(data.url, '_blank')
     } catch (err) {
