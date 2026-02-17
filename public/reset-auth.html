@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reset auth</title>
+  <style>
+    body { font-family: system-ui; padding: 2rem; max-width: 400px; margin: 2rem auto; }
+    h1 { font-size: 1.25rem; }
+    p { color: #333; }
+    a { color: #0d6efd; }
+  </style>
+</head>
+<body>
+  <h1>Auth reset</h1>
+  <p>Clearing token, userId, and userEmail from localStorage. You’ll see the login/register form again.</p>
+  <p><a href="/">Go to app</a></p>
+  <script>
+    ['token', 'userId', 'userEmail'].forEach(function (k) { localStorage.removeItem(k); });
+    console.log('Cleared token, userId, userEmail');
+  </script>
+</body>
+</html>
