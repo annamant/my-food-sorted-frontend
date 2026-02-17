@@ -1,0 +1,97 @@
+.shopping-list-display {
+  margin-bottom: var(--space-6);
+  padding: var(--space-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  background: var(--card-bg);
+}
+
+.shopping-list-display__title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.shopping-list-display__generateBtn {
+  margin-bottom: var(--space-4);
+}
+
+.shopping-list-display__category {
+  margin-bottom: var(--space-4);
+}
+
+.shopping-list-display__categoryTitle {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.shopping-list-display__list {
+  margin: 0 0 0 var(--space-5);
+  padding-left: var(--space-2);
+  list-style: disc;
+}
+
+.shopping-list-display__item {
+  margin-bottom: var(--space-1);
+  color: var(--text-primary);
+}
+
+.shopping-list-display__retailer {
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--input-bg);
+}
+
+.shopping-list-display__retailerTitle {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.shopping-list-display__retailerButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.btn--retailer {
+  background: var(--input-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.btn--retailer:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn--retailerActive {
+  border-color: var(--primary);
+  background: var(--primary-alpha);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.btn--success {
+  background: var(--success);
+  color: #fff;
+  border-color: var(--success);
+}
+
+.btn--success:hover:not(:disabled) {
+  background: #166534;
+  border-color: #166534;
+}
+
+.btn--success:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 2px;
+}

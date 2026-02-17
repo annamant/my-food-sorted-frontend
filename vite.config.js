@@ -6,6 +6,9 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      '/api': 'http://localhost:3000',
+      '/login': 'http://localhost:3000',
+      '/register': 'http://localhost:3000',
       '/chat': 'http://localhost:3000',
       '/meal-plan': 'http://localhost:3000',
       '/shopping-list': 'http://localhost:3000',

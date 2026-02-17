@@ -1,0 +1,64 @@
+.meal-plan-display {
+  margin-bottom: var(--space-6);
+  padding: var(--space-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  background: var(--card-bg);
+}
+
+.meal-plan-display__title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.meal-plan-display__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.meal-plan-display__card {
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--input-bg);
+}
+
+.meal-plan-display__cardTitle {
+  display: block;
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.meal-plan-display__cardMeta {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.meal-plan-display__cardInstructions {
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.meal-plan-display__cardIngredients {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.meal-plan-display__cardIngredientsLabel {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.meal-plan-display__saveBtn {
+  margin-top: var(--space-4);
+}

@@ -1,0 +1,81 @@
+.shopping-list-section {
+  margin-top: var(--space-6);
+}
+
+.shopping-list-section--generate {
+  margin-bottom: var(--space-4);
+}
+
+.shopping-list-section__title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.shopping-list-section__categories {
+  margin-bottom: var(--space-4);
+}
+
+.shopping-list-section__category {
+  margin-bottom: var(--space-4);
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow);
+}
+
+.shopping-list-section__categoryTitle {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.shopping-list-section__list {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.shopping-list-section__item {
+  margin-bottom: var(--space-1);
+  color: var(--text-primary);
+}
+
+.shopping-list-section__retailer {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.shopping-list-section__retailerTitle {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.shopping-list-section__retailerButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.btn--retailer {
+  background: var(--input-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.btn--retailer:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn--retailerActive {
+  border-color: var(--primary);
+  background: var(--primary-alpha);
+  color: var(--primary);
+  font-weight: 600;
+}
