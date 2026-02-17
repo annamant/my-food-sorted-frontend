@@ -119,15 +119,6 @@ function AppContent() {
         conversation_id: CONV_ID,
         user_id: loggedInUserId,
       })
-<<<<<<< HEAD
-      const data = await parseJsonOrThrow(res)
-      if (!res.ok) throw new Error(data.error || 'Request failed')
-      setMessages((m) => [
-        ...m,
-        { role: 'assistant', content: data.message },
-      ])
-      if (data.meal_plan) setMealPlan(data.meal_plan)
-=======
       // Backend sends full response in data.message and parsed JSON in data.meal_plan.
       // Show only the part of the message before the JSON block in chat.
       let chatResponse = (data.message || '').trim()
@@ -152,7 +143,6 @@ function AppContent() {
         }
       }
       setMessages((m) => [...m, makeMessage('assistant', chatResponse || "I couldn't generate a meal plan. Try asking again with more detail.")])
->>>>>>> 744bcdb (Refactor: Tailwind, components, toasts, chat/meal plan display fix, proxy for login/register)
     } catch (err) {
       setMessages((m) => [...m, makeMessage('assistant', `Error: ${err.message}`)])
     } finally {
@@ -170,16 +160,9 @@ function AppContent() {
         servings: mealPlan.servings || 2,
         recipes: mealPlan.recipes,
       })
-<<<<<<< HEAD
-      const data = await parseJsonOrThrow(res)
-      if (!res.ok) throw new Error(data.error || 'Save failed')
-      setSavedPlanId(data.meal_plan_id)
-      alert(`Plan saved (ID: ${data.meal_plan_id})`)
-=======
       const planId = data.meal_plan_id ?? data.id
       setSavedPlanId(planId)
       addToast(`Plan saved (ID: ${planId})`, 'success')
->>>>>>> 744bcdb (Refactor: Tailwind, components, toasts, chat/meal plan display fix, proxy for login/register)
     } catch (err) {
       addToast(err.message || 'Save failed', 'error')
     } finally {
@@ -194,13 +177,7 @@ function AppContent() {
     }
     setLoading(true)
     try {
-<<<<<<< HEAD
-      const res = await fetch(`${API}/shopping-list/${planId}`)
-      const data = await parseJsonOrThrow(res)
-      if (!res.ok) throw new Error(data.error || 'Request failed')
-=======
       const data = await getShoppingList(API, token, savedPlanId)
->>>>>>> 744bcdb (Refactor: Tailwind, components, toasts, chat/meal plan display fix, proxy for login/register)
       setShoppingList(data)
       addToast('Shopping list generated', 'success')
     } catch (err) {
@@ -224,11 +201,6 @@ function AppContent() {
         retailer,
         search_query: searchQuery,
       })
-<<<<<<< HEAD
-      const data = await parseJsonOrThrow(res)
-      if (!res.ok) throw new Error(data.error || 'Request failed')
-=======
->>>>>>> 744bcdb (Refactor: Tailwind, components, toasts, chat/meal plan display fix, proxy for login/register)
       window.open(data.url, '_blank')
     } catch (err) {
       addToast(err.message || 'Request failed', 'error')
