@@ -2,20 +2,16 @@ import { useState } from 'react'
 import { useToast } from '../context/ToastContext'
 import './AuthForm.css'
 
-function AuthForm({
-  API,
-  loading,
-  handleAuth,
-  handleLogout,
-  loggedInUserId,
-  email: userEmail,
-}) {
+const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/
+
+function AuthForm({ loading, handleAuth, handleLogout, loggedInUserId, email: userEmail }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [mode, setMode] = useState('login')
   const { addToast } = useToast()
 
   function validate() {
-    if (!email.trim() || !email.includes('@')) {
+    if (!email.trim() || !EMAIL_REGEX.test(email.trim())) {
       addToast('Please enter a valid email address.', 'error')
       return false
     }
@@ -26,9 +22,10 @@ function AuthForm({
     return true
   }
 
-  function onAuth(endpoint) {
+  function onSubmit(e) {
+    e.preventDefault()
     if (!validate()) return
-    handleAuth(endpoint, email, password)
+    handleAuth(mode, email.trim(), password)
   }
 
   if (loggedInUserId) {
@@ -39,12 +36,7 @@ function AuthForm({
             Logged in as: <span className="auth-form__user-infoHighlight">{userEmail}</span>
             {' '}(User ID: <span className="auth-form__user-infoHighlight">{loggedInUserId}</span>)
           </p>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="btn btn--danger"
-            aria-label="Log out"
-          >
+          <button type="button" onClick={handleLogout} className="btn btn--danger" aria-label="Log out">
             Logout
           </button>
         </div>
@@ -54,8 +46,8 @@ function AuthForm({
 
   return (
     <div className="auth-form">
-      <div className="auth-form__fields">
-        <h2 className="auth-form__title">Login / Register</h2>
+      <form className="auth-form__fields" onSubmit={onSubmit} noValidate>
+        <h2 className="auth-form__title">{mode === 'login' ? 'Login' : 'Register'}</h2>
         <label className="auth-form__label">
           <span className="auth-form__labelText">Email</span>
           <input
@@ -65,6 +57,7 @@ function AuthForm({
             onChange={(e) => setEmail(e.target.value)}
             className="auth-form__input"
             autoComplete="email"
+            required
           />
         </label>
         <label className="auth-form__label">
@@ -75,28 +68,24 @@ function AuthForm({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="auth-form__input"
-            autoComplete="current-password"
+            autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+            required
           />
         </label>
         <div className="auth-form__actions">
-          <button
-            type="button"
-            onClick={() => onAuth('login')}
-            disabled={loading}
-            className="btn btn--primary"
-          >
-            Login
+          <button type="submit" disabled={loading} className="btn btn--primary">
+            {mode === 'login' ? 'Login' : 'Register'}
           </button>
           <button
             type="button"
-            onClick={() => onAuth('register')}
+            onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
             disabled={loading}
             className="btn btn--secondary"
           >
-            Register
+            {mode === 'login' ? 'Create account' : 'Back to login'}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   )
 }

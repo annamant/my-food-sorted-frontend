@@ -1,262 +1,227 @@
-import { useState, useEffect, useCallback } from 'react'
-import { ToastProvider, useToast } from './context/ToastContext'
-import {
-  API,
-  login,
-  register,
-  sendChat,
-  saveMealPlan,
-  getShoppingList,
-  getAffiliateLink,
-} from './lib/api'
-import AuthForm from './components/AuthForm'
+import { useState, useCallback } from 'react'
 import ChatInterface from './components/ChatInterface'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
+import LandingPage from './components/LandingPage'
 import './App.css'
 
-const CONV_ID = 'conv-1'
+const API = import.meta.env.VITE_API_URL ?? ''
 
-function makeMessage(role, content) {
-  return {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-    role,
-    content,
-  }
-}
+export default function App() {
+  /* ── Auth ── */
+  const [token,         setToken]         = useState(() => localStorage.getItem('token') ?? '')
+  const [loggedInUserId, setLoggedInUserId] = useState(() => localStorage.getItem('userId') ?? '')
+  const [authEmail,     setAuthEmail]     = useState('')
+  const [authPassword,  setAuthPassword]  = useState('')
 
-/** Try to extract a meal plan from backend message (e.g. JSON in code block or raw JSON). */
-function parseMealPlanFromMessage(message) {
-  if (!message || typeof message !== 'string') return null
-  const trimmed = message.trim()
-  const codeBlockMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/)
-  const jsonStr = codeBlockMatch
-    ? codeBlockMatch[1].trim()
-    : trimmed.startsWith('{')
-      ? trimmed
-      : null
-  if (!jsonStr) return null
-  try {
-    const parsed = JSON.parse(jsonStr)
-    if (parsed?.recipes?.length) return parsed
-    return null
-  } catch {
-    return null
-  }
-}
+  /* ── Chat ── */
+  const [messages,     setMessages]     = useState([])
+  const [input,        setInput]        = useState('')
+  const [chatLoading,  setChatLoading]  = useState(false)
 
-function AppContent() {
-  const { addToast } = useToast()
-  const [token, setToken] = useState(() => localStorage.getItem('token'))
-  const [loggedInUserId, setLoggedInUserId] = useState(() => {
-    const id = localStorage.getItem('userId')
-    return id ? parseInt(id, 10) : null
-  })
-  const [email, setEmail] = useState(() => localStorage.getItem('userEmail') || '')
-  const [messages, setMessages] = useState([])
-  const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [mealPlan, setMealPlan] = useState(null)
-  const [savedPlanId, setSavedPlanId] = useState(null)
-  const [shoppingList, setShoppingList] = useState(null)
-  const [retailer, setRetailer] = useState('tesco')
+  /* ── Meal plan ── */
+  const [mealPlan,     setMealPlan]     = useState(null)
+  const [savedPlanId,  setSavedPlanId]  = useState(null)
+  const [planLoading,  setPlanLoading]  = useState(false)
 
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem('token', token)
-      localStorage.setItem('userId', String(loggedInUserId ?? ''))
-      if (email) localStorage.setItem('userEmail', email)
-    } else {
-      localStorage.removeItem('token')
-      localStorage.removeItem('userId')
-      localStorage.removeItem('userEmail')
+  /* ── Shopping list ── */
+  const [shoppingList,  setShoppingList]  = useState(null)
+  const [retailer,      setRetailer]      = useState('tesco')
+  const [shopLoading,   setShopLoading]   = useState(false)
+
+  const loading = chatLoading || planLoading || shopLoading
+
+  /* ── Auth handler ── */
+  const handleAuth = useCallback(async (endpoint, email, password) => {
+    try {
+      const res = await fetch(`${API}/auth/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail ?? 'Authentication failed')
+
+      localStorage.setItem('token', data.access_token)
+      localStorage.setItem('userId', String(data.user_id))
+      setToken(data.access_token)
+      setLoggedInUserId(String(data.user_id))
+      setAuthEmail('')
+      setAuthPassword('')
+    } catch (err) {
+      alert(err.message)
     }
-  }, [token, loggedInUserId, email])
-
-  const handleAuth = useCallback(
-    async (endpoint, authEmail, authPassword) => {
-      setLoading(true)
-      try {
-        const fn = endpoint === 'login' ? login : register
-        const data = await fn(API, authEmail, authPassword)
-        setToken(data.token)
-        setLoggedInUserId(data.userId)
-        setEmail(data.email ?? authEmail)
-        setMessages([])
-        setMealPlan(null)
-        setSavedPlanId(null)
-        setShoppingList(null)
-        addToast(data.message || (endpoint === 'login' ? 'Logged in.' : 'Registered.'), 'success')
-      } catch (err) {
-        addToast(err.message || 'Authentication failed', 'error')
-      } finally {
-        setLoading(false)
-      }
-    },
-    [addToast]
-  )
+  }, [])
 
   const handleLogout = useCallback(() => {
-    setToken(null)
-    setLoggedInUserId(null)
-    setEmail('')
+    localStorage.removeItem('token')
+    localStorage.removeItem('userId')
+    setToken('')
+    setLoggedInUserId('')
     setMessages([])
     setMealPlan(null)
     setSavedPlanId(null)
     setShoppingList(null)
-    addToast('Logged out successfully', 'success')
-  }, [addToast])
+  }, [])
 
+  /* ── Chat ── */
   const sendMessage = useCallback(async () => {
-    if (!input.trim() || loading || !token) return
     const text = input.trim()
+    if (!text || chatLoading) return
+
+    const userMsg = { role: 'user', content: text }
+    setMessages(prev => [...prev, userMsg])
     setInput('')
-    setMessages((m) => [...m, makeMessage('user', text)])
-    setLoading(true)
-    try {
-      const data = await sendChat(API, token, {
-        user_message: text,
-        conversation_id: CONV_ID,
-        user_id: loggedInUserId,
-      })
-      // Backend sends full response in data.message and parsed JSON in data.meal_plan.
-      // Show only the part of the message before the JSON block in chat.
-      let chatResponse = (data.message || '').trim()
-      if (data.meal_plan) {
-        setMealPlan(data.meal_plan)
-        const jsonStartIndex = chatResponse.indexOf('```json')
-        if (jsonStartIndex !== -1) {
-          chatResponse = chatResponse.substring(0, jsonStartIndex).trim()
-        }
-        if (!chatResponse) {
-          chatResponse = 'Here is the meal plan you requested:'
-        }
-      } else {
-        const planFromMessage = parseMealPlanFromMessage(data.message)
-        if (planFromMessage) {
-          setMealPlan(planFromMessage)
-          const jsonStartIndex = chatResponse.indexOf('```json')
-          if (jsonStartIndex !== -1) {
-            chatResponse = chatResponse.substring(0, jsonStartIndex).trim()
-          }
-          if (!chatResponse) chatResponse = 'Here is the meal plan you requested:'
-        }
-      }
-      setMessages((m) => [...m, makeMessage('assistant', chatResponse || "I couldn't generate a meal plan. Try asking again with more detail.")])
-    } catch (err) {
-      setMessages((m) => [...m, makeMessage('assistant', `Error: ${err.message}`)])
-    } finally {
-      setLoading(false)
-    }
-  }, [input, loading, token, loggedInUserId])
+    setChatLoading(true)
 
+    try {
+      const res = await fetch(`${API}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ message: text, conversation_history: messages }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail ?? 'Chat error')
+
+      setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
+      if (data.meal_plan) setMealPlan(data.meal_plan)
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }])
+    } finally {
+      setChatLoading(false)
+    }
+  }, [input, chatLoading, token, messages])
+
+  /* ── Save plan ── */
   const savePlan = useCallback(async () => {
-    if (!mealPlan?.recipes?.length || !token) return
-    setLoading(true)
+    if (!mealPlan || planLoading) return
+    setPlanLoading(true)
     try {
-      const data = await saveMealPlan(API, token, {
-        user_id: loggedInUserId,
-        plan_name: mealPlan.plan_name || 'My Plan',
-        servings: mealPlan.servings || 2,
-        recipes: mealPlan.recipes,
+      const res = await fetch(`${API}/meal-plans`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(mealPlan),
       })
-      const planId = data.meal_plan_id ?? data.id
-      setSavedPlanId(planId)
-      addToast(`Plan saved (ID: ${planId})`, 'success')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail ?? 'Save failed')
+      setSavedPlanId(data.id)
+      alert(`Plan saved! ID: ${data.id}`)
     } catch (err) {
-      addToast(err.message || 'Save failed', 'error')
+      alert(err.message)
     } finally {
-      setLoading(false)
+      setPlanLoading(false)
     }
-  }, [mealPlan, token, loggedInUserId, addToast])
+  }, [mealPlan, planLoading, token])
 
+  /* ── Shopping list ── */
   const generateShoppingList = useCallback(async () => {
-    if (!savedPlanId || !token) {
-      addToast('Save the meal plan first', 'error')
-      return
-    }
-    setLoading(true)
+    if (!savedPlanId || shopLoading) return
+    setShopLoading(true)
     try {
-      const data = await getShoppingList(API, token, savedPlanId)
+      const res = await fetch(`${API}/shopping-lists/generate/${savedPlanId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail ?? 'Generate failed')
       setShoppingList(data)
-      addToast('Shopping list generated', 'success')
     } catch (err) {
-      addToast(err.message || 'Request failed', 'error')
+      alert(err.message)
     } finally {
-      setLoading(false)
+      setShopLoading(false)
     }
-  }, [savedPlanId, token, addToast])
+  }, [savedPlanId, shopLoading, token])
 
   const shopNow = useCallback(async () => {
-    if (!shoppingList?.items?.length || !token) {
-      addToast('Generate shopping list first', 'error')
-      return
-    }
-    const searchQuery = shoppingList.items
-      .map((i) => i.ingredient_name)
-      .slice(0, 10)
-      .join(' ')
+    if (!shoppingList || shopLoading) return
+    setShopLoading(true)
     try {
-      const data = await getAffiliateLink(API, token, {
-        retailer,
-        search_query: searchQuery,
+      const res = await fetch(`${API}/shopping-lists/${shoppingList.id}/shop?retailer=${retailer}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
       })
-      window.open(data.url, '_blank')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail ?? 'Shop failed')
+      if (data.shopping_url) window.open(data.shopping_url, '_blank', 'noopener,noreferrer')
     } catch (err) {
-      addToast(err.message || 'Request failed', 'error')
+      alert(err.message)
+    } finally {
+      setShopLoading(false)
     }
-  }, [shoppingList, token, retailer, addToast])
+  }, [shoppingList, shopLoading, retailer, token])
+
+  /* ── Render ── */
+  if (!token) {
+    return (
+      <LandingPage
+        loading={loading}
+        handleAuth={handleAuth}
+      />
+    )
+  }
 
   return (
     <div className="app">
       <header className="app__header">
-        <h1 className="app__title">My Food SORTED</h1>
+        <div className="app__headerInner">
+          <div className="app__logo">
+            <span className="app__logoTop">my food.</span>
+            <span className="app__logoBottom">SORTED.</span>
+          </div>
+          <div className="app__headerRight">
+            <span className="app__userId">#{loggedInUserId}</span>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="btn btn--ghost app__logoutBtn"
+            >
+              Log out
+            </button>
+          </div>
+        </div>
       </header>
 
       <main className="app__main">
-        <AuthForm
-          API={API}
-          loading={loading}
-          handleAuth={handleAuth}
-          handleLogout={handleLogout}
-          loggedInUserId={loggedInUserId}
-          email={email}
-        />
-        {token && (
-          <>
-            <ChatInterface
-              messages={messages}
-              input={input}
-              setInput={setInput}
-              sendMessage={sendMessage}
-              loading={loading}
-            />
-            {mealPlan?.recipes?.length > 0 && (
-              <MealPlanDisplay mealPlan={mealPlan} savePlan={savePlan} loading={loading} />
-            )}
+        <section className="app__chat">
+          <ChatInterface
+            messages={messages}
+            input={input}
+            setInput={setInput}
+            sendMessage={sendMessage}
+            loading={chatLoading}
+          />
+        </section>
 
-            {savedPlanId && (
-              <ShoppingListDisplay
-                shoppingList={shoppingList}
-                savedPlanId={savedPlanId}
-                generateShoppingList={generateShoppingList}
-                shopNow={shopNow}
-                retailer={retailer}
-                setRetailer={setRetailer}
-                loading={loading}
-              />
-            )}
-          </>
+        {mealPlan && (
+          <section className="app__panel">
+            <MealPlanDisplay
+              mealPlan={mealPlan}
+              savePlan={savePlan}
+              loading={planLoading}
+            />
+          </section>
+        )}
+
+        {savedPlanId && (
+          <section className="app__panel">
+            <ShoppingListDisplay
+              shoppingList={shoppingList}
+              savedPlanId={savedPlanId}
+              generateShoppingList={generateShoppingList}
+              shopNow={shopNow}
+              retailer={retailer}
+              setRetailer={setRetailer}
+              loading={shopLoading}
+            />
+          </section>
         )}
       </main>
     </div>
-  )
-}
-
-export default function App() {
-  return (
-    <ToastProvider>
-      <AppContent />
-    </ToastProvider>
   )
 }

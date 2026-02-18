@@ -9,13 +9,18 @@ function ChatInterface({ messages, input, setInput, sendMessage, loading }) {
     <div className="chat-interface">
       <h2 className="chat-interface__title">Chat</h2>
       <div className="chat-interface__messages">
+        {messages.length === 0 && !loading && (
+          <p className="chat-interface__empty">
+            Ask me to plan your meals, suggest recipes, or build a shopping list!
+          </p>
+        )}
         {messages.map((m, i) => (
-          <div key={messageKey(m, i)} className="chat-interface__message">
-            <strong className="chat-interface__messageRole">{m.role}:</strong>{' '}
+          <div key={messageKey(m, i)} className={`chat-interface__message chat-interface__message--${m.role}`}>
+            <strong className="chat-interface__messageRole">{m.role}</strong>
             <span className="chat-interface__messageContent">{m.content}</span>
           </div>
         ))}
-        {loading && <div className="chat-interface__loading">...</div>}
+        {loading && <div className="chat-interface__loading">•••</div>}
       </div>
       <div className="chat-interface__inputWrap">
         <input
@@ -31,7 +36,7 @@ function ChatInterface({ messages, input, setInput, sendMessage, loading }) {
         <button
           type="button"
           onClick={sendMessage}
-          disabled={loading}
+          disabled={loading || !input.trim()}
           className="btn btn--primary"
         >
           Send
