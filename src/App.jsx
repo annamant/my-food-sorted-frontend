@@ -42,6 +42,7 @@ function AppContent() {
   const [messages,     setMessages]     = useState([])
   const [input,        setInput]        = useState('')
   const [chatLoading,  setChatLoading]  = useState(false)
+  const [conversationId]               = useState(() => crypto.randomUUID())
 
   /* ── Meal plan ── */
   const [mealPlan,     setMealPlan]     = useState(null)
@@ -110,7 +111,7 @@ function AppContent() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ message: text, conversation_history: messages }),
+        body: JSON.stringify({ user_message: text, conversation_id: conversationId }),
       })
       const { data, error } = await parseRes(res, 'Cannot reach server.')
       if (error) throw new Error(error)
@@ -124,14 +125,14 @@ function AppContent() {
     } finally {
       setChatLoading(false)
     }
-  }, [input, chatLoading, token, messages])
+  }, [input, chatLoading, token, conversationId])
 
   /* ── Save plan ── */
   const savePlan = useCallback(async () => {
     if (!mealPlan || planLoading) return
     setPlanLoading(true)
     try {
-      const res = await fetch(`${API}/meal-plans`, {
+      const res = await fetch(`${API}/meal-plan`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -158,8 +159,7 @@ function AppContent() {
     if (!savedPlanId || shopLoading) return
     setShopLoading(true)
     try {
-      const res = await fetch(`${API}/shopping-lists/generate/${savedPlanId}`, {
-        method: 'POST',
+      const res = await fetch(`${API}/shopping-list/${savedPlanId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const { data, error } = await parseRes(res, 'Cannot reach server.')
@@ -177,10 +177,13 @@ function AppContent() {
     if (!shoppingList || shopLoading) return
     setShopLoading(true)
     try {
-      const listId = shoppingList.id ?? savedPlanId
-      const res = await fetch(`${API}/shopping-lists/${listId}/shop?retailer=${retailer}`, {
+      const res = await fetch(`${API}/affiliate-link`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ retailer, search_query: 'weekly grocery shopping' }),
       })
       const { data, error } = await parseRes(res, 'Cannot reach server.')
       if (error) throw new Error(error)
@@ -192,7 +195,7 @@ function AppContent() {
     } finally {
       setShopLoading(false)
     }
-  }, [shoppingList, savedPlanId, shopLoading, retailer, token])
+  }, [shoppingList, shopLoading, retailer, token])
 
   /* ── Render ── */
   if (!token) {
