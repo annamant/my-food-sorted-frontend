@@ -1,0 +1,14 @@
+.meal-plan-section {
+  margin-top: var(--space-6);
+}
+
+.meal-plan-section__title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.meal-plan-section__list {
+  margin-bottom: var(--space-4);
+}

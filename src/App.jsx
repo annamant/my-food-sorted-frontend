@@ -33,25 +33,26 @@ function getErrorMsg(data, fallback = 'Something went wrong') {
 
 function AppContent() {
   /* ── Auth ── */
-  const [token,         setToken]         = useState(() => localStorage.getItem('token') ?? '')
+  const [token,          setToken]          = useState(() => localStorage.getItem('token') ?? '')
   const [loggedInUserId, setLoggedInUserId] = useState(() => localStorage.getItem('userId') ?? '')
-  const [authEmail,     setAuthEmail]     = useState('')
-  const [authPassword,  setAuthPassword]  = useState('')
+  const [authEmail,      setAuthEmail]      = useState('')
+  const [authPassword,   setAuthPassword]   = useState('')
 
   /* ── Chat ── */
-  const [messages,     setMessages]     = useState([])
-  const [input,        setInput]        = useState('')
-  const [chatLoading,  setChatLoading]  = useState(false)
+  const [messages,      setMessages]      = useState([])
+  const [input,         setInput]         = useState('')
+  const [chatLoading,   setChatLoading]   = useState(false)
+  const [conversationId]                  = useState(() => crypto.randomUUID())
 
   /* ── Meal plan ── */
-  const [mealPlan,     setMealPlan]     = useState(null)
-  const [savedPlanId,  setSavedPlanId]  = useState(null)
-  const [planLoading,  setPlanLoading]  = useState(false)
+  const [mealPlan,    setMealPlan]    = useState(null)
+  const [savedPlanId, setSavedPlanId] = useState(null)
+  const [planLoading, setPlanLoading] = useState(false)
 
   /* ── Shopping list ── */
-  const [shoppingList,  setShoppingList]  = useState(null)
-  const [retailer,      setRetailer]      = useState('tesco')
-  const [shopLoading,   setShopLoading]   = useState(false)
+  const [shoppingList, setShoppingList] = useState(null)
+  const [retailer,     setRetailer]     = useState('tesco')
+  const [shopLoading,  setShopLoading]  = useState(false)
 
   const loading = chatLoading || planLoading || shopLoading
 
@@ -110,13 +111,13 @@ function AppContent() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ message: text, conversation_history: messages }),
+        body: JSON.stringify({ user_message: text, conversation_id: conversationId }),
       })
       const { data, error } = await parseRes(res, 'Cannot reach server.')
       if (error) throw new Error(error)
       if (!res.ok) throw new Error(getErrorMsg(data, 'Chat error'))
 
-      const content = data.response ?? data.message ?? data.content ?? 'No response.'
+      const content = data.message ?? data.response ?? data.content ?? 'No response.'
       setMessages(prev => [...prev, { role: 'assistant', content }])
       if (data.meal_plan) setMealPlan(data.meal_plan)
     } catch (err) {
@@ -124,14 +125,14 @@ function AppContent() {
     } finally {
       setChatLoading(false)
     }
-  }, [input, chatLoading, token, messages])
+  }, [input, chatLoading, token, conversationId])
 
   /* ── Save plan ── */
   const savePlan = useCallback(async () => {
     if (!mealPlan || planLoading) return
     setPlanLoading(true)
     try {
-      const res = await fetch(`${API}/meal-plans`, {
+      const res = await fetch(`${API}/meal-plan`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -158,8 +159,7 @@ function AppContent() {
     if (!savedPlanId || shopLoading) return
     setShopLoading(true)
     try {
-      const res = await fetch(`${API}/shopping-lists/generate/${savedPlanId}`, {
-        method: 'POST',
+      const res = await fetch(`${API}/shopping-list/${savedPlanId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const { data, error } = await parseRes(res, 'Cannot reach server.')
@@ -177,22 +177,25 @@ function AppContent() {
     if (!shoppingList || shopLoading) return
     setShopLoading(true)
     try {
-      const listId = shoppingList.id ?? savedPlanId
-      const res = await fetch(`${API}/shopping-lists/${listId}/shop?retailer=${retailer}`, {
+      const res = await fetch(`${API}/affiliate-link`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ retailer, search_query: 'weekly grocery shopping' }),
       })
       const { data, error } = await parseRes(res, 'Cannot reach server.')
       if (error) throw new Error(error)
       if (!res.ok) throw new Error(getErrorMsg(data, 'Shop failed'))
-      const url = data.shopping_url ?? data.url
+      const url = data.url ?? data.shopping_url
       if (url) window.open(url, '_blank', 'noopener,noreferrer')
     } catch (err) {
       alert(err.message)
     } finally {
       setShopLoading(false)
     }
-  }, [shoppingList, savedPlanId, shopLoading, retailer, token])
+  }, [shoppingList, shopLoading, retailer, token])
 
   /* ── Render ── */
   if (!token) {
