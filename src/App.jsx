@@ -58,7 +58,7 @@ function AppContent() {
   /* ── Auth handler ── */
   const handleAuth = useCallback(async (endpoint, email, password) => {
     try {
-      const res = await fetch(`${API}/auth/${endpoint}`, {
+      const res = await fetch(`${API}/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
