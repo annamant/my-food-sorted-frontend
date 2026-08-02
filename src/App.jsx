@@ -177,16 +177,13 @@ function AppContent() {
     if (!shoppingList || shopLoading) return
     setShopLoading(true)
     try {
-      const searchQuery = shoppingList.items?.length
-        ? shoppingList.items.map(item => item.ingredient_name).join(', ')
-        : 'weekly grocery shopping'
       const res = await fetch(`${API}/affiliate-link`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ retailer, search_query: searchQuery }),
+        body: JSON.stringify({ retailer }),
       })
       const { data, error } = await parseRes(res, 'Cannot reach server.')
       if (error) throw new Error(error)
