@@ -1,8 +1,10 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { ToastProvider } from './context/ToastContext'
 import ChatInterface from './components/ChatInterface'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
+import PlanLibrary from './components/PlanLibrary'
+import PrefsPanel from './components/PrefsPanel'
 import LandingPage from './components/LandingPage'
 import './App.css'
 
@@ -35,8 +37,6 @@ function AppContent() {
   /* ── Auth ── */
   const [token,          setToken]          = useState(() => localStorage.getItem('token') ?? '')
   const [loggedInUserId, setLoggedInUserId] = useState(() => localStorage.getItem('userId') ?? '')
-  const [authEmail,      setAuthEmail]      = useState('')
-  const [authPassword,   setAuthPassword]   = useState('')
 
   /* ── Chat ── */
   const [messages,      setMessages]      = useState([])
@@ -48,13 +48,59 @@ function AppContent() {
   const [mealPlan,    setMealPlan]    = useState(null)
   const [savedPlanId, setSavedPlanId] = useState(null)
   const [planLoading, setPlanLoading] = useState(false)
+  const [savedPlans,  setSavedPlans]  = useState([])
+  const [libraryLoading, setLibraryLoading] = useState(false)
+
+  /* ── Prefs ── */
+  const [prefs, setPrefs] = useState(null)
+  const [prefsLoading, setPrefsLoading] = useState(false)
 
   /* ── Shopping list ── */
   const [shoppingList, setShoppingList] = useState(null)
   const [retailer,     setRetailer]     = useState('tesco')
   const [shopLoading,  setShopLoading]  = useState(false)
 
-  const loading = chatLoading || planLoading || shopLoading
+  const loading = chatLoading || planLoading || shopLoading || prefsLoading || libraryLoading
+
+  const authHeaders = useCallback(() => ({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  }), [token])
+
+  const loadPrefs = useCallback(async (accessToken = token) => {
+    if (!accessToken) return
+    try {
+      const res = await fetch(`${API}/me`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      const { data, error } = await parseRes(res, 'Cannot load preferences.')
+      if (error || !res.ok) return
+      setPrefs(data)
+      if (data.preferred_retailer) setRetailer(data.preferred_retailer)
+    } catch {
+      // non-blocking
+    }
+  }, [token])
+
+  const loadSavedPlans = useCallback(async (accessToken = token) => {
+    if (!accessToken) return
+    try {
+      const res = await fetch(`${API}/meal-plans`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      const { data, error } = await parseRes(res, 'Cannot load plans.')
+      if (error || !res.ok) return
+      setSavedPlans(data.plans ?? [])
+    } catch {
+      // non-blocking
+    }
+  }, [token])
+
+  useEffect(() => {
+    if (!token) return
+    loadPrefs()
+    loadSavedPlans()
+  }, [token, loadPrefs, loadSavedPlans])
 
   /* ── Auth handler ── */
   const handleAuth = useCallback(async (endpoint, email, password) => {
@@ -76,12 +122,12 @@ function AppContent() {
       localStorage.setItem('userId', String(userId))
       setToken(accessToken)
       setLoggedInUserId(String(userId))
-      setAuthEmail('')
-      setAuthPassword('')
+      loadPrefs(accessToken)
+      loadSavedPlans(accessToken)
     } catch (err) {
       alert(err.message)
     }
-  }, [])
+  }, [loadPrefs, loadSavedPlans])
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token')
@@ -92,7 +138,44 @@ function AppContent() {
     setMealPlan(null)
     setSavedPlanId(null)
     setShoppingList(null)
+    setSavedPlans([])
+    setPrefs(null)
   }, [])
+
+  const savePrefs = useCallback(async (nextPrefs) => {
+    setPrefsLoading(true)
+    try {
+      const res = await fetch(`${API}/me`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify(nextPrefs),
+      })
+      const { data, error } = await parseRes(res, 'Cannot save preferences.')
+      if (error) throw new Error(error)
+      if (!res.ok) throw new Error(getErrorMsg(data, 'Save failed'))
+      setPrefs(data)
+      if (data.preferred_retailer) setRetailer(data.preferred_retailer)
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setPrefsLoading(false)
+    }
+  }, [authHeaders])
+
+  const setRetailerAndPersist = useCallback((r) => {
+    setRetailer(r)
+    // Soft-persist preferred retailer without blocking UI
+    fetch(`${API}/me`, {
+      method: 'PATCH',
+      headers: authHeaders(),
+      body: JSON.stringify({ preferred_retailer: r }),
+    })
+      .then(async (res) => {
+        const { data } = await parseRes(res)
+        if (res.ok) setPrefs((prev) => (prev ? { ...prev, ...data } : data))
+      })
+      .catch(() => {})
+  }, [authHeaders])
 
   /* ── Chat ── */
   const sendMessage = useCallback(async () => {
@@ -107,10 +190,7 @@ function AppContent() {
     try {
       const res = await fetch(`${API}/chat`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: authHeaders(),
         body: JSON.stringify({ user_message: text, conversation_id: conversationId }),
       })
       const { data, error } = await parseRes(res, 'Cannot reach server.')
@@ -119,13 +199,19 @@ function AppContent() {
 
       const content = data.message ?? data.response ?? data.content ?? 'No response.'
       setMessages(prev => [...prev, { role: 'assistant', content }])
-      if (data.meal_plan) setMealPlan(data.meal_plan)
+      if (data.meal_plan) {
+        setMealPlan(data.meal_plan)
+        setSavedPlanId(null)
+        setShoppingList(null)
+      }
+      // Refresh remaining quota
+      loadPrefs()
     } catch (err) {
       setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }])
     } finally {
       setChatLoading(false)
     }
-  }, [input, chatLoading, token, conversationId])
+  }, [input, chatLoading, authHeaders, conversationId, loadPrefs])
 
   /* ── Save plan ── */
   const savePlan = useCallback(async () => {
@@ -134,10 +220,7 @@ function AppContent() {
     try {
       const res = await fetch(`${API}/meal-plan`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: authHeaders(),
         body: JSON.stringify(mealPlan),
       })
       const { data, error } = await parseRes(res, 'Cannot reach server.')
@@ -146,25 +229,115 @@ function AppContent() {
       const planId = data.id ?? data.meal_plan_id
       if (planId == null) throw new Error('No plan ID in response')
       setSavedPlanId(planId)
-      alert(`Plan saved! ID: ${planId}`)
+      await loadSavedPlans()
     } catch (err) {
       alert(err.message)
     } finally {
       setPlanLoading(false)
     }
-  }, [mealPlan, planLoading, token])
+  }, [mealPlan, planLoading, authHeaders, loadSavedPlans])
+
+  const openPlan = useCallback(async (planId) => {
+    setLibraryLoading(true)
+    try {
+      const res = await fetch(`${API}/meal-plan/${planId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const { data, error } = await parseRes(res, 'Cannot load plan.')
+      if (error) throw new Error(error)
+      if (!res.ok) throw new Error(getErrorMsg(data, 'Load failed'))
+
+      setMealPlan({
+        plan_name: data.plan_name,
+        servings: data.servings,
+        recipes: data.recipes,
+      })
+      setSavedPlanId(data.id)
+
+      const listRes = await fetch(`${API}/shopping-list/${planId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const listParsed = await parseRes(listRes, 'Cannot load shopping list.')
+      if (!listParsed.error && listRes.ok) {
+        setShoppingList(listParsed.data)
+      } else {
+        setShoppingList(null)
+      }
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setLibraryLoading(false)
+    }
+  }, [token])
 
   /* ── Shopping list ── */
   const generateShoppingList = useCallback(async () => {
     if (!savedPlanId || shopLoading) return
     setShopLoading(true)
     try {
-      const res = await fetch(`${API}/shopping-list/${savedPlanId}`, {
+      const res = await fetch(`${API}/shopping-list/${savedPlanId}/generate`, {
+        method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       })
       const { data, error } = await parseRes(res, 'Cannot reach server.')
       if (error) throw new Error(error)
       if (!res.ok) throw new Error(getErrorMsg(data, 'Generate failed'))
+      setShoppingList(data)
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setShopLoading(false)
+    }
+  }, [savedPlanId, shopLoading, token])
+
+  const toggleShoppingItem = useCallback(async (item) => {
+    if (item?.id == null) return
+    const nextChecked = !item.checked
+    setShoppingList((prev) => {
+      if (!prev?.items) return prev
+      return {
+        ...prev,
+        items: prev.items.map((i) => (i.id === item.id ? { ...i, checked: nextChecked } : i)),
+      }
+    })
+    try {
+      const res = await fetch(`${API}/shopping-list/items/${item.id}`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify({ checked: nextChecked }),
+      })
+      if (!res.ok) {
+        // revert
+        setShoppingList((prev) => {
+          if (!prev?.items) return prev
+          return {
+            ...prev,
+            items: prev.items.map((i) => (i.id === item.id ? { ...i, checked: item.checked } : i)),
+          }
+        })
+      }
+    } catch {
+      setShoppingList((prev) => {
+        if (!prev?.items) return prev
+        return {
+          ...prev,
+          items: prev.items.map((i) => (i.id === item.id ? { ...i, checked: item.checked } : i)),
+        }
+      })
+    }
+  }, [authHeaders])
+
+  const clearChecks = useCallback(async () => {
+    if (!savedPlanId || shopLoading) return
+    setShopLoading(true)
+    try {
+      const res = await fetch(`${API}/shopping-list/${savedPlanId}/clear-checks`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const { data, error } = await parseRes(res, 'Cannot clear checks.')
+      if (error) throw new Error(error)
+      if (!res.ok) throw new Error(getErrorMsg(data, 'Clear failed'))
       setShoppingList(data)
     } catch (err) {
       alert(err.message)
@@ -179,10 +352,7 @@ function AppContent() {
     try {
       const res = await fetch(`${API}/affiliate-link`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: authHeaders(),
         body: JSON.stringify({ retailer }),
       })
       const { data, error } = await parseRes(res, 'Cannot reach server.')
@@ -195,7 +365,7 @@ function AppContent() {
     } finally {
       setShopLoading(false)
     }
-  }, [shoppingList, shopLoading, retailer, token])
+  }, [shoppingList, shopLoading, retailer, authHeaders])
 
   /* ── Render ── */
   if (!token) {
@@ -216,7 +386,9 @@ function AppContent() {
             <span className="app__logoBottom">SORTED.</span>
           </div>
           <div className="app__headerRight">
-            <span className="app__userId">#{loggedInUserId}</span>
+            <span className="app__userId">
+              {prefs?.email || `#${loggedInUserId}`}
+            </span>
             <button
               type="button"
               onClick={handleLogout}
@@ -229,6 +401,23 @@ function AppContent() {
       </header>
 
       <main className="app__main">
+        <section className="app__panel">
+          <PrefsPanel
+            prefs={prefs}
+            onSave={savePrefs}
+            loading={prefsLoading}
+          />
+        </section>
+
+        <section className="app__panel">
+          <PlanLibrary
+            plans={savedPlans}
+            activePlanId={savedPlanId}
+            onSelect={openPlan}
+            loading={libraryLoading}
+          />
+        </section>
+
         <section className="app__chat">
           <ChatInterface
             messages={messages}
@@ -245,6 +434,7 @@ function AppContent() {
               mealPlan={mealPlan}
               savePlan={savePlan}
               loading={planLoading}
+              alreadySaved={savedPlanId != null}
             />
           </section>
         )}
@@ -257,8 +447,10 @@ function AppContent() {
               generateShoppingList={generateShoppingList}
               shopNow={shopNow}
               retailer={retailer}
-              setRetailer={setRetailer}
+              setRetailer={setRetailerAndPersist}
               loading={shopLoading}
+              onToggleItem={toggleShoppingItem}
+              onClearChecks={clearChecks}
             />
           </section>
         )}

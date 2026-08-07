@@ -8,8 +8,10 @@ export default defineConfig({
     proxy: {
       '/login': 'http://localhost:3000',
       '/register': 'http://localhost:3000',
+      '/me': 'http://localhost:3000',
       '/chat': 'http://localhost:3000',
       '/meal-plan': 'http://localhost:3000',
+      '/meal-plans': 'http://localhost:3000',
       '/shopping-list': 'http://localhost:3000',
       '/affiliate-link': 'http://localhost:3000',
     },

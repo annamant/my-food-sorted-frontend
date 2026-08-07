@@ -8,7 +8,7 @@ function recipeKey(r, i) {
   return r.id ?? `${r.day_of_week}-${r.meal_slot}-${String(r.title).slice(0, 30)}-${i}`
 }
 
-function MealPlanDisplay({ mealPlan, savePlan, loading }) {
+function MealPlanDisplay({ mealPlan, savePlan, loading, alreadySaved }) {
   if (!mealPlan?.recipes?.length) return null
 
   return (
@@ -24,6 +24,16 @@ function MealPlanDisplay({ mealPlan, savePlan, loading }) {
             </strong>
             <div className="meal-plan-display__cardMeta">
               £{fmtPrice(r.estimated_cost)} | {r.prep_time}min prep, {r.cook_time}min cook
+              {(r.calories != null || r.protein != null || r.carbs != null || r.fat != null) && (
+                <span>
+                  {' '}· {[
+                    r.calories != null ? `${r.calories} kcal` : null,
+                    r.protein != null ? `P ${r.protein}g` : null,
+                    r.carbs != null ? `C ${r.carbs}g` : null,
+                    r.fat != null ? `F ${r.fat}g` : null,
+                  ].filter(Boolean).join(' · ')}
+                </span>
+              )}
             </div>
             <p className="meal-plan-display__cardInstructions">{r.instructions}</p>
             <div className="meal-plan-display__cardIngredients">
@@ -35,14 +45,18 @@ function MealPlanDisplay({ mealPlan, savePlan, loading }) {
           </div>
         ))}
       </div>
-      <button
-        type="button"
-        onClick={savePlan}
-        disabled={loading}
-        className="btn btn--primary meal-plan-display__saveBtn"
-      >
-        Save Plan
-      </button>
+      {alreadySaved ? (
+        <p className="meal-plan-display__savedNote">Saved in your library</p>
+      ) : (
+        <button
+          type="button"
+          onClick={savePlan}
+          disabled={loading}
+          className="btn btn--primary meal-plan-display__saveBtn"
+        >
+          Save Plan
+        </button>
+      )}
     </div>
   )
 }
