@@ -15,7 +15,7 @@ function ChatInterface({ messages, input, setInput, sendMessage, loading }) {
       <div className="chat-interface__messages">
         {messages.length === 0 && !loading && (
           <p className="chat-interface__empty">
-            Tell the chef what you're after — they'll ask a few quick questions (likes, dislikes, what's in the cupboard) before building your plan.
+            Tick your meal brief above, then send a short note — e.g. “make brunch light” or “go”.
           </p>
         )}
         {messages.map((m, i) => (
@@ -32,7 +32,7 @@ function ChatInterface({ messages, input, setInput, sendMessage, loading }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder="e.g. high-protein Italian dinners for 4…"
+          placeholder="Add a note, or just say go…"
           className="chat-interface__input"
           aria-label="Chat message"
           disabled={loading}

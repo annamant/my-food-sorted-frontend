@@ -5,6 +5,7 @@ import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
 import PrefsPanel from './components/PrefsPanel'
+import MealBriefPanel, { defaultBrief } from './components/MealBriefPanel'
 import LandingPage from './components/LandingPage'
 import './App.css'
 
@@ -54,6 +55,7 @@ function AppContent() {
   /* ── Prefs ── */
   const [prefs, setPrefs] = useState(null)
   const [prefsLoading, setPrefsLoading] = useState(false)
+  const [mealBrief, setMealBrief] = useState(() => ({ ...defaultBrief }))
 
   /* ── Shopping list ── */
   const [shoppingList, setShoppingList] = useState(null)
@@ -101,6 +103,12 @@ function AppContent() {
     loadPrefs()
     loadSavedPlans()
   }, [token, loadPrefs, loadSavedPlans])
+
+  useEffect(() => {
+    if (prefs?.household_size && mealBrief.servings === defaultBrief.servings) {
+      setMealBrief((prev) => ({ ...prev, servings: prefs.household_size }))
+    }
+  }, [prefs]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Auth handler ── */
   const handleAuth = useCallback(async (endpoint, email, password) => {
@@ -191,7 +199,11 @@ function AppContent() {
       const res = await fetch(`${API}/chat`, {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({ user_message: text, conversation_id: conversationId }),
+        body: JSON.stringify({
+          user_message: text,
+          conversation_id: conversationId,
+          meal_brief: mealBrief,
+        }),
       })
       const { data, error } = await parseRes(res, 'Cannot reach server.')
       if (error) throw new Error(error)
@@ -211,7 +223,7 @@ function AppContent() {
     } finally {
       setChatLoading(false)
     }
-  }, [input, chatLoading, authHeaders, conversationId, loadPrefs])
+  }, [input, chatLoading, authHeaders, conversationId, mealBrief, loadPrefs])
 
   /* ── Save plan ── */
   const savePlan = useCallback(async () => {
@@ -415,6 +427,14 @@ function AppContent() {
             activePlanId={savedPlanId}
             onSelect={openPlan}
             loading={libraryLoading}
+          />
+        </section>
+
+        <section className="app__panel">
+          <MealBriefPanel
+            brief={mealBrief}
+            onChange={setMealBrief}
+            prefs={prefs}
           />
         </section>
 

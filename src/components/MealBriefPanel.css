@@ -1,0 +1,131 @@
+.meal-brief {
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: #111;
+}
+
+.meal-brief__toggle {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.meal-brief__title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.meal-brief__subtitle {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.meal-brief__chevron {
+  font-size: var(--text-xs);
+  color: var(--primary);
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.meal-brief__body {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.meal-brief__hint {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.meal-brief__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-3);
+}
+
+.meal-brief__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.meal-brief__field--wide {
+  width: 100%;
+}
+
+.meal-brief__field input {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+}
+
+.meal-brief__group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+.meal-brief__legend {
+  padding: 0;
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.meal-brief__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.meal-brief__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--input-bg);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  user-select: none;
+}
+
+.meal-brief__chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.meal-brief__chip--on {
+  border-color: var(--primary);
+  background: var(--primary-alpha, rgba(200, 251, 76, 0.12));
+  color: var(--primary);
+  font-weight: 600;
+}
