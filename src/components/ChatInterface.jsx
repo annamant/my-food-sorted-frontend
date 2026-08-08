@@ -8,6 +8,10 @@ function ChatInterface({ messages, input, setInput, sendMessage, loading }) {
   return (
     <div className="chat-interface">
       <h2 className="chat-interface__title">Chat</h2>
+      <p className="chat-interface__disclaimer">
+        For medical or clinical dietary advice, please consult your GP or a registered dietitian.
+        My Food SORTED is here to help with everyday meal ideas and does not replace professional medical advice.
+      </p>
       <div className="chat-interface__messages">
         {messages.length === 0 && !loading && (
           <p className="chat-interface__empty">
