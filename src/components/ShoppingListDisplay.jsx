@@ -13,7 +13,6 @@ function formatItemLine(item) {
 
 function ShoppingListDisplay({
   shoppingList,
-  savedPlanId,
   generateShoppingList,
   loading,
   onToggleItem,
@@ -53,8 +52,7 @@ function ShoppingListDisplay({
     <div className="shopping-list-display">
       <h2 className="shopping-list-display__title">Ingredients</h2>
       <p className="shopping-list-display__lede">
-        A cook’s checklist for this saved week — copy it, tick it off, take it to any shop you like.
-        {savedPlanId ? ` · Week #${savedPlanId}` : ''}
+        A cook’s checklist for this recipe — copy it, tick it off, take it to any shop you like.
       </p>
 
       <div className="shopping-list-display__actions">

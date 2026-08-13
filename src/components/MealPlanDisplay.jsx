@@ -8,53 +8,124 @@ function recipeKey(r, i) {
   return r.id ?? `${r.day_of_week}-${r.meal_slot}-${String(r.title).slice(0, 30)}-${i}`
 }
 
-function MealPlanDisplay({ mealPlan, savePlan, loading, alreadySaved }) {
+/** Turn a wall of instruction text into readable steps. */
+function instructionSteps(text) {
+  if (!text || typeof text !== 'string') return []
+  const trimmed = text.trim()
+  if (!trimmed) return []
+
+  const byNumber = trimmed
+    .split(/(?=\b\d+[\).]\s)/)
+    .map((s) => s.replace(/^\d+[\).]\s*/, '').trim())
+    .filter(Boolean)
+  if (byNumber.length > 1) return byNumber
+
+  const byLine = trimmed
+    .split(/\n+/)
+    .map((s) => s.replace(/^[-•*]\s*/, '').trim())
+    .filter(Boolean)
+  if (byLine.length > 1) return byLine
+
+  // Sentence-ish split for dense single paragraphs
+  const bySentence = trimmed
+    .split(/(?<=[.!?])\s+(?=[A-Z])/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+  return bySentence.length ? bySentence : [trimmed]
+}
+
+function MealPlanDisplay({ mealPlan, savePlan, loading, alreadySaved, embedded }) {
   if (!mealPlan?.recipes?.length) return null
 
+  const recipeCount = mealPlan.recipes.length
+  const title =
+    mealPlan.plan_name ||
+    (recipeCount === 1 ? mealPlan.recipes[0].title : 'Your composed plan')
+
   return (
-    <div className="meal-plan-display">
-      <h2 className="meal-plan-display__title">
-        {mealPlan.plan_name || 'This week’s plan'}
-      </h2>
+    <div className={`meal-plan-display ${embedded ? 'meal-plan-display--embedded' : ''}`}>
+      <header className="meal-plan-display__header">
+        <p className="meal-plan-display__label">Recipe</p>
+        <h2 className="meal-plan-display__title">{title}</h2>
+        {recipeCount > 1 && (
+          <p className="meal-plan-display__count">{recipeCount} dishes in this plan</p>
+        )}
+      </header>
+
       <div className="meal-plan-display__list">
-        {mealPlan.recipes.map((r, i) => (
-          <div key={recipeKey(r, i)} className="meal-plan-display__card">
-            <strong className="meal-plan-display__cardTitle">
-              {r.day_of_week} – {r.meal_slot}: {r.title}
-            </strong>
-            <div className="meal-plan-display__cardMeta">
-              £{fmtPrice(r.estimated_cost)} | {r.prep_time}min prep, {r.cook_time}min cook
-              {(r.calories != null || r.protein != null || r.carbs != null || r.fat != null) && (
-                <span>
-                  {' '}· {[
-                    r.calories != null ? `${r.calories} kcal` : null,
-                    r.protein != null ? `P ${r.protein}g` : null,
-                    r.carbs != null ? `C ${r.carbs}g` : null,
-                    r.fat != null ? `F ${r.fat}g` : null,
-                  ].filter(Boolean).join(' · ')}
-                </span>
+        {mealPlan.recipes.map((r, i) => {
+          const steps = instructionSteps(r.instructions)
+          const ingredients = r.ingredients || []
+          return (
+            <article key={recipeKey(r, i)} className="meal-plan-display__card">
+              {recipeCount > 1 && (
+                <h3 className="meal-plan-display__cardTitle">{r.title}</h3>
               )}
-            </div>
-            <p className="meal-plan-display__cardInstructions">{r.instructions}</p>
-            <div className="meal-plan-display__cardIngredients">
-              <span className="meal-plan-display__cardIngredientsLabel">Ingredients:</span>{' '}
-              {(r.ingredients || [])
-                .map((ing) => `${ing.ingredient_name} (${ing.quantity} ${ing.unit})`)
-                .join(', ')}
-            </div>
-          </div>
-        ))}
+              <p className="meal-plan-display__cardSlot">
+                {[r.day_of_week, r.meal_slot].filter(Boolean).join(' · ')}
+              </p>
+              <div className="meal-plan-display__cardMeta">
+                <span>£{fmtPrice(r.estimated_cost)}</span>
+                <span>
+                  {r.prep_time} min prep · {r.cook_time} min cook
+                </span>
+                {(r.calories != null || r.protein != null || r.carbs != null || r.fat != null) && (
+                  <span>
+                    {[
+                      r.calories != null ? `${r.calories} kcal` : null,
+                      r.protein != null ? `P ${r.protein}g` : null,
+                      r.carbs != null ? `C ${r.carbs}g` : null,
+                      r.fat != null ? `F ${r.fat}g` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </span>
+                )}
+              </div>
+
+              {ingredients.length > 0 && (
+                <div className="meal-plan-display__section">
+                  <h4 className="meal-plan-display__sectionLabel">Ingredients</h4>
+                  <ul className="meal-plan-display__ingredients">
+                    {ingredients.map((ing, idx) => (
+                      <li key={`${ing.ingredient_name}-${idx}`}>
+                        <span className="meal-plan-display__ingName">{ing.ingredient_name}</span>
+                        <span className="meal-plan-display__ingQty">
+                          {ing.quantity} {ing.unit}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {steps.length > 0 && (
+                <div className="meal-plan-display__section">
+                  <h4 className="meal-plan-display__sectionLabel">Method</h4>
+                  <ol className="meal-plan-display__steps">
+                    {steps.map((step, idx) => (
+                      <li key={idx}>{step}</li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+            </article>
+          )
+        })}
       </div>
+
       {alreadySaved ? (
-        <p className="meal-plan-display__savedNote">In your library</p>
+        embedded ? null : (
+          <p className="meal-plan-display__savedNote">Saved to your library</p>
+        )
       ) : (
         <button
           type="button"
           onClick={savePlan}
-          disabled={loading}
+          disabled={loading || !savePlan}
           className="btn btn--primary meal-plan-display__saveBtn"
         >
-          Keep in library
+          {loading ? 'Saving…' : 'Save to library'}
         </button>
       )}
     </div>

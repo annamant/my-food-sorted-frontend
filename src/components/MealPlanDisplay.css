@@ -6,73 +6,175 @@
   box-shadow: var(--shadow);
 }
 
-.meal-plan-display__title {
-  margin: 0 0 var(--space-6);
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3vw, 2rem);
+.meal-plan-display--embedded {
+  padding: var(--space-5) 0 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.meal-plan-display__header {
+  margin-bottom: var(--space-6);
+}
+
+.meal-plan-display__label {
+  margin: 0 0 var(--space-2);
+  font-size: var(--panel-label-size);
   font-weight: 500;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--panel-label-tracking);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.meal-plan-display__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
+  line-height: 1.15;
+}
+
+.meal-plan-display__count {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-sm);
+  font-weight: 300;
+  color: var(--text-muted);
 }
 
 .meal-plan-display__list {
   display: flex;
   flex-direction: column;
-  margin-bottom: var(--space-6);
+  gap: var(--space-8);
+  margin-bottom: var(--space-8);
 }
 
 .meal-plan-display__card {
-  padding: var(--space-5) 0;
-  border-top: 1px solid var(--border);
+  padding: 0;
   background: transparent;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-4);
 }
-.meal-plan-display__card:last-child {
-  border-bottom: 1px solid var(--border);
+
+.meal-plan-display__card + .meal-plan-display__card {
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--border);
 }
 
 .meal-plan-display__cardTitle {
+  margin: 0;
   font-family: var(--font-display);
-  font-size: var(--text-xl);
+  font-size: clamp(1.35rem, 2.5vw, 1.75rem);
   font-weight: 500;
   color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
+.meal-plan-display__cardSlot {
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
 .meal-plan-display__cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
   font-size: var(--text-sm);
   color: var(--accent);
   font-weight: 400;
-  letter-spacing: 0.01em;
 }
 
-.meal-plan-display__cardInstructions {
+.meal-plan-display__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.meal-plan-display__sectionLabel {
   margin: 0;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.meal-plan-display__ingredients {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+
+.meal-plan-display__ingredients li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--border);
   font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.meal-plan-display__ingName {
+  color: var(--text-primary);
+  font-weight: 400;
+}
+
+.meal-plan-display__ingQty {
+  color: var(--text-muted);
+  font-weight: 300;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.meal-plan-display__steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: method;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.meal-plan-display__steps li {
+  counter-increment: method;
+  position: relative;
+  padding-left: 2.25rem;
+  font-size: var(--text-base);
   font-weight: 300;
   color: var(--text-secondary);
   line-height: 1.7;
 }
 
-.meal-plan-display__cardIngredients {
+.meal-plan-display__steps li::before {
+  content: counter(method, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.1rem;
+  font-family: var(--font-display);
   font-size: var(--text-sm);
-  font-weight: 300;
-  color: var(--text-muted);
-  line-height: 1.55;
-}
-
-.meal-plan-display__cardIngredientsLabel {
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--accent);
+  letter-spacing: 0.02em;
 }
 
 .meal-plan-display__saveBtn {
   width: 100%;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 0.9rem var(--space-4);
+  padding: 0.95rem var(--space-4);
 }
 
 .meal-plan-display__savedNote {

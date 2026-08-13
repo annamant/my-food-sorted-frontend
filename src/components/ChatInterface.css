@@ -29,7 +29,7 @@
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   min-height: 14rem;
-  max-height: 22rem;
+  max-height: min(36rem, 60vh);
   overflow-y: auto;
   margin-bottom: var(--space-4);
   background: var(--page-bg);

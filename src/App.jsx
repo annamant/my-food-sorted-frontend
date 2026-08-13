@@ -5,6 +5,7 @@ import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
 import PrefsPanel from './components/PrefsPanel'
+import AccountPanel from './components/AccountPanel'
 import MealBriefPanel, { defaultBrief } from './components/MealBriefPanel'
 import LandingPage from './components/LandingPage'
 import './App.css'
@@ -232,7 +233,16 @@ function AppContent() {
   }, [mealPlan, planLoading, authHeaders, loadSavedPlans])
 
   const openPlan = useCallback(async (planId) => {
+    if (savedPlanId === planId) {
+      setSavedPlanId(null)
+      setShoppingList(null)
+      // Keep a freshly composed unsaved plan; clear only library-opened plans
+      setMealPlan(null)
+      return
+    }
+
     setLibraryLoading(true)
+    setSavedPlanId(planId)
     try {
       const res = await fetch(`${API}/meal-plan/${planId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -246,7 +256,6 @@ function AppContent() {
         servings: data.servings,
         recipes: data.recipes,
       })
-      setSavedPlanId(data.id)
 
       const listRes = await fetch(`${API}/shopping-list/${planId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -258,11 +267,23 @@ function AppContent() {
         setShoppingList(null)
       }
     } catch (err) {
+      setSavedPlanId(null)
       alert(err.message)
     } finally {
       setLibraryLoading(false)
     }
-  }, [token])
+  }, [token, savedPlanId])
+
+  const changePassword = useCallback(async ({ current_password, new_password }) => {
+    const res = await fetch(`${API}/me/password`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ current_password, new_password }),
+    })
+    const { data, error } = await parseRes(res, 'Cannot update password.')
+    if (error) throw new Error(error)
+    if (!res.ok) throw new Error(getErrorMsg(data, 'Password update failed'))
+  }, [authHeaders])
 
   /* ── Shopping list ── */
   const generateShoppingList = useCallback(async () => {
@@ -359,6 +380,9 @@ function AppContent() {
             <span className="app__logoBottom">SORTED.</span>
           </div>
           <div className="app__headerRight">
+            <a className="app__accountLink" href="#account">
+              Account
+            </a>
             <span className="app__userId">
               {prefs?.email || `#${loggedInUserId}`}
             </span>
@@ -389,6 +413,8 @@ function AppContent() {
             activePlanId={savedPlanId}
             onSelect={openPlan}
             loading={libraryLoading}
+            expandedPlan={savedPlanId != null ? mealPlan : null}
+            expandedLoading={libraryLoading}
           />
         </section>
 
@@ -410,13 +436,13 @@ function AppContent() {
           />
         </section>
 
-        {mealPlan && (
+        {mealPlan && savedPlanId == null && (
           <section className="app__panel">
             <MealPlanDisplay
               mealPlan={mealPlan}
               savePlan={savePlan}
               loading={planLoading}
-              alreadySaved={savedPlanId != null}
+              alreadySaved={false}
             />
           </section>
         )}
@@ -425,7 +451,6 @@ function AppContent() {
           <section className="app__panel app__panel--muted">
             <ShoppingListDisplay
               shoppingList={shoppingList}
-              savedPlanId={savedPlanId}
               generateShoppingList={generateShoppingList}
               loading={shopLoading}
               onToggleItem={toggleShoppingItem}
@@ -433,6 +458,15 @@ function AppContent() {
             />
           </section>
         )}
+
+        <section className="app__panel">
+          <AccountPanel
+            prefs={prefs}
+            onChangePassword={changePassword}
+            loading={prefsLoading}
+            onLogout={handleLogout}
+          />
+        </section>
 
         <section className="app__panel app__panel--muted">
           <PrefsPanel
