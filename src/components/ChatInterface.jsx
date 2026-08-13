@@ -9,13 +9,13 @@ function ChatInterface({ messages, input, setInput, sendMessage, loading }) {
     <div className="chat-interface">
       <h2 className="chat-interface__title">Compose</h2>
       <p className="chat-interface__disclaimer">
-        Everyday meal ideas for your kitchen — not medical or clinical advice.
-        For dietary concerns, speak with your GP or a registered dietitian.
+        Ask for an existing recipe, invent one, or shape a week — then keep what you love in your library.
+        Not medical advice; for clinical concerns, speak with your GP or a dietitian.
       </p>
       <div className="chat-interface__messages">
         {messages.length === 0 && !loading && (
           <p className="chat-interface__empty">
-            Set your brief above, then send a note — or simply say “go”.
+            Try “go”, “give me a classic carbonara”, or “a high-protein week under £40”.
           </p>
         )}
         {messages.map((m, i) => (
@@ -32,7 +32,7 @@ function ChatInterface({ messages, input, setInput, sendMessage, loading }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder="Add a note, or say go…"
+          placeholder="Ask for a recipe, or say go…"
           className="chat-interface__input"
           aria-label="Chat message"
           disabled={loading}

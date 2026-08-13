@@ -59,7 +59,6 @@ function AppContent() {
 
   /* ── Shopping list ── */
   const [shoppingList, setShoppingList] = useState(null)
-  const [retailer,     setRetailer]     = useState('tesco')
   const [shopLoading,  setShopLoading]  = useState(false)
 
   const loading = chatLoading || planLoading || shopLoading || prefsLoading || libraryLoading
@@ -78,7 +77,6 @@ function AppContent() {
       const { data, error } = await parseRes(res, 'Cannot load preferences.')
       if (error || !res.ok) return
       setPrefs(data)
-      if (data.preferred_retailer) setRetailer(data.preferred_retailer)
     } catch {
       // non-blocking
     }
@@ -162,27 +160,11 @@ function AppContent() {
       if (error) throw new Error(error)
       if (!res.ok) throw new Error(getErrorMsg(data, 'Save failed'))
       setPrefs(data)
-      if (data.preferred_retailer) setRetailer(data.preferred_retailer)
     } catch (err) {
       alert(err.message)
     } finally {
       setPrefsLoading(false)
     }
-  }, [authHeaders])
-
-  const setRetailerAndPersist = useCallback((r) => {
-    setRetailer(r)
-    // Soft-persist preferred retailer without blocking UI
-    fetch(`${API}/me`, {
-      method: 'PATCH',
-      headers: authHeaders(),
-      body: JSON.stringify({ preferred_retailer: r }),
-    })
-      .then(async (res) => {
-        const { data } = await parseRes(res)
-        if (res.ok) setPrefs((prev) => (prev ? { ...prev, ...data } : data))
-      })
-      .catch(() => {})
   }, [authHeaders])
 
   /* ── Chat ── */
@@ -358,27 +340,6 @@ function AppContent() {
     }
   }, [savedPlanId, shopLoading, token])
 
-  const shopNow = useCallback(async () => {
-    if (!shoppingList || shopLoading) return
-    setShopLoading(true)
-    try {
-      const res = await fetch(`${API}/affiliate-link`, {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify({ retailer }),
-      })
-      const { data, error } = await parseRes(res, 'Cannot reach server.')
-      if (error) throw new Error(error)
-      if (!res.ok) throw new Error(getErrorMsg(data, 'Shop failed'))
-      const url = data.url ?? data.shopping_url
-      if (url) window.open(url, '_blank', 'noopener,noreferrer')
-    } catch (err) {
-      alert(err.message)
-    } finally {
-      setShopLoading(false)
-    }
-  }, [shoppingList, shopLoading, retailer, authHeaders])
-
   /* ── Render ── */
   if (!token) {
     return (
@@ -414,22 +375,15 @@ function AppContent() {
 
       <main className="app__main">
         <div className="app__intro">
-          <p className="app__introLabel">Your kitchen</p>
-          <h1 className="app__introTitle">Compose the week ahead.</h1>
+          <p className="app__introLabel">Your kitchen library</p>
+          <h1 className="app__introTitle">Recipes composed for you. Kept by you.</h1>
           <p className="app__introBody">
-            Set your brief, then cook from a plan written for your stove — not a restaurant pass.
+            Ask for a classic, invent something new, or shape a week around budget and calories —
+            then save it to your library, like a playlist for the stove.
           </p>
         </div>
 
-        <section className="app__panel">
-          <PrefsPanel
-            prefs={prefs}
-            onSave={savePrefs}
-            loading={prefsLoading}
-          />
-        </section>
-
-        <section className="app__panel">
+        <section className="app__panel app__panel--library">
           <PlanLibrary
             plans={savedPlans}
             activePlanId={savedPlanId}
@@ -468,20 +422,25 @@ function AppContent() {
         )}
 
         {savedPlanId && (
-          <section className="app__panel">
+          <section className="app__panel app__panel--muted">
             <ShoppingListDisplay
               shoppingList={shoppingList}
               savedPlanId={savedPlanId}
               generateShoppingList={generateShoppingList}
-              shopNow={shopNow}
-              retailer={retailer}
-              setRetailer={setRetailerAndPersist}
               loading={shopLoading}
               onToggleItem={toggleShoppingItem}
               onClearChecks={clearChecks}
             />
           </section>
         )}
+
+        <section className="app__panel app__panel--muted">
+          <PrefsPanel
+            prefs={prefs}
+            onSave={savePrefs}
+            loading={prefsLoading}
+          />
+        </section>
       </main>
     </div>
   )

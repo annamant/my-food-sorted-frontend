@@ -107,6 +107,15 @@
   width: 100%;
 }
 
+.app__panel--library .plan-library--hero {
+  border-color: rgba(110, 58, 62, 0.18);
+  box-shadow: var(--shadow), 0 0 0 1px rgba(110, 58, 62, 0.04);
+}
+
+.app__panel--muted {
+  opacity: 0.96;
+}
+
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .app__headerInner { padding: var(--space-3) var(--space-4); }

@@ -19,15 +19,18 @@ function fmtDate(iso) {
 
 function PlanLibrary({ plans, activePlanId, onSelect, loading }) {
   return (
-    <div className="plan-library">
+    <div className="plan-library plan-library--hero">
       <div className="plan-library__header">
-        <h2 className="plan-library__title">Your library</h2>
-        <p className="plan-library__subtitle">Composed weeks you can reopen anytime.</p>
+        <p className="plan-library__label">Library</p>
+        <h2 className="plan-library__title">Your collection</h2>
+        <p className="plan-library__subtitle">
+          Saved recipes and weeks — reopen, cook again, or ask the kitchen for something in the same spirit.
+        </p>
       </div>
 
       {!plans?.length && !loading && (
         <p className="plan-library__empty">
-          No saved weeks yet. Compose a plan, then keep it here.
+          Your library is empty. Compose a meal or a week below, then keep it here — like adding a playlist.
         </p>
       )}
 

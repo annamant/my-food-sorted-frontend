@@ -6,7 +6,6 @@ function PrefsPanel({ prefs, onSave, loading }) {
   const [allergies, setAllergies] = useState('')
   const [household, setHousehold] = useState(2)
   const [budget, setBudget] = useState('')
-  const [retailer, setRetailer] = useState('tesco')
   const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
@@ -15,7 +14,6 @@ function PrefsPanel({ prefs, onSave, loading }) {
     setAllergies(prefs.allergies ?? '')
     setHousehold(prefs.household_size ?? 2)
     setBudget(prefs.default_budget != null ? String(prefs.default_budget) : '')
-    setRetailer(prefs.preferred_retailer ?? 'tesco')
     setDirty(false)
   }, [prefs])
 
@@ -26,7 +24,6 @@ function PrefsPanel({ prefs, onSave, loading }) {
       allergies,
       household_size: Number(household) || 1,
       default_budget: budgetNum != null && !Number.isNaN(budgetNum) ? budgetNum : null,
-      preferred_retailer: retailer,
     })
     setDirty(false)
   }
@@ -41,7 +38,7 @@ function PrefsPanel({ prefs, onSave, loading }) {
       <div className="prefs-panel__header">
         <h2 className="prefs-panel__title">Household notes</h2>
         <p className="prefs-panel__subtitle">
-          Saved once, used quietly in every week you compose.
+          Diet, budget, household — used quietly whenever you compose.
           {remaining != null && (
             <span className="prefs-panel__quota"> · {remaining} messages left</span>
           )}
@@ -90,17 +87,6 @@ function PrefsPanel({ prefs, onSave, loading }) {
             onChange={(e) => { setBudget(e.target.value); setDirty(true) }}
             placeholder="e.g. 60"
           />
-        </label>
-
-        <label className="prefs-panel__field">
-          <span>Preferred supermarket</span>
-          <select
-            value={retailer}
-            onChange={(e) => { setRetailer(e.target.value); setDirty(true) }}
-          >
-            <option value="tesco">Tesco</option>
-            <option value="sainsburys">Sainsbury&apos;s</option>
-          </select>
         </label>
       </div>
 

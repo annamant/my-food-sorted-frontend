@@ -46,7 +46,7 @@ function MealPlanDisplay({ mealPlan, savePlan, loading, alreadySaved }) {
         ))}
       </div>
       {alreadySaved ? (
-        <p className="meal-plan-display__savedNote">Kept in your library</p>
+        <p className="meal-plan-display__savedNote">In your library</p>
       ) : (
         <button
           type="button"
@@ -54,7 +54,7 @@ function MealPlanDisplay({ mealPlan, savePlan, loading, alreadySaved }) {
           disabled={loading}
           className="btn btn--primary meal-plan-display__saveBtn"
         >
-          Keep this week
+          Keep in library
         </button>
       )}
     </div>

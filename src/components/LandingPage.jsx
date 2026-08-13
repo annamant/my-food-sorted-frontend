@@ -16,16 +16,16 @@ function LogoMark({ size = 'md', tone = 'ink' }) {
 
 const STEPS = [
   {
-    title: 'Brief your week',
-    body: 'Tastes, budget, household, and what you will and won’t cook — your requirements, nothing generic.',
+    title: 'Brief what you want',
+    body: 'Budget, calories, household, tastes — your requirements, nothing generic.',
   },
   {
-    title: 'Open a composed week',
-    body: 'Recipes, timing, and cost arrive like a weekly box of ideas — exceptional, and written for your kitchen.',
+    title: 'Compose with the kitchen',
+    body: 'Ask for a classic recipe, invent something new, or shape a full week — written for your stove.',
   },
   {
-    title: 'Shop, then cook it yourself',
-    body: 'Your list builds and opens at Tesco or Sainsbury’s. The plate is yours — made by you, at home.',
+    title: 'Keep it in your library',
+    body: 'Save meals and weeks like playlists. Reopen them, cook again, or ask for something in the same spirit.',
   },
 ]
 
@@ -58,16 +58,16 @@ export default function LandingPage({ loading, handleAuth }) {
         <div className="landing__heroContent">
           <LogoMark size="md" tone="light" />
           <h1 className="landing__headline">
-            Extraordinary weeks.<br />
-            <em>Cooked in your kitchen.</em>
+            Your kitchen library.<br />
+            <em>Composed for you.</em>
           </h1>
           <p className="landing__sub">
-            Built from your requirements — then made by you. Recipes, timing, and a
-            weekly shop, composed so home cooking feels restaurant-calibre.
+            Create recipes around budget, calories, and taste — or ask for a classic —
+            then keep them in a library that grows with how you cook.
           </p>
           <div className="landing__heroCtas">
             <button type="button" className="btn landing__ctaPrimary" onClick={scrollToAuth}>
-              Start planning
+              Open your library
             </button>
             <span className="landing__ctaNote">Complimentary · moments to begin</span>
           </div>
@@ -96,8 +96,8 @@ export default function LandingPage({ loading, handleAuth }) {
 
       <section className="landing__authSection" ref={authRef}>
         <div className="landing__authInner">
-          <p className="landing__authLabel">Your kitchen</p>
-          <h2 className="landing__authTitle">Open your place at the table.</h2>
+          <p className="landing__authLabel">Your library</p>
+          <h2 className="landing__authTitle">Start your collection.</h2>
           <p className="landing__authSub">Free to join. Ready in under a minute.</p>
           <AuthForm
             loading={loading}
@@ -112,7 +112,7 @@ export default function LandingPage({ loading, handleAuth }) {
       <footer className="landing__footer">
         <LogoMark size="sm" tone="ink" />
         <p className="landing__footerNote">
-          © {new Date().getFullYear()} my food. SORTED. — cook as if it matters.
+          © {new Date().getFullYear()} my food. SORTED. — your recipes, kept.
         </p>
       </footer>
     </div>

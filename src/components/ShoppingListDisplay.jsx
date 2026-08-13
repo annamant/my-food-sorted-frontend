@@ -15,9 +15,6 @@ function ShoppingListDisplay({
   shoppingList,
   savedPlanId,
   generateShoppingList,
-  shopNow,
-  retailer,
-  setRetailer,
   loading,
   onToggleItem,
   onClearChecks,
@@ -54,9 +51,11 @@ function ShoppingListDisplay({
 
   return (
     <div className="shopping-list-display">
-      <h2 className="shopping-list-display__title">
-        The shop{savedPlanId ? ` · Week #${savedPlanId}` : ''}
-      </h2>
+      <h2 className="shopping-list-display__title">Ingredients</h2>
+      <p className="shopping-list-display__lede">
+        A cook’s checklist for this saved week — copy it, tick it off, take it to any shop you like.
+        {savedPlanId ? ` · Week #${savedPlanId}` : ''}
+      </p>
 
       <div className="shopping-list-display__actions">
         <button
@@ -65,7 +64,7 @@ function ShoppingListDisplay({
           disabled={loading}
           className="btn btn--primary"
         >
-          {shoppingList ? 'Refresh list' : 'Build shopping list'}
+          {shoppingList ? 'Refresh ingredients' : 'Build ingredient list'}
         </button>
 
         {shoppingList && (
@@ -130,34 +129,14 @@ function ShoppingListDisplay({
         </div>
       ))}
 
-      {shoppingList && (
-        <div className="shopping-list-display__retailer">
-          <h3 className="shopping-list-display__retailerTitle">Where you’ll shop</h3>
-          <p className="shopping-list-display__retailerHint">
-            Opens your supermarket with this list ready beside you.
-          </p>
-          <div className="shopping-list-display__retailerButtons">
-            {['tesco', 'sainsburys'].map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => setRetailer(r)}
-                className={`btn ${retailer === r ? 'btn--retailerActive' : 'btn--retailer'}`}
-              >
-                {r === 'tesco' ? 'Tesco' : "Sainsbury's"}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={shopNow}
-              disabled={loading}
-              className="btn btn--success"
-            >
-              Shop now →
-            </button>
-          </div>
-        </div>
-      )}
+      <p className="shopping-list-display__footnote">
+        No basket checkout here — this is your recipe library. When you’re ready to buy,
+        open{' '}
+        <a href="https://www.tesco.com" target="_blank" rel="noopener noreferrer">Tesco</a>
+        {' '}or{' '}
+        <a href="https://www.sainsburys.co.uk" target="_blank" rel="noopener noreferrer">Sainsbury’s</a>
+        {' '}with this list beside you.
+      </p>
     </div>
   )
 }
