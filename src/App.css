@@ -2,7 +2,9 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--page-bg);
+  background:
+    radial-gradient(ellipse 80% 40% at 50% -10%, rgba(110, 58, 62, 0.05) 0%, transparent 60%),
+    var(--page-bg);
 }
 
 /* ── Header ── */
@@ -10,13 +12,13 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(10, 10, 10, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(243, 242, 239, 0.9);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--border);
 }
 .app__headerInner {
-  max-width: 1160px;
+  max-width: 920px;
   margin: 0 auto;
   padding: var(--space-4) var(--space-8);
   display: flex;
@@ -27,19 +29,20 @@
 .app__logo {
   display: flex;
   flex-direction: column;
-  line-height: 1.1;
+  line-height: 1.05;
 }
 .app__logoTop {
-  font-size: var(--text-xs);
+  font-size: 0.65rem;
   font-weight: 400;
   color: var(--text-muted);
-  letter-spacing: 0.01em;
+  letter-spacing: 0.04em;
 }
 .app__logoBottom {
-  font-size: var(--text-xl);
-  font-weight: 900;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
   color: var(--text-primary);
-  letter-spacing: -0.04em;
+  letter-spacing: 0.02em;
 }
 
 .app__headerRight {
@@ -49,30 +52,63 @@
 }
 .app__userId {
   font-size: var(--text-xs);
+  font-weight: 400;
   color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 .app__logoutBtn {
   font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.85rem;
 }
 
 /* ── Main ── */
 .app__main {
   flex: 1;
-  max-width: 1160px;
+  max-width: 920px;
   width: 100%;
   margin: 0 auto;
-  padding: var(--space-8);
+  padding: var(--space-10) var(--space-8) var(--space-16);
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--space-6);
 }
 
-.app__chat  { width: 100%; }
-.app__panel { width: 100%; }
+.app__intro {
+  margin: 0 0 var(--space-2);
+}
+.app__introLabel {
+  margin: 0 0 var(--space-2);
+  font-size: var(--panel-label-size);
+  font-weight: 500;
+  letter-spacing: var(--panel-label-tracking);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.app__introTitle {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: clamp(1.85rem, 4vw, 2.5rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.app__introBody {
+  margin: 0;
+  max-width: 42ch;
+  font-size: var(--text-base);
+  font-weight: 300;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.app__chat,
+.app__panel {
+  width: 100%;
+}
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .app__headerInner { padding: var(--space-3) var(--space-4); }
-  .app__main        { padding: var(--space-4); gap: var(--space-4); }
+  .app__main { padding: var(--space-6) var(--space-4) var(--space-12); gap: var(--space-4); }
 }

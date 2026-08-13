@@ -39,9 +39,9 @@ function PrefsPanel({ prefs, onSave, loading }) {
   return (
     <div className="prefs-panel">
       <div className="prefs-panel__header">
-        <h2 className="prefs-panel__title">Your preferences</h2>
+        <h2 className="prefs-panel__title">Household notes</h2>
         <p className="prefs-panel__subtitle">
-          Saved once, used automatically in every chat.
+          Saved once, used quietly in every week you compose.
           {remaining != null && (
             <span className="prefs-panel__quota"> · {remaining} messages left</span>
           )}

@@ -3,30 +3,37 @@
 html { font-size: 16px; -webkit-text-size-adjust: 100%; }
 body { margin: 0; }
 
-/* ── Design tokens ── */
+/* ── Design tokens — editorial culinary ── */
 :root {
-  /* Colour */
-  --primary:        #c8fb4c;
-  --primary-dark:   #aee034;
-  --primary-text:   #0a0a0a;
-  --primary-tint:   rgba(200,251,76,0.12);
-  --accent:         #c8fb4c;
+  /* Colour: cool stone paper, ink, restrained wine accent */
+  --primary:        #1c1b19;
+  --primary-dark:   #0a0a09;
+  --primary-text:   #f3f2ef;
+  --primary-tint:   rgba(28, 27, 25, 0.06);
+  --primary-alpha:  rgba(110, 58, 62, 0.12);
+  --accent:         #6e3a3e;
+  --accent-soft:    #8a5559;
 
-  --page-bg:        #0a0a0a;
-  --surface:        #111111;
-  --border:         rgba(255,255,255,0.08);
+  --page-bg:        #f3f2ef;
+  --surface:        #fffcf8;
+  --card-bg:        #fffcf8;
+  --input-bg:       #fffcf8;
+  --border:         rgba(28, 27, 25, 0.12);
 
-  --text-primary:   #f5f5f5;
-  --text-secondary: rgba(245,245,245,0.70);
-  --text-muted:     rgba(245,245,245,0.40);
+  --text-primary:   #1c1b19;
+  --text-secondary: rgba(28, 27, 25, 0.68);
+  --text-muted:     rgba(28, 27, 25, 0.42);
 
-  --danger:         #ff4d4d;
-  --danger-dark:    #cc0000;
-  --success:        #22c55e;
-  --success-dark:   #16a34a;
+  --danger:         #b42318;
+  --danger-dark:    #912018;
+  --success:        #3d6b4f;
+  --success-dark:   #2f5440;
+
+  --shadow:         0 1px 2px rgba(28, 27, 25, 0.04), 0 12px 32px rgba(28, 27, 25, 0.06);
 
   /* Typography */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-sans:    'Outfit', system-ui, -apple-system, sans-serif;
   --text-xs:   0.75rem;
   --text-sm:   0.875rem;
   --text-base: 1rem;
@@ -46,27 +53,39 @@ body { margin: 0; }
   --space-12: 3rem;
   --space-16: 4rem;
 
-  /* Radii */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 10px;
-  --radius-xl: 16px;
+  /* Radii — quieter, more tailored */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 10px;
+  --radius: var(--radius-md);
+
+  /* Shared panel chrome */
+  --panel-pad: var(--space-6);
+  --panel-label-size: 0.7rem;
+  --panel-label-tracking: 0.14em;
 }
 
 /* ── Base ── */
 body {
   font-family: var(--font-sans);
+  font-weight: 400;
   background: var(--page-bg);
   color: var(--text-primary);
-  line-height: 1.5;
+  line-height: 1.55;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 { line-height: 1.15; color: var(--text-primary); }
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
 
 a {
-  color: var(--primary);
+  color: var(--accent);
   text-decoration: none;
 }
 a:hover { text-decoration: underline; }
@@ -80,17 +99,18 @@ a:hover { text-decoration: underline; }
   cursor: pointer;
   font-family: inherit;
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   line-height: 1;
   padding: var(--space-2) var(--space-4);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-  transition: background-color 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s, opacity 0.2s;
   white-space: nowrap;
   user-select: none;
 }
 .btn:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -111,7 +131,17 @@ a:hover { text-decoration: underline; }
   border-color: var(--border);
 }
 .btn--ghost:hover:not(:disabled) {
-  background: rgba(255,255,255,0.05);
+  background: var(--primary-tint);
+  color: var(--text-primary);
+}
+
+.btn--secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+.btn--secondary:hover:not(:disabled) {
+  background: var(--primary-tint);
   color: var(--text-primary);
 }
 
@@ -136,26 +166,26 @@ a:hover { text-decoration: underline; }
 }
 
 .btn--retailer {
-  background: rgba(255,255,255,0.05);
+  background: var(--surface);
   color: var(--text-secondary);
   border-color: var(--border);
 }
 .btn--retailer:hover:not(:disabled) {
-  background: rgba(255,255,255,0.1);
-  color: var(--text-primary);
+  background: var(--primary-tint);
+  color: var(--accent);
 }
 
 .btn--retailerActive {
-  background: var(--primary-tint);
-  color: var(--primary);
-  border-color: rgba(200,251,76,0.35);
+  background: var(--primary-alpha);
+  color: var(--accent);
+  border-color: rgba(110, 58, 62, 0.35);
 }
 
 /* ── Shared form elements ── */
 input, textarea, select {
   font-family: inherit;
   font-size: var(--text-base);
-  background: rgba(255,255,255,0.04);
+  background: var(--input-bg);
   color: var(--text-primary);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -166,8 +196,8 @@ input, textarea, select {
 }
 input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(200,251,76,0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--primary-alpha);
 }
 
 /* ── App shell ── */
@@ -199,10 +229,10 @@ input:focus, textarea:focus, select:focus {
   background: var(--surface);
   color: var(--text-primary);
   font-size: var(--text-sm);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  box-shadow: var(--shadow);
 }
-.toast--success { border-color: var(--success); background: rgba(34,197,94,0.12); }
-.toast--error   { border-color: var(--danger); background: rgba(255,77,77,0.12); }
+.toast--success { border-color: var(--success); background: rgba(61, 107, 79, 0.1); }
+.toast--error   { border-color: var(--danger); background: rgba(180, 35, 24, 0.08); }
 .toast__message { flex: 1; }
 .toast__dismiss {
   flex-shrink: 0;
@@ -215,4 +245,4 @@ input:focus, textarea:focus, select:focus {
   line-height: 1;
 }
 .toast__dismiss:hover { color: var(--text-primary); }
-.toast__dismiss:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.toast__dismiss:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

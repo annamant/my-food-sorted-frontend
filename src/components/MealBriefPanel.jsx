@@ -78,7 +78,7 @@ function MealBriefPanel({ brief, onChange, prefs }) {
     <div className="meal-brief">
       <button type="button" className="meal-brief__toggle" onClick={() => setOpen((v) => !v)}>
         <div>
-          <h2 className="meal-brief__title">Meal brief</h2>
+          <h2 className="meal-brief__title">This week’s brief</h2>
           <p className="meal-brief__subtitle">{summary}</p>
         </div>
         <span className="meal-brief__chevron">{open ? 'Hide' : 'Edit'}</span>
@@ -87,7 +87,7 @@ function MealBriefPanel({ brief, onChange, prefs }) {
       {open && (
         <div className="meal-brief__body">
           <p className="meal-brief__hint">
-            Tick what you want — the chef uses this first, then chat only fills gaps.
+            Set your requirements here — the kitchen follows this first; chat only fills the gaps.
           </p>
 
           <div className="meal-brief__row">

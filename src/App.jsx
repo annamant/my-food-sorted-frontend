@@ -413,6 +413,14 @@ function AppContent() {
       </header>
 
       <main className="app__main">
+        <div className="app__intro">
+          <p className="app__introLabel">Your kitchen</p>
+          <h1 className="app__introTitle">Compose the week ahead.</h1>
+          <p className="app__introBody">
+            Set your brief, then cook from a plan written for your stove — not a restaurant pass.
+          </p>
+        </div>
+
         <section className="app__panel">
           <PrefsPanel
             prefs={prefs}

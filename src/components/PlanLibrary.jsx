@@ -21,13 +21,13 @@ function PlanLibrary({ plans, activePlanId, onSelect, loading }) {
   return (
     <div className="plan-library">
       <div className="plan-library__header">
-        <h2 className="plan-library__title">Your meal library</h2>
-        <p className="plan-library__subtitle">Saved plans you can reopen anytime.</p>
+        <h2 className="plan-library__title">Your library</h2>
+        <p className="plan-library__subtitle">Composed weeks you can reopen anytime.</p>
       </div>
 
       {!plans?.length && !loading && (
         <p className="plan-library__empty">
-          No saved plans yet. Chat a week of meals, then hit Save Plan.
+          No saved weeks yet. Compose a plan, then keep it here.
         </p>
       )}
 

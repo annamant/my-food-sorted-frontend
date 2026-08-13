@@ -47,7 +47,7 @@ function AuthForm({ loading, handleAuth, handleLogout, loggedInUserId, email: us
   return (
     <div className="auth-form">
       <form className="auth-form__fields" onSubmit={onSubmit} noValidate>
-        <h2 className="auth-form__title">{mode === 'login' ? 'Login' : 'Register'}</h2>
+        <h2 className="auth-form__title">{mode === 'login' ? 'Welcome back' : 'Join us'}</h2>
         <label className="auth-form__label">
           <span className="auth-form__labelText">Email</span>
           <input

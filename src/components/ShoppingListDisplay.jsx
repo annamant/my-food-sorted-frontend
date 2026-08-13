@@ -55,7 +55,7 @@ function ShoppingListDisplay({
   return (
     <div className="shopping-list-display">
       <h2 className="shopping-list-display__title">
-        Shopping List {savedPlanId ? `(Plan #${savedPlanId})` : ''}
+        The shop{savedPlanId ? ` · Week #${savedPlanId}` : ''}
       </h2>
 
       <div className="shopping-list-display__actions">
@@ -65,7 +65,7 @@ function ShoppingListDisplay({
           disabled={loading}
           className="btn btn--primary"
         >
-          {shoppingList ? 'Regenerate List' : 'Generate Shopping List'}
+          {shoppingList ? 'Refresh list' : 'Build shopping list'}
         </button>
 
         {shoppingList && (
@@ -132,9 +132,9 @@ function ShoppingListDisplay({
 
       {shoppingList && (
         <div className="shopping-list-display__retailer">
-          <h3 className="shopping-list-display__retailerTitle">Shop at</h3>
+          <h3 className="shopping-list-display__retailerTitle">Where you’ll shop</h3>
           <p className="shopping-list-display__retailerHint">
-            Opens your supermarket so you can shop with this list beside you.
+            Opens your supermarket with this list ready beside you.
           </p>
           <div className="shopping-list-display__retailerButtons">
             {['tesco', 'sainsburys'].map((r) => (

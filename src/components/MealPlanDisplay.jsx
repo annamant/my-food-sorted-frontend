@@ -14,7 +14,7 @@ function MealPlanDisplay({ mealPlan, savePlan, loading, alreadySaved }) {
   return (
     <div className="meal-plan-display">
       <h2 className="meal-plan-display__title">
-        Meal Plan: {mealPlan.plan_name || 'Untitled'}
+        {mealPlan.plan_name || 'This week’s plan'}
       </h2>
       <div className="meal-plan-display__list">
         {mealPlan.recipes.map((r, i) => (
@@ -46,7 +46,7 @@ function MealPlanDisplay({ mealPlan, savePlan, loading, alreadySaved }) {
         ))}
       </div>
       {alreadySaved ? (
-        <p className="meal-plan-display__savedNote">Saved in your library</p>
+        <p className="meal-plan-display__savedNote">Kept in your library</p>
       ) : (
         <button
           type="button"
@@ -54,7 +54,7 @@ function MealPlanDisplay({ mealPlan, savePlan, loading, alreadySaved }) {
           disabled={loading}
           className="btn btn--primary meal-plan-display__saveBtn"
         >
-          Save Plan
+          Keep this week
         </button>
       )}
     </div>

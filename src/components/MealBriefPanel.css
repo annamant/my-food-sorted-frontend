@@ -1,8 +1,9 @@
 .meal-brief {
-  padding: var(--space-5);
+  padding: var(--panel-pad);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  background: #111;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .meal-brief__toggle {
@@ -21,39 +22,46 @@
 
 .meal-brief__title {
   margin: 0 0 var(--space-1);
-  font-size: var(--text-base);
-  font-weight: 700;
-  color: var(--text-muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  text-transform: none;
 }
 
 .meal-brief__subtitle {
   margin: 0;
   font-size: var(--text-sm);
+  font-weight: 300;
   color: var(--text-secondary);
 }
 
 .meal-brief__chevron {
   font-size: var(--text-xs);
-  color: var(--primary);
-  font-weight: 600;
+  color: var(--accent);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 0.45rem;
 }
 
 .meal-brief__body {
-  margin-top: var(--space-4);
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 .meal-brief__hint {
   margin: 0;
   font-size: var(--text-sm);
+  font-weight: 300;
   color: var(--text-muted);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .meal-brief__row {
@@ -67,6 +75,8 @@
   flex-direction: column;
   gap: var(--space-1);
   font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
 }
 
@@ -77,10 +87,11 @@
 .meal-brief__field input {
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-md);
   background: var(--input-bg);
   color: var(--text-primary);
   font-size: var(--text-sm);
+  font-weight: 400;
 }
 
 .meal-brief__group {
@@ -94,6 +105,9 @@
   padding: 0;
   margin: 0 0 var(--space-2);
   font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--text-muted);
 }
 
@@ -107,14 +121,21 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: 0.4rem 0.7rem;
+  padding: 0.45rem 0.75rem;
   border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--input-bg);
+  border-radius: var(--radius-md);
+  background: var(--page-bg);
   color: var(--text-secondary);
   font-size: var(--text-xs);
+  font-weight: 400;
   cursor: pointer;
   user-select: none;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.meal-brief__chip:hover {
+  border-color: rgba(28, 27, 25, 0.28);
+  color: var(--text-primary);
 }
 
 .meal-brief__chip input {
@@ -124,8 +145,8 @@
 }
 
 .meal-brief__chip--on {
-  border-color: var(--primary);
-  background: var(--primary-alpha, rgba(200, 251, 76, 0.12));
-  color: var(--primary);
-  font-weight: 600;
+  border-color: rgba(110, 58, 62, 0.4);
+  background: var(--primary-alpha);
+  color: var(--accent);
+  font-weight: 500;
 }

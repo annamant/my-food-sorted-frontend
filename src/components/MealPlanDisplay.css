@@ -1,69 +1,84 @@
 .meal-plan-display {
-  padding: var(--space-5);
+  padding: var(--panel-pad);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  background: #111;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .meal-plan-display__title {
-  margin: 0 0 var(--space-4);
-  font-size: var(--text-lg);
-  font-weight: 700;
+  margin: 0 0 var(--space-6);
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
 }
 
 .meal-plan-display__list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-6);
 }
 
 .meal-plan-display__card {
-  padding: var(--space-4);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.03);
+  padding: var(--space-5) 0;
+  border-top: 1px solid var(--border);
+  background: transparent;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
+.meal-plan-display__card:last-child {
+  border-bottom: 1px solid var(--border);
+}
 
 .meal-plan-display__cardTitle {
-  font-size: var(--text-base);
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .meal-plan-display__cardMeta {
   font-size: var(--text-sm);
-  color: var(--primary);
-  font-weight: 600;
+  color: var(--accent);
+  font-weight: 400;
+  letter-spacing: 0.01em;
 }
 
 .meal-plan-display__cardInstructions {
   margin: 0;
   font-size: var(--text-sm);
+  font-weight: 300;
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
 .meal-plan-display__cardIngredients {
   font-size: var(--text-sm);
+  font-weight: 300;
   color: var(--text-muted);
+  line-height: 1.55;
 }
 
 .meal-plan-display__cardIngredientsLabel {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
 .meal-plan-display__saveBtn {
   width: 100%;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.9rem var(--space-4);
 }
 
 .meal-plan-display__savedNote {
   margin: 0;
   font-size: var(--text-sm);
+  font-weight: 300;
   color: var(--text-muted);
+  text-align: center;
 }
