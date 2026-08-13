@@ -63,6 +63,10 @@ function AppContent() {
   /* ── Navigation ── */
   const [view, setView] = useState('library') // 'library' | 'account'
 
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [view])
+
   /* ── Auth ── */
   const [token,          setToken]          = useState(() => localStorage.getItem('token') ?? '')
   const [loggedInUserId, setLoggedInUserId] = useState(() => localStorage.getItem('userId') ?? '')
@@ -509,22 +513,23 @@ function AppContent() {
           </button>
           <div className="app__headerRight">
             <nav className="app__nav" aria-label="Main">
+              {view === 'account' && (
+                <button
+                  type="button"
+                  className="app__navItem"
+                  onClick={() => setView('library')}
+                >
+                  Library
+                </button>
+              )}
               <button
                 type="button"
-                className={`app__navItem ${view === 'library' ? 'app__navItem--active' : ''}`}
-                onClick={() => setView('library')}
-              >
-                Library
-              </button>
-              <button
-                type="button"
-                className={`app__navItem ${view === 'account' ? 'app__navItem--active' : ''}`}
-                onClick={() => setView('account')}
-                aria-label="Open account"
+                className={`app__avatarBtn ${view === 'account' ? 'app__avatarBtn--active' : ''}`}
+                onClick={() => setView(view === 'account' ? 'library' : 'account')}
+                aria-label={view === 'account' ? 'Back to library' : 'Open your account'}
                 title={prefs?.email || 'Account'}
               >
                 <span className="app__avatar" aria-hidden="true">{accountInitial}</span>
-                <span className="app__navItemLabel">Account</span>
               </button>
             </nav>
           </div>
@@ -539,7 +544,7 @@ function AppContent() {
             onSavePrefs={savePrefs}
             loading={prefsLoading}
             onLogout={handleLogout}
-            onBack={() => setView('library')}
+            onOpenLibrary={() => setView('library')}
           />
         ) : (
           <>
