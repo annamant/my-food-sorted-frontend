@@ -1,13 +1,15 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { ToastProvider, useToast } from './context/ToastContext'
 import ChatInterface from './components/ChatInterface'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
-import MealBriefPanel, { defaultBrief } from './components/MealBriefPanel'
+import MealBriefPanel, { defaultBrief, formatBriefForChat } from './components/MealBriefPanel'
 import LandingPage from './components/LandingPage'
 import SharedRecipeView from './components/SharedRecipeView'
 import AccountPage from './components/AccountPage'
+import CreateStudio from './components/CreateStudio'
+import KitchenHome from './components/KitchenHome'
 import './App.css'
 
 const API = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
@@ -62,6 +64,7 @@ function AppContent() {
 
   /* ── Navigation ── */
   const [view, setView] = useState('library') // 'library' | 'account'
+  const chatSectionRef = useRef(null)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -75,7 +78,7 @@ function AppContent() {
   const [messages,      setMessages]      = useState([])
   const [input,         setInput]         = useState('')
   const [chatLoading,   setChatLoading]   = useState(false)
-  const [conversationId]                  = useState(() => crypto.randomUUID())
+  const [conversationId, setConversationId] = useState(() => crypto.randomUUID())
 
   /* ── Meal plan ── */
   const [mealPlan,    setMealPlan]    = useState(null)
@@ -184,6 +187,8 @@ function AppContent() {
     setToken('')
     setLoggedInUserId('')
     setMessages([])
+    setInput('')
+    setConversationId(crypto.randomUUID())
     setMealPlan(null)
     setSavedPlanId(null)
     setShoppingList(null)
@@ -216,6 +221,11 @@ function AppContent() {
     const text = String(rawText || '').trim()
     if (!text || chatLoading) return
 
+    const briefBlock = formatBriefForChat(mealBrief)
+    const userMessage = briefBlock
+      ? `${text}\n\n${briefBlock}\n\nObey the brief exactly for proteins, meal slots, avoid list, and notes.`
+      : text
+
     const userMsg = { role: 'user', content: text }
     setMessages(prev => [...prev, userMsg])
     setInput('')
@@ -226,7 +236,7 @@ function AppContent() {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({
-          user_message: text,
+          user_message: userMessage,
           conversation_id: conversationId,
           meal_brief: mealBrief,
         }),
@@ -253,9 +263,26 @@ function AppContent() {
 
   const sendMessage = useCallback(() => sendMessageText(input), [sendMessageText, input])
 
+  const clearChat = useCallback(() => {
+    setMessages([])
+    setInput('')
+    setConversationId(crypto.randomUUID())
+    setMealPlan(null)
+    setSavedPlanId(null)
+    setShoppingList(null)
+    setActiveShareMeta({ is_public: false, share_slug: null })
+    addToast('Chat cleared — start a fresh create', 'success')
+  }, [addToast])
+
   const handleRemix = useCallback((prompt) => {
     sendMessageText(prompt)
   }, [sendMessageText])
+
+  const handlePickCollection = useCallback((collection) => {
+    if (!collection?.prompt || chatLoading) return
+    chatSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    sendMessageText(collection.prompt)
+  }, [chatLoading, sendMessageText])
 
   /* ── Save plan ── */
   const savePlan = useCallback(async () => {
@@ -548,14 +575,10 @@ function AppContent() {
           />
         ) : (
           <>
-            <div className="app__intro">
-              <p className="app__introLabel">Your kitchen library</p>
-              <h1 className="app__introTitle">Find. Remix. Keep. Share.</h1>
-              <p className="app__introBody">
-                Get any recipe, twist it for budget and wellbeing, save it to your collection,
-                then share a public link — like Spotify, for the stove.
-              </p>
-            </div>
+            <KitchenHome
+              onPickCollection={handlePickCollection}
+              composeDisabled={chatLoading}
+            />
 
             <section className="app__panel app__panel--library">
               <PlanLibrary
@@ -588,15 +611,12 @@ function AppContent() {
               />
             </section>
 
-            <section className="app__panel">
+            <CreateStudio studioRef={chatSectionRef}>
               <MealBriefPanel
                 brief={mealBrief}
                 onChange={setMealBrief}
                 prefs={prefs}
               />
-            </section>
-
-            <section className="app__chat">
               <ChatInterface
                 messages={messages}
                 input={input}
@@ -604,8 +624,10 @@ function AppContent() {
                 sendMessage={sendMessage}
                 loading={chatLoading}
                 onQuickPrompt={sendMessageText}
+                mealBrief={mealBrief}
+                onClearChat={clearChat}
               />
-            </section>
+            </CreateStudio>
 
             {mealPlan && savedPlanId == null && (
               <section className="app__panel">

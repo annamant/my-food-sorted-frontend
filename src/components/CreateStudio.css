@@ -1,0 +1,63 @@
+.create-studio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--panel-pad);
+  border: 1px solid rgba(110, 58, 62, 0.22);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(ellipse 80% 50% at 0% 0%, rgba(110, 58, 62, 0.06) 0%, transparent 55%),
+    var(--surface);
+  box-shadow: var(--shadow);
+  scroll-margin-top: 5.5rem;
+}
+
+.create-studio__header {
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.create-studio__label {
+  margin: 0 0 var(--space-2);
+  font-size: var(--panel-label-size);
+  font-weight: 500;
+  letter-spacing: var(--panel-label-tracking);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.create-studio__title {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.5vw, 2.35rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.create-studio__body {
+  margin: 0;
+  max-width: 46ch;
+  font-size: var(--text-base);
+  font-weight: 300;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.create-studio__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.create-studio .meal-brief,
+.create-studio .chat-interface {
+  border: 1px solid var(--border);
+  box-shadow: none;
+  background: var(--page-bg);
+}
+
+.create-studio .chat-interface {
+  background: var(--surface);
+  border-color: rgba(110, 58, 62, 0.18);
+}
