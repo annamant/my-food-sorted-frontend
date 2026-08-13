@@ -26,6 +26,11 @@ function PlanLibrary({
   loading,
   expandedPlan,
   expandedLoading,
+  onRemix,
+  onShare,
+  onUnshare,
+  shareBusy,
+  shareUrlFor,
 }) {
   const expandRef = useRef(null)
 
@@ -41,13 +46,13 @@ function PlanLibrary({
         <p className="plan-library__label">Library</p>
         <h2 className="plan-library__title">Your collection</h2>
         <p className="plan-library__subtitle">
-          Click a recipe to open and read it. Reopen, cook again, or ask the kitchen for something in the same spirit.
+          Saved recipes and weekly lists — reopen, remix, or share a public link for Instagram and friends.
         </p>
       </div>
 
       {!plans?.length && !loading && (
         <p className="plan-library__empty">
-          Your library is empty. Compose a meal or a week below, then save it here — like adding a playlist.
+          Your library is empty. Ask for a classic, invent from the cupboard, or build a week — then add it here like a playlist.
         </p>
       )}
 
@@ -74,6 +79,7 @@ function PlanLibrary({
                     </span>
                   </span>
                   <span className="plan-library__itemMeta">
+                    {plan.is_public ? 'Public · ' : ''}
                     {plan.recipes_count ?? 0} {(plan.recipes_count ?? 0) === 1 ? 'recipe' : 'recipes'}
                     {plan.servings != null ? ` · ${plan.servings} servings` : ''}
                     {plan.total_estimated_cost != null ? ` · £${fmtPrice(plan.total_estimated_cost)}` : ''}
@@ -91,6 +97,12 @@ function PlanLibrary({
                         mealPlan={expandedPlan}
                         alreadySaved
                         embedded
+                        onRemix={onRemix}
+                        onShare={onShare ? () => onShare(plan.id) : undefined}
+                        onUnshare={onUnshare ? () => onUnshare(plan.id) : undefined}
+                        shareBusy={shareBusy}
+                        isPublic={Boolean(plan.is_public || expandedPlan.is_public)}
+                        shareUrl={shareUrlFor?.(plan)}
                       />
                     )}
                   </div>

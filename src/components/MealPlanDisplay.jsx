@@ -26,7 +26,6 @@ function instructionSteps(text) {
     .filter(Boolean)
   if (byLine.length > 1) return byLine
 
-  // Sentence-ish split for dense single paragraphs
   const bySentence = trimmed
     .split(/(?<=[.!?])\s+(?=[A-Z])/)
     .map((s) => s.trim())
@@ -34,21 +33,65 @@ function instructionSteps(text) {
   return bySentence.length ? bySentence : [trimmed]
 }
 
-function MealPlanDisplay({ mealPlan, savePlan, loading, alreadySaved, embedded }) {
+const REMIX_ACTIONS = [
+  {
+    id: 'cheaper',
+    label: 'Make cheaper',
+    promptFor: (title) =>
+      `Remix “${title}” to cost less while staying satisfying. Deliver a full save-ready recipe.`,
+  },
+  {
+    id: 'lighter',
+    label: 'Lower calories',
+    promptFor: (title) =>
+      `Remix “${title}” to be lower calorie / lighter, still flavourful. Deliver a full save-ready recipe.`,
+  },
+  {
+    id: 'protein',
+    label: 'More protein',
+    promptFor: (title) =>
+      `Remix “${title}” for higher protein without blowing the budget. Deliver a full save-ready recipe.`,
+  },
+  {
+    id: 'pantry',
+    label: 'Use my cupboard',
+    promptFor: (title) =>
+      `Remix “${title}” to lean on the pantry items in my brief. Minimise new shopping. Deliver a full save-ready recipe.`,
+  },
+]
+
+function MealPlanDisplay({
+  mealPlan,
+  savePlan,
+  loading,
+  alreadySaved,
+  embedded,
+  onRemix,
+  onShare,
+  onUnshare,
+  shareBusy,
+  isPublic,
+  shareUrl,
+  readOnly,
+}) {
   if (!mealPlan?.recipes?.length) return null
 
   const recipeCount = mealPlan.recipes.length
   const title =
     mealPlan.plan_name ||
     (recipeCount === 1 ? mealPlan.recipes[0].title : 'Your composed plan')
+  const remixTitle = recipeCount === 1 ? mealPlan.recipes[0].title : title
 
   return (
     <div className={`meal-plan-display ${embedded ? 'meal-plan-display--embedded' : ''}`}>
       <header className="meal-plan-display__header">
-        <p className="meal-plan-display__label">Recipe</p>
+        <p className="meal-plan-display__label">{readOnly ? 'Shared recipe' : 'Recipe'}</p>
         <h2 className="meal-plan-display__title">{title}</h2>
         {recipeCount > 1 && (
-          <p className="meal-plan-display__count">{recipeCount} dishes in this plan</p>
+          <p className="meal-plan-display__count">{recipeCount} dishes in this list</p>
+        )}
+        {isPublic && shareUrl && (
+          <p className="meal-plan-display__shareStatus">Public · {shareUrl}</p>
         )}
       </header>
 
@@ -114,22 +157,82 @@ function MealPlanDisplay({ mealPlan, savePlan, loading, alreadySaved, embedded }
         })}
       </div>
 
-      {alreadySaved ? (
-        embedded ? null : (
-          <p className="meal-plan-display__savedNote">Saved to your library</p>
-        )
-      ) : (
-        <button
-          type="button"
-          onClick={savePlan}
-          disabled={loading || !savePlan}
-          className="btn btn--primary meal-plan-display__saveBtn"
-        >
-          {loading ? 'Saving…' : 'Save to library'}
-        </button>
+      {!readOnly && onRemix && (
+        <div className="meal-plan-display__remix">
+          <p className="meal-plan-display__remixLabel">Remix</p>
+          <div className="meal-plan-display__remixRow">
+            {REMIX_ACTIONS.map((action) => (
+              <button
+                key={action.id}
+                type="button"
+                className="meal-plan-display__remixBtn"
+                disabled={loading}
+                onClick={() => onRemix(action.promptFor(remixTitle))}
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!readOnly && (
+        <div className="meal-plan-display__actions">
+          {alreadySaved ? (
+            embedded ? null : (
+              <p className="meal-plan-display__savedNote">Saved to your library</p>
+            )
+          ) : (
+            <button
+              type="button"
+              onClick={savePlan}
+              disabled={loading || !savePlan}
+              className="btn btn--primary meal-plan-display__saveBtn"
+            >
+              {loading ? 'Saving…' : 'Add to library'}
+            </button>
+          )}
+
+          {alreadySaved && onShare && (
+            <div className="meal-plan-display__shareActions">
+              {isPublic ? (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn--primary meal-plan-display__shareBtn"
+                    disabled={shareBusy}
+                    onClick={onShare}
+                  >
+                    {shareBusy ? 'Working…' : 'Copy share link'}
+                  </button>
+                  {onUnshare && (
+                    <button
+                      type="button"
+                      className="btn btn--ghost meal-plan-display__unshareBtn"
+                      disabled={shareBusy}
+                      onClick={onUnshare}
+                    >
+                      Make private
+                    </button>
+                  )}
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn--primary meal-plan-display__shareBtn"
+                  disabled={shareBusy}
+                  onClick={onShare}
+                >
+                  {shareBusy ? 'Publishing…' : 'Share publicly'}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
 }
 
 export default MealPlanDisplay
+export { REMIX_ACTIONS }

@@ -87,7 +87,7 @@ function MealBriefPanel({ brief, onChange, prefs }) {
       {open && (
         <div className="meal-brief__body">
           <p className="meal-brief__hint">
-            Budget, calories, tastes — set the brief, then compose. What you keep goes into your library.
+            Set budget, wellbeing goals, and cupboard stock — then find, remix, or invent. What you keep becomes a playlist for your stove.
           </p>
 
           <div className="meal-brief__row">

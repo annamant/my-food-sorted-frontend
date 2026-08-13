@@ -53,6 +53,7 @@ function ShoppingListDisplay({
       <h2 className="shopping-list-display__title">Ingredients</h2>
       <p className="shopping-list-display__lede">
         A cook’s checklist for this recipe — copy it, tick it off, take it to any shop you like.
+        When you’ve remixed a dish for your budget, this list is what makes it real.
       </p>
 
       <div className="shopping-list-display__actions">
