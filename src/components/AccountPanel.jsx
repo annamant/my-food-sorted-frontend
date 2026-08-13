@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './AccountPanel.css'
 
-function AccountPanel({ prefs, onChangePassword, loading, onLogout }) {
+function AccountPanel({ prefs, onChangePassword, loading, onLogout, embedded }) {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -46,14 +46,25 @@ function AccountPanel({ prefs, onChangePassword, loading, onLogout }) {
   }
 
   return (
-    <div className="account-panel" id="account">
-      <div className="account-panel__header">
-        <p className="account-panel__label">Account</p>
-        <h2 className="account-panel__title">Your profile</h2>
-        <p className="account-panel__subtitle">
-          Manage your sign-in details. Household cooking notes live below.
-        </p>
-      </div>
+    <div className={`account-panel ${embedded ? 'account-panel--embedded' : ''}`}>
+      {!embedded && (
+        <div className="account-panel__header">
+          <p className="account-panel__label">Account</p>
+          <h2 className="account-panel__title">Your profile</h2>
+          <p className="account-panel__subtitle">
+            Manage your sign-in details and security.
+          </p>
+        </div>
+      )}
+
+      {embedded && (
+        <div className="account-panel__header">
+          <h2 className="account-panel__title">Sign-in</h2>
+          <p className="account-panel__subtitle">
+            Your email and password for this kitchen.
+          </p>
+        </div>
+      )}
 
       <dl className="account-panel__meta">
         <div>

@@ -4,11 +4,10 @@ import ChatInterface from './components/ChatInterface'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
-import PrefsPanel from './components/PrefsPanel'
-import AccountPanel from './components/AccountPanel'
 import MealBriefPanel, { defaultBrief } from './components/MealBriefPanel'
 import LandingPage from './components/LandingPage'
 import SharedRecipeView from './components/SharedRecipeView'
+import AccountPage from './components/AccountPage'
 import './App.css'
 
 const API = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
@@ -60,6 +59,9 @@ function AppContent() {
 
   /* ── Public share view ── */
   const [shareSlug, setShareSlug] = useState(() => getShareSlugFromUrl())
+
+  /* ── Navigation ── */
+  const [view, setView] = useState('library') // 'library' | 'account'
 
   /* ── Auth ── */
   const [token,          setToken]          = useState(() => localStorage.getItem('token') ?? '')
@@ -183,6 +185,7 @@ function AppContent() {
     setShoppingList(null)
     setSavedPlans([])
     setPrefs(null)
+    setView('library')
   }, [])
 
   const savePrefs = useCallback(async (nextPrefs) => {
@@ -487,132 +490,143 @@ function AppContent() {
     activeShareMeta.is_public || activePlanFromLibrary?.is_public || mealPlan?.is_public
   )
 
+  const accountInitial = (prefs?.email || 'U').trim().charAt(0).toUpperCase()
+
   return (
     <div className="app">
       <header className="app__header">
         <div className="app__headerInner">
-          <div className="app__logo">
-            <span className="app__logoTop">my food.</span>
-            <span className="app__logoBottom">SORTED.</span>
-          </div>
-          <div className="app__headerRight">
-            <a className="app__accountLink" href="#account">
-              Account
-            </a>
-            <span className="app__userId">
-              {prefs?.email || `#${loggedInUserId}`}
+          <button
+            type="button"
+            className="app__logoBtn"
+            onClick={() => setView('library')}
+            aria-label="Go to library"
+          >
+            <span className="app__logo">
+              <span className="app__logoTop">my food.</span>
+              <span className="app__logoBottom">SORTED.</span>
             </span>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="btn btn--ghost app__logoutBtn"
-            >
-              Log out
-            </button>
+          </button>
+          <div className="app__headerRight">
+            <nav className="app__nav" aria-label="Main">
+              <button
+                type="button"
+                className={`app__navItem ${view === 'library' ? 'app__navItem--active' : ''}`}
+                onClick={() => setView('library')}
+              >
+                Library
+              </button>
+              <button
+                type="button"
+                className={`app__navItem ${view === 'account' ? 'app__navItem--active' : ''}`}
+                onClick={() => setView('account')}
+                aria-label="Open account"
+                title={prefs?.email || 'Account'}
+              >
+                <span className="app__avatar" aria-hidden="true">{accountInitial}</span>
+                <span className="app__navItemLabel">Account</span>
+              </button>
+            </nav>
           </div>
         </div>
       </header>
 
       <main className="app__main">
-        <div className="app__intro">
-          <p className="app__introLabel">Your kitchen library</p>
-          <h1 className="app__introTitle">Find. Remix. Keep. Share.</h1>
-          <p className="app__introBody">
-            Get any recipe, twist it for budget and wellbeing, save it to your collection,
-            then share a public link — like Spotify, for the stove.
-          </p>
-        </div>
-
-        <section className="app__panel app__panel--library">
-          <PlanLibrary
-            plans={savedPlans}
-            activePlanId={savedPlanId}
-            onSelect={openPlan}
-            loading={libraryLoading}
-            expandedPlan={
-              savedPlanId != null && mealPlan
-                ? {
-                    ...mealPlan,
-                    is_public: libraryShareIsPublic,
-                    share_slug:
-                      activeShareMeta.share_slug ||
-                      activePlanFromLibrary?.share_slug ||
-                      mealPlan.share_slug,
-                  }
-                : null
-            }
-            expandedLoading={libraryLoading}
-            onRemix={handleRemix}
-            onShare={publishAndCopyShare}
-            onUnshare={unsharePlan}
-            shareBusy={shareBusy}
-            shareUrlFor={(plan) =>
-              buildShareUrl(
-                plan.share_slug || activeShareMeta.share_slug || mealPlan?.share_slug
-              )
-            }
-          />
-        </section>
-
-        <section className="app__panel">
-          <MealBriefPanel
-            brief={mealBrief}
-            onChange={setMealBrief}
-            prefs={prefs}
-          />
-        </section>
-
-        <section className="app__chat">
-          <ChatInterface
-            messages={messages}
-            input={input}
-            setInput={setInput}
-            sendMessage={sendMessage}
-            loading={chatLoading}
-            onQuickPrompt={sendMessageText}
-          />
-        </section>
-
-        {mealPlan && savedPlanId == null && (
-          <section className="app__panel">
-            <MealPlanDisplay
-              mealPlan={mealPlan}
-              savePlan={savePlan}
-              loading={planLoading || chatLoading}
-              alreadySaved={false}
-              onRemix={handleRemix}
-            />
-          </section>
-        )}
-
-        {savedPlanId && (
-          <section className="app__panel app__panel--muted">
-            <ShoppingListDisplay
-              shoppingList={shoppingList}
-              generateShoppingList={generateShoppingList}
-              loading={shopLoading}
-              onToggleItem={toggleShoppingItem}
-              onClearChecks={clearChecks}
-            />
-          </section>
-        )}
-
-        <section className="app__panel">
-          <AccountPanel
+        {view === 'account' ? (
+          <AccountPage
             prefs={prefs}
             onChangePassword={changePassword}
+            onSavePrefs={savePrefs}
             loading={prefsLoading}
             onLogout={handleLogout}
+            onBack={() => setView('library')}
           />
-        </section>
+        ) : (
+          <>
+            <div className="app__intro">
+              <p className="app__introLabel">Your kitchen library</p>
+              <h1 className="app__introTitle">Find. Remix. Keep. Share.</h1>
+              <p className="app__introBody">
+                Get any recipe, twist it for budget and wellbeing, save it to your collection,
+                then share a public link — like Spotify, for the stove.
+              </p>
+            </div>
 
-        <section className="app__panel app__panel--muted">
-          <PrefsPanel
-            prefs={prefs}
-            onSave={savePrefs}
-            loading={prefsLoading}
-          />
-        </section>
+            <section className="app__panel app__panel--library">
+              <PlanLibrary
+                plans={savedPlans}
+                activePlanId={savedPlanId}
+                onSelect={openPlan}
+                loading={libraryLoading}
+                expandedPlan={
+                  savedPlanId != null && mealPlan
+                    ? {
+                        ...mealPlan,
+                        is_public: libraryShareIsPublic,
+                        share_slug:
+                          activeShareMeta.share_slug ||
+                          activePlanFromLibrary?.share_slug ||
+                          mealPlan.share_slug,
+                      }
+                    : null
+                }
+                expandedLoading={libraryLoading}
+                onRemix={handleRemix}
+                onShare={publishAndCopyShare}
+                onUnshare={unsharePlan}
+                shareBusy={shareBusy}
+                shareUrlFor={(plan) =>
+                  buildShareUrl(
+                    plan.share_slug || activeShareMeta.share_slug || mealPlan?.share_slug
+                  )
+                }
+              />
+            </section>
+
+            <section className="app__panel">
+              <MealBriefPanel
+                brief={mealBrief}
+                onChange={setMealBrief}
+                prefs={prefs}
+              />
+            </section>
+
+            <section className="app__chat">
+              <ChatInterface
+                messages={messages}
+                input={input}
+                setInput={setInput}
+                sendMessage={sendMessage}
+                loading={chatLoading}
+                onQuickPrompt={sendMessageText}
+              />
+            </section>
+
+            {mealPlan && savedPlanId == null && (
+              <section className="app__panel">
+                <MealPlanDisplay
+                  mealPlan={mealPlan}
+                  savePlan={savePlan}
+                  loading={planLoading || chatLoading}
+                  alreadySaved={false}
+                  onRemix={handleRemix}
+                />
+              </section>
+            )}
+
+            {savedPlanId && (
+              <section className="app__panel app__panel--muted">
+                <ShoppingListDisplay
+                  shoppingList={shoppingList}
+                  generateShoppingList={generateShoppingList}
+                  loading={shopLoading}
+                  onToggleItem={toggleShoppingItem}
+                  onClearChecks={clearChecks}
+                />
+              </section>
+            )}
+          </>
+        )}
       </main>
     </div>
   )
