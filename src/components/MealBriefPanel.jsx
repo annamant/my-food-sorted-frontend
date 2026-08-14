@@ -5,9 +5,11 @@ const METHODS = ['Stir-fry', 'Grilled', 'Baked', 'Boiled', 'Steamed', 'Roasted',
 const PROTEINS = ['Chicken', 'Beef', 'Pork', 'Fish', 'Eggs', 'Tofu', 'Lamb', 'Vegetarian']
 const PANTRY = ['Pasta', 'Rice', 'Noodles', 'Potatoes', 'Onion', 'Garlic', 'Olive oil', 'Soy sauce', 'Tinned tomatoes', 'Beans', 'Cheese', 'Eggs']
 const MEAL_SLOTS = [
+  { id: 'breakfast', label: 'Breakfast' },
   { id: 'brunch', label: 'Brunch' },
   { id: 'lunch', label: 'Lunch' },
   { id: 'dinner', label: 'Dinner' },
+  { id: 'occasion', label: 'Special occasion' },
 ]
 
 function toggleInList(list, value) {
@@ -63,7 +65,14 @@ export function formatBriefForChat(brief) {
   const lines = []
   if (value.servings) lines.push(`- People / servings: ${value.servings}`)
   if (value.days) lines.push(`- Days: ${value.days}`)
-  if (value.meal_slots?.length) lines.push(`- Meals only: ${value.meal_slots.join(', ')}`)
+  const slots = Array.isArray(value.meal_slots) ? value.meal_slots : []
+  const slotLabels = slots
+    .filter((id) => id !== 'occasion')
+    .map((id) => MEAL_SLOTS.find((s) => s.id === id)?.label ?? id)
+  if (slotLabels.length) lines.push(`- Meals only: ${slotLabels.join(', ')}`)
+  if (slots.includes('occasion')) {
+    lines.push('- This is a one-off special occasion (celebration, guests, a treat). Make it feel special — not a weeknight default. One standout dish, not a routine plate.')
+  }
   if (value.budget_per_day) lines.push(`- Budget per day: £${value.budget_per_day}`)
   if (value.max_cook_minutes) lines.push(`- Max cook time: ${value.max_cook_minutes} mins`)
   if (value.cuisines?.length) lines.push(`- Cuisines: ${value.cuisines.join(', ')}`)
