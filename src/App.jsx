@@ -73,6 +73,7 @@ function AppContent() {
   /* ── Auth ── */
   const [token,          setToken]          = useState(() => localStorage.getItem('token') ?? '')
   const [loggedInUserId, setLoggedInUserId] = useState(() => localStorage.getItem('userId') ?? '')
+  const [landingAuthMode, setLandingAuthMode] = useState('register')
 
   /* ── Chat ── */
   const [messages,      setMessages]      = useState([])
@@ -195,6 +196,7 @@ function AppContent() {
     setSavedPlans([])
     setPrefs(null)
     setView('tonight')
+    setLandingAuthMode('login')
   }, [])
 
   const savePrefs = useCallback(async (nextPrefs) => {
@@ -542,6 +544,7 @@ function AppContent() {
       <LandingPage
         loading={loading}
         handleAuth={handleAuth}
+        initialAuthMode={landingAuthMode}
       />
     )
   }

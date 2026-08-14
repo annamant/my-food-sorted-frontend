@@ -51,6 +51,27 @@
   background: transparent;
 }
 .landing__nav .logomark { opacity: 0.92; }
+.landing__navActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.landing__navLogin {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0.65rem 0.35rem;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(247, 245, 241, 0.85);
+  cursor: pointer;
+}
+.landing__navLogin:hover {
+  color: #f7f5f1;
+}
 .landing__navCta {
   background: transparent;
   color: #f7f5f1;

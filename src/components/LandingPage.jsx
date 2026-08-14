@@ -31,10 +31,15 @@ const STEPS = [
   },
 ]
 
-export default function LandingPage({ loading, handleAuth }) {
+export default function LandingPage({ loading, handleAuth, initialAuthMode = 'register' }) {
   const authRef = useRef(null)
   const dishesRef = useRef(null)
   const [openDish, setOpenDish] = useState(null)
+  const [authMode, setAuthMode] = useState(initialAuthMode)
+
+  useEffect(() => {
+    setAuthMode(initialAuthMode)
+  }, [initialAuthMode])
 
   useEffect(() => {
     if (!openDish) return
@@ -45,7 +50,8 @@ export default function LandingPage({ loading, handleAuth }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [openDish])
 
-  function scrollToAuth() {
+  function scrollToAuth(nextMode) {
+    if (nextMode === 'login' || nextMode === 'register') setAuthMode(nextMode)
     setOpenDish(null)
     authRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
@@ -58,9 +64,14 @@ export default function LandingPage({ loading, handleAuth }) {
     <div className="landing">
       <nav className="landing__nav">
         <span className="landing__navSpacer" aria-hidden="true" />
-        <button type="button" className="btn landing__navCta" onClick={scrollToAuth}>
-          Join
-        </button>
+        <div className="landing__navActions">
+          <button type="button" className="landing__navLogin" onClick={() => scrollToAuth('login')}>
+            Log in
+          </button>
+          <button type="button" className="btn landing__navCta" onClick={() => scrollToAuth('register')}>
+            Join
+          </button>
+        </div>
       </nav>
 
       <header className="landing__hero">
@@ -142,14 +153,21 @@ export default function LandingPage({ loading, handleAuth }) {
       <section className="landing__authSection" ref={authRef}>
         <div className="landing__authInner">
           <p className="landing__authLabel">Keep what you cook</p>
-          <h2 className="landing__authTitle">Join to save it.</h2>
-          <p className="landing__authSub">Free. Under a minute. Remix and lists wait here.</p>
+          <h2 className="landing__authTitle">
+            {authMode === 'login' ? 'Welcome back.' : 'Join to save it.'}
+          </h2>
+          <p className="landing__authSub">
+            {authMode === 'login'
+              ? 'Log in, or enter Eve’s demo kitchen.'
+              : 'Free. Under a minute. Remix and lists wait here.'}
+          </p>
           <AuthForm
             loading={loading}
             handleAuth={handleAuth}
             loggedInUserId={null}
             email=""
             handleLogout={() => {}}
+            initialMode={authMode}
           />
         </div>
       </section>

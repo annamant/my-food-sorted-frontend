@@ -1,14 +1,26 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useToast } from '../context/ToastContext'
 import './AuthForm.css'
 
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/
 
-function AuthForm({ loading, handleAuth, handleLogout, loggedInUserId, email: userEmail }) {
-  const [email, setEmail] = useState('')
+export const DEMO_KITCHEN = {
+  email: 'eve@demo.com',
+  password: 'demo1234',
+}
+
+function AuthForm({ loading, handleAuth, handleLogout, loggedInUserId, email: userEmail, initialMode = 'register' }) {
+  const [email, setEmail] = useState(initialMode === 'login' ? DEMO_KITCHEN.email : '')
   const [password, setPassword] = useState('')
-  const [mode, setMode] = useState('register')
+  const [mode, setMode] = useState(initialMode)
   const { addToast } = useToast()
+
+  useEffect(() => {
+    setMode(initialMode)
+    if (initialMode === 'login') {
+      setEmail(DEMO_KITCHEN.email)
+    }
+  }, [initialMode])
 
   function validate() {
     if (!email.trim() || !EMAIL_REGEX.test(email.trim())) {
@@ -84,6 +96,15 @@ function AuthForm({ loading, handleAuth, handleLogout, loggedInUserId, email: us
           >
             {mode === 'login' ? 'Need an account? Join' : 'Already here? Log in'}
           </button>
+          <button
+            type="button"
+            className="btn btn--ghost auth-form__demo"
+            disabled={loading}
+            onClick={() => handleAuth('login', DEMO_KITCHEN.email, DEMO_KITCHEN.password)}
+          >
+            Enter Eve’s kitchen
+          </button>
+          <p className="auth-form__demoHint">Demo · {DEMO_KITCHEN.email}</p>
         </div>
       </form>
     </div>
