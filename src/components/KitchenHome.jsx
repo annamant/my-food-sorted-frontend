@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import MealBriefPanel from './MealBriefPanel'
 import './KitchenHome.css'
 
 const COLLECTIONS = [
@@ -125,74 +123,51 @@ const COLLECTIONS = [
   },
 ]
 
-const TONIGHT_PROMPT =
-  'What am I cooking tonight? One strong dinner that strictly follows my brief. Realistic UK cost and calories. Save-ready.'
-
 export default function KitchenHome({
   onPickCollection,
-  onCookTonight,
   composeDisabled,
-  brief,
-  onChangeBrief,
-  prefs,
   hideCollections,
+  hideHero,
+  children,
 }) {
-  const [query, setQuery] = useState('')
-
-  function submitCook(e) {
-    e?.preventDefault()
-    const trimmed = query.trim()
-    onCookTonight?.(
-      trimmed
-        ? `Cook this tonight, following my brief: ${trimmed}. One strong dinner, realistic UK cost and calories. Save-ready.`
-        : TONIGHT_PROMPT,
-      trimmed || 'What’s for dinner tonight?',
-    )
-  }
 
   return (
     <div className="kitchen-home">
-      <section className="kitchen-home__hero" aria-label="What’s for dinner">
-        <div className="kitchen-home__heroMedia" aria-hidden="true">
-          <img
-            className="kitchen-home__heroImg"
-            src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=2400&q=80"
-            alt=""
-          />
-          <div className="kitchen-home__heroShade" />
-        </div>
-        <div className="kitchen-home__heroContent">
-          <p className="kitchen-home__heroLabel">Tonight</p>
-          <h1 className="kitchen-home__heroTitle">
-            What’s for<br />
-            <em>dinner?</em>
-          </h1>
-          <form className="kitchen-home__compose" onSubmit={submitCook}>
-            <input
-              type="search"
-              className="kitchen-home__search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Carbonara, leftover chicken, 20 minutes…"
-              aria-label="What do you want to cook"
-              disabled={composeDisabled}
+      {!hideHero && (
+        <section className="kitchen-home__hero" aria-label="What’s for dinner">
+          <div className="kitchen-home__heroMedia" aria-hidden="true">
+            <img
+              className="kitchen-home__heroImg"
+              src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=2400&q=80"
+              alt=""
             />
-            <button type="submit" className="btn kitchen-home__cookBtn" disabled={composeDisabled}>
-              {composeDisabled ? 'Cooking…' : 'Cook tonight'}
-            </button>
-          </form>
-        </div>
-      </section>
+            <div className="kitchen-home__heroShade" />
+          </div>
+          <div className="kitchen-home__heroContent">
+            <p className="kitchen-home__heroLabel">Tonight</p>
+            <h1 className="kitchen-home__heroTitle">
+              What’s for<br />
+              <em>dinner?</em>
+            </h1>
+            <p className="kitchen-home__heroBody">
+              Find a dish you know, or make your own. The kitchen asks first — then cooks once.
+            </p>
+          </div>
+        </section>
+      )}
 
-      <MealBriefPanel brief={brief} onChange={onChangeBrief} prefs={prefs} />
+      {children}
 
       {!hideCollections && (
         <section className="kitchen-home__browse" aria-labelledby="browse-heading">
           <div className="kitchen-home__browseIntro">
-            <p className="kitchen-home__browseLabel">Or tap a mood</p>
+            <p className="kitchen-home__browseLabel">Or start from a mood</p>
             <h2 id="browse-heading" className="kitchen-home__browseTitle">
               Classics & ways of eating
             </h2>
+            <p className="kitchen-home__browseBody">
+              Tap one to fill the search. It won’t cook until you hit Find.
+            </p>
           </div>
 
           <ul className="kitchen-home__grid">
@@ -222,4 +197,4 @@ export default function KitchenHome({
   )
 }
 
-export { COLLECTIONS, TONIGHT_PROMPT }
+export { COLLECTIONS }

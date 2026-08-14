@@ -11,6 +11,25 @@
   box-shadow: none;
 }
 
+.meal-brief--intake {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.meal-brief__intakeLead {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
 .meal-brief__essentials {
   display: grid;
   grid-template-columns: 5.5rem 5.5rem minmax(0, 1fr) auto;

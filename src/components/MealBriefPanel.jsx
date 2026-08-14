@@ -1,4 +1,3 @@
-import { useMemo, useState } from 'react'
 import './MealBriefPanel.css'
 
 const CUISINES = ['Italian', 'Asian', 'Japanese', 'Mexican', 'British', 'Indian', 'Mediterranean']
@@ -54,7 +53,7 @@ const defaultBrief = {
   notes: '',
 }
 
-/** Human-readable brief block appended to create messages so the model must obey it. */
+/** Full brief for Make my own — every line is a hard constraint. */
 export function formatBriefForChat(brief) {
   const value = brief ?? defaultBrief
   const lines = []
@@ -73,25 +72,31 @@ export function formatBriefForChat(brief) {
   return `My kitchen brief — follow exactly:\n${lines.join('\n')}`
 }
 
+/** Light constraints for Find a dish — do not invent a 30-minute budget dinner around a named plate. */
+export function formatSearchBrief(brief, prefs) {
+  const lines = []
+  const servings = brief?.servings || prefs?.household_size
+  if (servings) lines.push(`- People / servings: ${servings}`)
+  const diet = prefs?.dietary_preferences?.trim()
+  if (diet && diet.toLowerCase() !== 'none') lines.push(`- Diet: ${diet}`)
+  const avoid = [brief?.avoid?.trim(), prefs?.allergies?.trim()].filter(Boolean).join('; ')
+  if (avoid) lines.push(`- Avoid / FORBIDDEN: ${avoid}`)
+  if (!lines.length) return ''
+  return `Household constraints — follow these, but cook the dish they asked for:\n${lines.join('\n')}`
+}
+
 function MealBriefPanel({ brief, onChange, prefs }) {
-  const [more, setMore] = useState(false)
   const value = brief ?? defaultBrief
-
-  const summary = useMemo(() => {
-    const parts = [
-      `${value.servings || '?'} people`,
-      value.max_cook_minutes ? `${value.max_cook_minutes} mins` : null,
-      value.avoid?.trim() ? `no ${value.avoid.trim()}` : null,
-    ].filter(Boolean)
-    return parts.join(' · ')
-  }, [value])
-
   const setField = (key, next) => onChange({ ...value, [key]: next })
   const household = prefs?.household_size
 
   return (
-    <div className="meal-brief meal-brief--bar">
-      <div className="meal-brief__essentials">
+    <div className="meal-brief meal-brief--intake">
+      <p className="meal-brief__intakeLead">
+        Answer these once. Then I’ll cook one dish — not a guessing round.
+      </p>
+
+      <div className="meal-brief__row">
         <label className="meal-brief__field">
           <span>Who’s eating</span>
           <input
@@ -104,7 +109,7 @@ function MealBriefPanel({ brief, onChange, prefs }) {
           />
         </label>
         <label className="meal-brief__field">
-          <span>How long</span>
+          <span>How long (mins)</span>
           <input
             type="number"
             min={5}
@@ -114,94 +119,78 @@ function MealBriefPanel({ brief, onChange, prefs }) {
             onChange={(e) => setField('max_cook_minutes', Number(e.target.value) || 20)}
           />
         </label>
-        <label className="meal-brief__field meal-brief__field--grow">
-          <span>Anything we won’t eat</span>
+        <label className="meal-brief__field">
+          <span>Days</span>
           <input
-            type="text"
-            value={value.avoid}
-            onChange={(e) => setField('avoid', e.target.value)}
-            placeholder="no garlic, no shellfish…"
+            type="number"
+            min={1}
+            max={14}
+            value={value.days}
+            onChange={(e) => setField('days', Number(e.target.value) || 1)}
           />
         </label>
-        <button
-          type="button"
-          className="meal-brief__moreBtn"
-          onClick={() => setMore((v) => !v)}
-          aria-expanded={more}
-        >
-          {more ? 'Less' : 'More'}
-        </button>
+        <label className="meal-brief__field">
+          <span>Budget / day (£)</span>
+          <input
+            type="number"
+            min={0}
+            step={1}
+            value={value.budget_per_day}
+            onChange={(e) => setField('budget_per_day', Number(e.target.value) || 0)}
+          />
+        </label>
       </div>
 
-      <p className="meal-brief__summary">{summary}</p>
+      <label className="meal-brief__field meal-brief__field--wide">
+        <span>Anything we won’t eat</span>
+        <input
+          type="text"
+          value={value.avoid}
+          onChange={(e) => setField('avoid', e.target.value)}
+          placeholder="no garlic, no shellfish…"
+        />
+      </label>
 
-      {more && (
-        <div className="meal-brief__body">
-          <div className="meal-brief__row">
-            <label className="meal-brief__field">
-              <span>Days</span>
-              <input
-                type="number"
-                min={1}
-                max={14}
-                value={value.days}
-                onChange={(e) => setField('days', Number(e.target.value) || 1)}
-              />
-            </label>
-            <label className="meal-brief__field">
-              <span>Budget / day (£)</span>
-              <input
-                type="number"
-                min={0}
-                step={1}
-                value={value.budget_per_day}
-                onChange={(e) => setField('budget_per_day', Number(e.target.value) || 0)}
-              />
-            </label>
-          </div>
+      <ChipGroup
+        label="Meals"
+        options={MEAL_SLOTS}
+        selected={value.meal_slots}
+        onChange={(next) => setField('meal_slots', next)}
+      />
+      <ChipGroup
+        label="Cuisines"
+        options={CUISINES}
+        selected={value.cuisines}
+        onChange={(next) => setField('cuisines', next)}
+      />
+      <ChipGroup
+        label="Cooking style"
+        options={METHODS}
+        selected={value.cooking_methods}
+        onChange={(next) => setField('cooking_methods', next)}
+      />
+      <ChipGroup
+        label="Proteins"
+        options={PROTEINS}
+        selected={value.proteins}
+        onChange={(next) => setField('proteins', next)}
+      />
+      <ChipGroup
+        label="Already in the cupboard"
+        options={PANTRY}
+        selected={value.pantry}
+        onChange={(next) => setField('pantry', next)}
+      />
 
-          <ChipGroup
-            label="Meals"
-            options={MEAL_SLOTS}
-            selected={value.meal_slots}
-            onChange={(next) => setField('meal_slots', next)}
-          />
-          <ChipGroup
-            label="Cuisines"
-            options={CUISINES}
-            selected={value.cuisines}
-            onChange={(next) => setField('cuisines', next)}
-          />
-          <ChipGroup
-            label="Cooking style"
-            options={METHODS}
-            selected={value.cooking_methods}
-            onChange={(next) => setField('cooking_methods', next)}
-          />
-          <ChipGroup
-            label="Proteins"
-            options={PROTEINS}
-            selected={value.proteins}
-            onChange={(next) => setField('proteins', next)}
-          />
-          <ChipGroup
-            label="Already in the cupboard"
-            options={PANTRY}
-            selected={value.pantry}
-            onChange={(next) => setField('pantry', next)}
-          />
-
-          <label className="meal-brief__field meal-brief__field--wide">
-            <span>Must-use flavours</span>
-            <input
-              type="text"
-              value={value.notes}
-              onChange={(e) => setField('notes', e.target.value)}
-              placeholder="lots of onions, extra crispy…"
-            />
-          </label>
-        </div>
-      )}
+      <label className="meal-brief__field meal-brief__field--wide">
+        <span>Must-use flavours or notes</span>
+        <input
+          type="text"
+          value={value.notes}
+          onChange={(e) => setField('notes', e.target.value)}
+          placeholder="lots of onions, extra crispy…"
+        />
+      </label>
     </div>
   )
 }

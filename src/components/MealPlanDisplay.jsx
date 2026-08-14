@@ -66,7 +66,6 @@ function MealPlanDisplay({
   loading,
   alreadySaved,
   embedded,
-  onRemix,
   onShare,
   onUnshare,
   shareBusy,
@@ -80,7 +79,6 @@ function MealPlanDisplay({
   const title =
     mealPlan.plan_name ||
     (recipeCount === 1 ? mealPlan.recipes[0].title : 'Your composed plan')
-  const remixTitle = recipeCount === 1 ? mealPlan.recipes[0].title : title
 
   return (
     <div className={`meal-plan-display ${embedded ? 'meal-plan-display--embedded' : ''}`}>
@@ -161,25 +159,6 @@ function MealPlanDisplay({
           )
         })}
       </div>
-
-      {!readOnly && onRemix && (
-        <div className="meal-plan-display__remix">
-          <p className="meal-plan-display__remixLabel">Remix</p>
-          <div className="meal-plan-display__remixRow">
-            {REMIX_ACTIONS.map((action) => (
-              <button
-                key={action.id}
-                type="button"
-                className="meal-plan-display__remixBtn"
-                disabled={loading}
-                onClick={() => onRemix(action.promptFor(remixTitle), action.label)}
-              >
-                {action.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {!readOnly && (
         <div className="meal-plan-display__actions">
