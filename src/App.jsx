@@ -4,11 +4,10 @@ import ChatInterface from './components/ChatInterface'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
-import MealBriefPanel, { defaultBrief, formatBriefForChat } from './components/MealBriefPanel'
+import { defaultBrief, formatBriefForChat } from './components/MealBriefPanel'
 import LandingPage from './components/LandingPage'
 import SharedRecipeView from './components/SharedRecipeView'
 import AccountPage from './components/AccountPage'
-import CreateStudio from './components/CreateStudio'
 import KitchenHome from './components/KitchenHome'
 import './App.css'
 
@@ -63,8 +62,9 @@ function AppContent() {
   const [shareSlug, setShareSlug] = useState(() => getShareSlugFromUrl())
 
   /* ── Navigation ── */
-  const [view, setView] = useState('library') // 'library' | 'account'
-  const chatSectionRef = useRef(null)
+  const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'account'
+  const recipeRef = useRef(null)
+  const pendingCoverRef = useRef(null)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -177,9 +177,9 @@ function AppContent() {
       loadPrefs(accessToken)
       loadSavedPlans(accessToken)
     } catch (err) {
-      alert(err.message)
+      addToast(err.message, 'error')
     }
-  }, [loadPrefs, loadSavedPlans])
+  }, [loadPrefs, loadSavedPlans, addToast])
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token')
@@ -194,7 +194,7 @@ function AppContent() {
     setShoppingList(null)
     setSavedPlans([])
     setPrefs(null)
-    setView('library')
+    setView('tonight')
   }, [])
 
   const savePrefs = useCallback(async (nextPrefs) => {
@@ -210,14 +210,14 @@ function AppContent() {
       if (!res.ok) throw new Error(getErrorMsg(data, 'Save failed'))
       setPrefs(data)
     } catch (err) {
-      alert(err.message)
+      addToast(err.message, 'error')
     } finally {
       setPrefsLoading(false)
     }
-  }, [authHeaders])
+  }, [authHeaders, addToast])
 
   /* ── Chat ── */
-  const sendMessageText = useCallback(async (rawText) => {
+  const sendMessageText = useCallback(async (rawText, displayText) => {
     const text = String(rawText || '').trim()
     if (!text || chatLoading) return
 
@@ -226,10 +226,16 @@ function AppContent() {
       ? `${text}\n\n${briefBlock}\n\nObey the brief exactly for proteins, meal slots, avoid list, and notes.`
       : text
 
-    const userMsg = { role: 'user', content: text }
+    const shown = String(displayText || text).trim()
+    const userMsg = { role: 'user', content: shown }
     setMessages(prev => [...prev, userMsg])
     setInput('')
     setChatLoading(true)
+    setView('tonight')
+
+    requestAnimationFrame(() => {
+      recipeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
 
     try {
       const res = await fetch(`${API}/chat`, {
@@ -241,25 +247,44 @@ function AppContent() {
           meal_brief: mealBrief,
         }),
       })
-      const { data, error } = await parseRes(res, 'Cannot reach server.')
+      const { data, error } = await parseRes(res, 'Cannot reach the kitchen right now.')
       if (error) throw new Error(error)
-      if (!res.ok) throw new Error(getErrorMsg(data, 'Chat error'))
+      if (!res.ok) throw new Error(getErrorMsg(data, 'Could not cook that just now'))
 
-      const content = data.message ?? data.response ?? data.content ?? 'No response.'
-      setMessages(prev => [...prev, { role: 'assistant', content }])
+      const content = data.message ?? data.response ?? data.content ?? ''
+      if (content && !data.meal_plan) {
+        setMessages(prev => [...prev, { role: 'assistant', content }])
+      }
       if (data.meal_plan) {
-        setMealPlan(data.meal_plan)
+        const cover = pendingCoverRef.current
+        pendingCoverRef.current = null
+        const plan = cover
+          ? {
+              ...data.meal_plan,
+              image: data.meal_plan.image || cover,
+              recipes: (data.meal_plan.recipes || []).map((r, i) =>
+                i === 0 && !r.image ? { ...r, image: cover } : r
+              ),
+            }
+          : data.meal_plan
+        setMealPlan(plan)
         setSavedPlanId(null)
         setShoppingList(null)
         setActiveShareMeta({ is_public: false, share_slug: null })
+      } else if (!content) {
+        setMessages(prev => [...prev, { role: 'assistant', content: 'I could not build a recipe from that. Try another dish or mood.' }])
       }
       loadPrefs()
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }])
+      const friendly = /fetch|network|reach/i.test(err.message)
+        ? 'The kitchen could not be reached. Try again in a moment.'
+        : err.message
+      setMessages(prev => [...prev, { role: 'assistant', content: friendly }])
+      addToast(friendly, 'error')
     } finally {
       setChatLoading(false)
     }
-  }, [chatLoading, authHeaders, conversationId, mealBrief, loadPrefs])
+  }, [chatLoading, authHeaders, conversationId, mealBrief, loadPrefs, addToast])
 
   const sendMessage = useCallback(() => sendMessageText(input), [sendMessageText, input])
 
@@ -271,17 +296,22 @@ function AppContent() {
     setSavedPlanId(null)
     setShoppingList(null)
     setActiveShareMeta({ is_public: false, share_slug: null })
-    addToast('Chat cleared — start a fresh create', 'success')
+    addToast('Starting over', 'success')
   }, [addToast])
 
-  const handleRemix = useCallback((prompt) => {
-    sendMessageText(prompt)
+  const handleRemix = useCallback((prompt, label) => {
+    sendMessageText(prompt, label ? `Remix: ${label}` : 'Remix this')
   }, [sendMessageText])
 
   const handlePickCollection = useCallback((collection) => {
     if (!collection?.prompt || chatLoading) return
-    chatSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    sendMessageText(collection.prompt)
+    pendingCoverRef.current = collection.image || null
+    sendMessageText(collection.prompt, collection.label || collection.title)
+  }, [chatLoading, sendMessageText])
+
+  const handleCookTonight = useCallback((prompt, label) => {
+    if (chatLoading) return
+    sendMessageText(prompt, label)
   }, [chatLoading, sendMessageText])
 
   /* ── Save plan ── */
@@ -304,7 +334,7 @@ function AppContent() {
       addToast('Added to your library', 'success')
       await loadSavedPlans()
     } catch (err) {
-      alert(err.message)
+      addToast(err.message, 'error')
     } finally {
       setPlanLoading(false)
     }
@@ -352,11 +382,11 @@ function AppContent() {
       }
     } catch (err) {
       setSavedPlanId(null)
-      alert(err.message)
+      addToast(err.message, 'error')
     } finally {
       setLibraryLoading(false)
     }
-  }, [token, savedPlanId])
+  }, [token, savedPlanId, addToast])
 
   const publishAndCopyShare = useCallback(async (planId) => {
     if (!planId || shareBusy) return
@@ -440,11 +470,11 @@ function AppContent() {
       if (!res.ok) throw new Error(getErrorMsg(data, 'Generate failed'))
       setShoppingList(data)
     } catch (err) {
-      alert(err.message)
+      addToast(err.message, 'error')
     } finally {
       setShopLoading(false)
     }
-  }, [savedPlanId, shopLoading, token])
+  }, [savedPlanId, shopLoading, token, addToast])
 
   const toggleShoppingItem = useCallback(async (item) => {
     if (item?.id == null) return
@@ -496,11 +526,11 @@ function AppContent() {
       if (!res.ok) throw new Error(getErrorMsg(data, 'Clear failed'))
       setShoppingList(data)
     } catch (err) {
-      alert(err.message)
+      addToast(err.message, 'error')
     } finally {
       setShopLoading(false)
     }
-  }, [savedPlanId, shopLoading, token])
+  }, [savedPlanId, shopLoading, token, addToast])
 
   /* ── Render ── */
   if (shareSlug) {
@@ -530,8 +560,8 @@ function AppContent() {
           <button
             type="button"
             className="app__logoBtn"
-            onClick={() => setView('library')}
-            aria-label="Go to library"
+            onClick={() => setView('tonight')}
+            aria-label="What’s for dinner"
           >
             <span className="app__logo">
               <span className="app__logoTop">my food.</span>
@@ -540,20 +570,25 @@ function AppContent() {
           </button>
           <div className="app__headerRight">
             <nav className="app__nav" aria-label="Main">
-              {view === 'account' && (
-                <button
-                  type="button"
-                  className="app__navItem"
-                  onClick={() => setView('library')}
-                >
-                  Library
-                </button>
-              )}
+              <button
+                type="button"
+                className={`app__navItem ${view === 'tonight' ? 'app__navItem--active' : ''}`}
+                onClick={() => setView('tonight')}
+              >
+                Tonight
+              </button>
+              <button
+                type="button"
+                className={`app__navItem ${view === 'library' ? 'app__navItem--active' : ''}`}
+                onClick={() => setView('library')}
+              >
+                Library
+              </button>
               <button
                 type="button"
                 className={`app__avatarBtn ${view === 'account' ? 'app__avatarBtn--active' : ''}`}
-                onClick={() => setView(view === 'account' ? 'library' : 'account')}
-                aria-label={view === 'account' ? 'Back to library' : 'Open your account'}
+                onClick={() => setView('account')}
+                aria-label="Open your account"
                 title={prefs?.email || 'Account'}
               >
                 <span className="app__avatar" aria-hidden="true">{accountInitial}</span>
@@ -573,13 +608,8 @@ function AppContent() {
             onLogout={handleLogout}
             onOpenLibrary={() => setView('library')}
           />
-        ) : (
+        ) : view === 'library' ? (
           <>
-            <KitchenHome
-              onPickCollection={handlePickCollection}
-              composeDisabled={chatLoading}
-            />
-
             <section className="app__panel app__panel--library">
               <PlanLibrary
                 plans={savedPlans}
@@ -599,7 +629,10 @@ function AppContent() {
                     : null
                 }
                 expandedLoading={libraryLoading}
-                onRemix={handleRemix}
+                onRemix={(prompt, label) => {
+                  handleRemix(prompt, label)
+                  setView('tonight')
+                }}
                 onShare={publishAndCopyShare}
                 onUnshare={unsharePlan}
                 shareBusy={shareBusy}
@@ -610,37 +643,6 @@ function AppContent() {
                 }
               />
             </section>
-
-            <CreateStudio studioRef={chatSectionRef}>
-              <MealBriefPanel
-                brief={mealBrief}
-                onChange={setMealBrief}
-                prefs={prefs}
-              />
-              <ChatInterface
-                messages={messages}
-                input={input}
-                setInput={setInput}
-                sendMessage={sendMessage}
-                loading={chatLoading}
-                onQuickPrompt={sendMessageText}
-                mealBrief={mealBrief}
-                onClearChat={clearChat}
-              />
-            </CreateStudio>
-
-            {mealPlan && savedPlanId == null && (
-              <section className="app__panel">
-                <MealPlanDisplay
-                  mealPlan={mealPlan}
-                  savePlan={savePlan}
-                  loading={planLoading || chatLoading}
-                  alreadySaved={false}
-                  onRemix={handleRemix}
-                />
-              </section>
-            )}
-
             {savedPlanId && (
               <section className="app__panel app__panel--muted">
                 <ShoppingListDisplay
@@ -652,6 +654,76 @@ function AppContent() {
                 />
               </section>
             )}
+          </>
+        ) : (
+          <>
+            <KitchenHome
+              onPickCollection={handlePickCollection}
+              onCookTonight={handleCookTonight}
+              composeDisabled={chatLoading}
+              brief={mealBrief}
+              onChangeBrief={setMealBrief}
+              prefs={prefs}
+              hideCollections={Boolean(mealPlan) || chatLoading}
+            />
+
+            <div ref={recipeRef} className="app__recipe">
+              {chatLoading && !mealPlan && (
+                <p className="app__cooking" aria-live="polite">Cooking tonight’s dish…</p>
+              )}
+
+              {mealPlan && savedPlanId == null && (
+                <section className="app__panel">
+                  <MealPlanDisplay
+                    mealPlan={mealPlan}
+                    savePlan={savePlan}
+                    loading={planLoading || chatLoading}
+                    alreadySaved={false}
+                    onRemix={handleRemix}
+                  />
+                </section>
+              )}
+
+              {mealPlan && savedPlanId != null && view === 'tonight' && (
+                <section className="app__panel">
+                  <MealPlanDisplay
+                    mealPlan={mealPlan}
+                    alreadySaved
+                    onRemix={handleRemix}
+                    onShare={() => publishAndCopyShare(savedPlanId)}
+                    onUnshare={() => unsharePlan(savedPlanId)}
+                    shareBusy={shareBusy}
+                    isPublic={libraryShareIsPublic}
+                    shareUrl={buildShareUrl(
+                      activeShareMeta.share_slug ||
+                      activePlanFromLibrary?.share_slug ||
+                      mealPlan.share_slug
+                    )}
+                  />
+                </section>
+              )}
+
+              <ChatInterface
+                messages={messages}
+                input={input}
+                setInput={setInput}
+                sendMessage={sendMessage}
+                loading={chatLoading}
+                onClearChat={clearChat}
+              />
+
+              {savedPlanId && mealPlan && (
+                <section className="app__panel app__panel--muted">
+                  <ShoppingListDisplay
+                    shoppingList={shoppingList}
+                    generateShoppingList={generateShoppingList}
+                    loading={shopLoading}
+                    onToggleItem={toggleShoppingItem}
+                    onClearChecks={clearChecks}
+                  />
+                </section>
+              )}
+            </div>
           </>
         )}
       </main>

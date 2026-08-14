@@ -85,7 +85,7 @@ function MealPlanDisplay({
   return (
     <div className={`meal-plan-display ${embedded ? 'meal-plan-display--embedded' : ''}`}>
       <header className="meal-plan-display__header">
-        <p className="meal-plan-display__label">{readOnly ? 'Shared recipe' : 'Recipe'}</p>
+        <p className="meal-plan-display__label">{readOnly ? 'Cook this' : 'Tonight'}</p>
         <h2 className="meal-plan-display__title">{title}</h2>
         {recipeCount > 1 && (
           <p className="meal-plan-display__count">{recipeCount} dishes in this list</p>
@@ -101,6 +101,11 @@ function MealPlanDisplay({
           const ingredients = r.ingredients || []
           return (
             <article key={recipeKey(r, i)} className="meal-plan-display__card">
+              {(r.image || mealPlan.image) && (
+                <div className="meal-plan-display__photo" aria-hidden="true">
+                  <img src={r.image || mealPlan.image} alt="" />
+                </div>
+              )}
               {recipeCount > 1 && (
                 <h3 className="meal-plan-display__cardTitle">{r.title}</h3>
               )}
@@ -167,7 +172,7 @@ function MealPlanDisplay({
                 type="button"
                 className="meal-plan-display__remixBtn"
                 disabled={loading}
-                onClick={() => onRemix(action.promptFor(remixTitle))}
+                onClick={() => onRemix(action.promptFor(remixTitle), action.label)}
               >
                 {action.label}
               </button>
@@ -189,7 +194,7 @@ function MealPlanDisplay({
               disabled={loading || !savePlan}
               className="btn btn--primary meal-plan-display__saveBtn"
             >
-              {loading ? 'Saving…' : 'Add to library'}
+        {loading ? 'Saving…' : 'Keep this'}
             </button>
           )}
 

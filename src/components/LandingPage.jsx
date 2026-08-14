@@ -1,5 +1,7 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import AuthForm from './AuthForm'
+import MealPlanDisplay from './MealPlanDisplay'
+import { FEATURED_DISHES } from '../data/featuredDishes'
 import './LandingPage.css'
 
 function LogoMark({ size = 'md', tone = 'ink' }) {
@@ -16,35 +18,40 @@ function LogoMark({ size = 'md', tone = 'ink' }) {
 
 const STEPS = [
   {
-    title: 'Find or ask for any recipe',
-    body: 'Carbonara, a week of dinners, whatever you need — the kitchen already knows the classics.',
+    title: 'Ask for tonight',
+    body: 'Type carbonara, leftover chicken, or twenty minutes. Or tap a dish below and cook it as-is.',
   },
   {
     title: 'Remix it for your life',
-    body: 'Cut calories, cut cost, swap ingredients, or cook from what’s already in the cupboard.',
+    body: 'Cheaper, lighter, more protein, or from the cupboard — without losing the dish.',
   },
   {
-    title: 'Keep it in your library',
-    body: 'Save recipes and lists like playlists — reopen them, cook again, or build a new mood week.',
+    title: 'Keep what you cook',
+    body: 'Save it to your library. Reopen it next week. Share the version you actually made.',
   },
-  {
-    title: 'Share what you made',
-    body: 'Make a recipe public, copy a link for Instagram, or let someone else cook your version.',
-  },
-]
-
-const MOODS = [
-  { title: 'Budget week', body: 'Good food when prices bite.' },
-  { title: 'Wellbeing plate', body: 'Higher protein, lighter calories — still supper.' },
-  { title: 'Use the fridge', body: 'Create from what you already bought.' },
-  { title: 'Classics, remixed', body: 'Your carbonara. Your rules.' },
 ]
 
 export default function LandingPage({ loading, handleAuth }) {
   const authRef = useRef(null)
+  const dishesRef = useRef(null)
+  const [openDish, setOpenDish] = useState(null)
+
+  useEffect(() => {
+    if (!openDish) return
+    function onKey(e) {
+      if (e.key === 'Escape') setOpenDish(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [openDish])
 
   function scrollToAuth() {
+    setOpenDish(null)
     authRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function scrollToDishes() {
+    dishesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   return (
@@ -52,7 +59,7 @@ export default function LandingPage({ loading, handleAuth }) {
       <nav className="landing__nav">
         <span className="landing__navSpacer" aria-hidden="true" />
         <button type="button" className="btn landing__navCta" onClick={scrollToAuth}>
-          Begin
+          Join
         </button>
       </nav>
 
@@ -69,41 +76,53 @@ export default function LandingPage({ loading, handleAuth }) {
         <div className="landing__heroContent">
           <LogoMark size="md" tone="light" />
           <h1 className="landing__headline">
-            Your kitchen library.<br />
-            <em>Built like Spotify.</em>
+            What’s for<br />
+            <em>dinner?</em>
           </h1>
           <p className="landing__sub">
-            Find any recipe, remix it for wellbeing and budget, save it as yours —
-            then share the version you actually cook.
+            Real dishes you can cook tonight. Remix them for budget and
+            wellbeing — then keep the version you actually make.
           </p>
           <div className="landing__heroCtas">
-            <button type="button" className="btn landing__ctaPrimary" onClick={scrollToAuth}>
-              Open your library
+            <button type="button" className="btn landing__ctaPrimary" onClick={scrollToDishes}>
+              See tonight’s dishes
             </button>
-            <span className="landing__ctaNote">Free to start · keep what you cook</span>
+            <span className="landing__ctaNote">No account needed to look</span>
           </div>
         </div>
       </header>
 
-      <section className="landing__moods" aria-labelledby="moods-heading">
-        <p className="landing__moodsLabel">Lists for how you cook</p>
-        <h2 id="moods-heading" className="landing__moodsTitle">
-          Playlists for the stove.
+      <section className="landing__dishes" ref={dishesRef} aria-labelledby="dishes-heading">
+        <p className="landing__dishesLabel">Tonight</p>
+        <h2 id="dishes-heading" className="landing__dishesTitle">
+          Three plates. Tap one and cook.
         </h2>
-        <ul className="landing__moodsList">
-          {MOODS.map((mood) => (
-            <li key={mood.title} className="landing__mood">
-              <h3 className="landing__moodTitle">{mood.title}</h3>
-              <p className="landing__moodBody">{mood.body}</p>
+        <ul className="landing__dishGrid">
+          {FEATURED_DISHES.map((dish) => (
+            <li key={dish.id}>
+              <button
+                type="button"
+                className="landing__dish"
+                onClick={() => setOpenDish(dish)}
+              >
+                <span className="landing__dishMedia" aria-hidden="true">
+                  <img src={dish.image} alt="" />
+                </span>
+                <span className="landing__dishCopy">
+                  <span className="landing__dishEyebrow">{dish.eyebrow}</span>
+                  <span className="landing__dishName">{dish.title}</span>
+                  <span className="landing__dishBlurb">{dish.blurb}</span>
+                </span>
+              </button>
             </li>
           ))}
         </ul>
       </section>
 
       <section className="landing__steps" aria-labelledby="steps-heading">
-        <p className="landing__stepsLabel">The method</p>
+        <p className="landing__stepsLabel">How it works</p>
         <h2 id="steps-heading" className="landing__stepsTitle">
-          Library first. Chat is the instrument.
+          Dinner first. The library comes after.
         </h2>
         <ol className="landing__stepsList">
           {STEPS.map((step, i) => (
@@ -120,22 +139,11 @@ export default function LandingPage({ loading, handleAuth }) {
         </ol>
       </section>
 
-      <section className="landing__sharePitch" aria-labelledby="share-heading">
-        <p className="landing__shareLabel">Creators & friends</p>
-        <h2 id="share-heading" className="landing__shareTitle">
-          Your recipe can go public.
-        </h2>
-        <p className="landing__shareBody">
-          Remixed a classic? Invented something from leftovers? Publish a link,
-          post it to Instagram, or let someone save your version to their library.
-        </p>
-      </section>
-
       <section className="landing__authSection" ref={authRef}>
         <div className="landing__authInner">
-          <p className="landing__authLabel">Your library</p>
-          <h2 className="landing__authTitle">Start your collection.</h2>
-          <p className="landing__authSub">Free to join. Ready in under a minute.</p>
+          <p className="landing__authLabel">Keep what you cook</p>
+          <h2 className="landing__authTitle">Join to save it.</h2>
+          <p className="landing__authSub">Free. Under a minute. Remix and lists wait here.</p>
           <AuthForm
             loading={loading}
             handleAuth={handleAuth}
@@ -149,9 +157,29 @@ export default function LandingPage({ loading, handleAuth }) {
       <footer className="landing__footer">
         <LogoMark size="sm" tone="ink" />
         <p className="landing__footerNote">
-          © {new Date().getFullYear()} my food. SORTED. — your recipes, kept and shared.
+          © {new Date().getFullYear()} my food. SORTED. — dinner, then the library.
         </p>
       </footer>
+
+      {openDish && (
+        <div className="landing__cook" role="dialog" aria-modal="true" aria-labelledby="cook-title">
+          <div className="landing__cookPanel">
+            <header className="landing__cookBar">
+              <p id="cook-title" className="landing__cookEyebrow">{openDish.eyebrow}</p>
+              <button type="button" className="btn btn--ghost" onClick={() => setOpenDish(null)}>
+                Close
+              </button>
+            </header>
+            <MealPlanDisplay mealPlan={openDish.mealPlan} readOnly alreadySaved />
+            <div className="landing__cookKeep">
+              <p>Like it? Join to save, remix, and take the list to the shop.</p>
+              <button type="button" className="btn btn--primary" onClick={scrollToAuth}>
+                Keep this in your library
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

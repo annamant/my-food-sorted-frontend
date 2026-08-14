@@ -6,6 +6,15 @@
   box-shadow: var(--shadow);
 }
 
+.chat-interface--tweak {
+  box-shadow: none;
+}
+
+.chat-interface--tweak .chat-interface__messages {
+  min-height: 6rem;
+  max-height: min(20rem, 40vh);
+}
+
 .chat-interface__top {
   display: flex;
   align-items: flex-start;

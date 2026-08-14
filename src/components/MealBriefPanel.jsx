@@ -41,7 +41,7 @@ function ChipGroup({ label, options, selected, onChange }) {
 }
 
 const defaultBrief = {
-  servings: 4,
+  servings: 2,
   days: 1,
   meal_slots: ['dinner'],
   budget_per_day: 20,
@@ -54,7 +54,7 @@ const defaultBrief = {
   notes: '',
 }
 
-/** Human-readable brief block appended to create messages so the model must obey Step 1. */
+/** Human-readable brief block appended to create messages so the model must obey it. */
 export function formatBriefForChat(brief) {
   const value = brief ?? defaultBrief
   const lines = []
@@ -70,61 +70,74 @@ export function formatBriefForChat(brief) {
   if (value.avoid?.trim()) lines.push(`- Avoid / FORBIDDEN: ${value.avoid.trim()}`)
   if (value.notes?.trim()) lines.push(`- Extra notes REQUIRED: ${value.notes.trim()}`)
   if (!lines.length) return ''
-  return `My Step 1 brief — follow exactly:\n${lines.join('\n')}`
+  return `My kitchen brief — follow exactly:\n${lines.join('\n')}`
 }
 
 function MealBriefPanel({ brief, onChange, prefs }) {
-  const [open, setOpen] = useState(true)
+  const [more, setMore] = useState(false)
   const value = brief ?? defaultBrief
 
   const summary = useMemo(() => {
     const parts = [
       `${value.servings || '?'} people`,
-      (value.meal_slots || []).join(' + ') || 'meals TBD',
-      (value.proteins || []).slice(0, 2).join(', ') || null,
-      value.avoid?.trim() ? `avoid ${value.avoid.trim()}` : null,
-      value.notes?.trim() || null,
-      value.budget_per_day ? `£${value.budget_per_day}/day` : null,
+      value.max_cook_minutes ? `${value.max_cook_minutes} mins` : null,
+      value.avoid?.trim() ? `no ${value.avoid.trim()}` : null,
     ].filter(Boolean)
     return parts.join(' · ')
   }, [value])
 
   const setField = (key, next) => onChange({ ...value, [key]: next })
-
   const household = prefs?.household_size
 
   return (
-    <div className="meal-brief">
-      <button type="button" className="meal-brief__toggle" onClick={() => setOpen((v) => !v)}>
-        <div>
-          <p className="meal-brief__label">Step 1 · your constraints</p>
-          <h2 className="meal-brief__title">Tune your brief</h2>
-          <p className="meal-brief__subtitle">
-            {summary} — these travel with every create request and mode button.
-          </p>
-        </div>
-        <span className="meal-brief__chevron">{open ? 'Hide' : 'Edit'}</span>
-      </button>
+    <div className="meal-brief meal-brief--bar">
+      <div className="meal-brief__essentials">
+        <label className="meal-brief__field">
+          <span>Who’s eating</span>
+          <input
+            type="number"
+            min={1}
+            max={20}
+            value={value.servings}
+            onChange={(e) => setField('servings', Number(e.target.value) || 1)}
+            placeholder={household ? String(household) : '2'}
+          />
+        </label>
+        <label className="meal-brief__field">
+          <span>How long</span>
+          <input
+            type="number"
+            min={5}
+            max={180}
+            step={5}
+            value={value.max_cook_minutes}
+            onChange={(e) => setField('max_cook_minutes', Number(e.target.value) || 20)}
+          />
+        </label>
+        <label className="meal-brief__field meal-brief__field--grow">
+          <span>Anything we won’t eat</span>
+          <input
+            type="text"
+            value={value.avoid}
+            onChange={(e) => setField('avoid', e.target.value)}
+            placeholder="no garlic, no shellfish…"
+          />
+        </label>
+        <button
+          type="button"
+          className="meal-brief__moreBtn"
+          onClick={() => setMore((v) => !v)}
+          aria-expanded={more}
+        >
+          {more ? 'Less' : 'More'}
+        </button>
+      </div>
 
-      {open && (
+      <p className="meal-brief__summary">{summary}</p>
+
+      {more && (
         <div className="meal-brief__body">
-          <p className="meal-brief__hint">
-            Pick dinner + beef, then write “no garlic” in Avoid and “lots of onions” in notes.
-            Step 2 will show them as active chips and send them with your request.
-          </p>
-
           <div className="meal-brief__row">
-            <label className="meal-brief__field">
-              <span>People</span>
-              <input
-                type="number"
-                min={1}
-                max={20}
-                value={value.servings}
-                onChange={(e) => setField('servings', Number(e.target.value) || 1)}
-                placeholder={household ? String(household) : '4'}
-              />
-            </label>
             <label className="meal-brief__field">
               <span>Days</span>
               <input
@@ -145,21 +158,10 @@ function MealBriefPanel({ brief, onChange, prefs }) {
                 onChange={(e) => setField('budget_per_day', Number(e.target.value) || 0)}
               />
             </label>
-            <label className="meal-brief__field">
-              <span>Max cook time (mins)</span>
-              <input
-                type="number"
-                min={5}
-                max={180}
-                step={5}
-                value={value.max_cook_minutes}
-                onChange={(e) => setField('max_cook_minutes', Number(e.target.value) || 20)}
-              />
-            </label>
           </div>
 
           <ChipGroup
-            label="Meals needed"
+            label="Meals"
             options={MEAL_SLOTS}
             selected={value.meal_slots}
             onChange={(next) => setField('meal_slots', next)}
@@ -190,22 +192,12 @@ function MealBriefPanel({ brief, onChange, prefs }) {
           />
 
           <label className="meal-brief__field meal-brief__field--wide">
-            <span>Avoid / dislikes (kids hate quinoa, no garlic…)</span>
-            <input
-              type="text"
-              value={value.avoid}
-              onChange={(e) => setField('avoid', e.target.value)}
-              placeholder="e.g. no garlic, no shellfish, mild spice only"
-            />
-          </label>
-
-          <label className="meal-brief__field meal-brief__field--wide">
-            <span>Anything else (must-use flavours)</span>
+            <span>Must-use flavours</span>
             <input
               type="text"
               value={value.notes}
               onChange={(e) => setField('notes', e.target.value)}
-              placeholder="e.g. lots of onions, high protein, under 20 minutes"
+              placeholder="lots of onions, extra crispy…"
             />
           </label>
         </div>

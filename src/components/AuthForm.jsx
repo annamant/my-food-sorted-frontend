@@ -7,7 +7,7 @@ const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-
 function AuthForm({ loading, handleAuth, handleLogout, loggedInUserId, email: userEmail }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [mode, setMode] = useState('login')
+  const [mode, setMode] = useState('register')
   const { addToast } = useToast()
 
   function validate() {
@@ -47,7 +47,7 @@ function AuthForm({ loading, handleAuth, handleLogout, loggedInUserId, email: us
   return (
     <div className="auth-form">
       <form className="auth-form__fields" onSubmit={onSubmit} noValidate>
-        <h2 className="auth-form__title">{mode === 'login' ? 'Welcome back' : 'Join us'}</h2>
+        <h2 className="auth-form__title">{mode === 'login' ? 'Welcome back' : 'Create your kitchen'}</h2>
         <label className="auth-form__label">
           <span className="auth-form__labelText">Email</span>
           <input
@@ -74,7 +74,7 @@ function AuthForm({ loading, handleAuth, handleLogout, loggedInUserId, email: us
         </label>
         <div className="auth-form__actions">
           <button type="submit" disabled={loading} className="btn btn--primary">
-            {mode === 'login' ? 'Login' : 'Register'}
+            {mode === 'login' ? 'Log in' : 'Join free'}
           </button>
           <button
             type="button"
@@ -82,7 +82,7 @@ function AuthForm({ loading, handleAuth, handleLogout, loggedInUserId, email: us
             disabled={loading}
             className="btn btn--secondary"
           >
-            {mode === 'login' ? 'Create account' : 'Back to login'}
+            {mode === 'login' ? 'Need an account? Join' : 'Already here? Log in'}
           </button>
         </div>
       </form>

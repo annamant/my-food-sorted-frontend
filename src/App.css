@@ -89,8 +89,23 @@
   border-radius: var(--radius-md);
 }
 
-.app__navItem:hover {
+.app__navItem--active {
   color: var(--accent);
+}
+
+.app__recipe {
+  scroll-margin-top: 5.5rem;
+}
+
+.app__cooking {
+  padding: var(--space-8) var(--panel-pad);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  text-align: center;
 }
 
 .app__avatarBtn {

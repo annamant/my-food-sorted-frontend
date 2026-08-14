@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import MealBriefPanel from './MealBriefPanel'
 import './KitchenHome.css'
 
 const COLLECTIONS = [
@@ -7,6 +9,7 @@ const COLLECTIONS = [
     blurb: 'Carbonara, ragù, risotto — the real ones.',
     image:
       'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=900&q=80',
+    label: 'Italian classic for tonight',
     prompt:
       'Give me a traditional Italian classic dinner for my brief — authentic technique, realistic UK cost and calories. Save-ready.',
   },
@@ -15,7 +18,8 @@ const COLLECTIONS = [
     title: 'French classics',
     blurb: 'Bistro plates you can cook at home.',
     image:
-      'https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80',
+    label: 'French classic for tonight',
     prompt:
       'Give me a traditional French classic dinner for my brief — home-cookable, with cost and calories. Save-ready.',
   },
@@ -24,7 +28,8 @@ const COLLECTIONS = [
     title: 'British comfort',
     blurb: 'Sunday energy, weeknight ease.',
     image:
-      'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1432139509613-5c4255815697?auto=format&fit=crop&w=900&q=80',
+    label: 'British comfort for tonight',
     prompt:
       'Give me a traditional British comfort dinner for my brief — proper and satisfying, with cost and calories. Save-ready.',
   },
@@ -34,6 +39,7 @@ const COLLECTIONS = [
     blurb: 'Clean flavours, weeknight-friendly.',
     image:
       'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=900&q=80',
+    label: 'Japanese-inspired dinner',
     prompt:
       'Give me a traditional Japanese-inspired dinner for my brief — achievable at home in the UK, with cost and calories. Save-ready.',
   },
@@ -43,6 +49,7 @@ const COLLECTIONS = [
     blurb: 'Spice, warmth, and balance.',
     image:
       'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=900&q=80',
+    label: 'Indian classic for tonight',
     prompt:
       'Give me a traditional Indian classic dinner for my brief — aromatic but home-cookable, with cost and calories. Save-ready.',
   },
@@ -52,6 +59,7 @@ const COLLECTIONS = [
     blurb: 'Bright, bold, shareable plates.',
     image:
       'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=900&q=80',
+    label: 'Mexican classic for tonight',
     prompt:
       'Give me a traditional Mexican classic dinner for my brief — vibrant and achievable, with cost and calories. Save-ready.',
   },
@@ -61,6 +69,7 @@ const COLLECTIONS = [
     blurb: 'Olive oil, herbs, sunshine plates.',
     image:
       'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=900&q=80',
+    label: 'Mediterranean dinner',
     prompt:
       'Give me a Mediterranean dinner for my brief — vegetables-forward and satisfying, with cost and calories. Save-ready.',
   },
@@ -70,6 +79,7 @@ const COLLECTIONS = [
     blurb: 'No meat — still proper supper.',
     image:
       'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=80',
+    label: 'Vegetarian dinner',
     prompt:
       'Create a vegetarian dinner for my brief — filling and flavourful, with cost and calories. Save-ready.',
   },
@@ -79,6 +89,7 @@ const COLLECTIONS = [
     blurb: 'Plant-based, cooked with care.',
     image:
       'https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?auto=format&fit=crop&w=900&q=80',
+    label: 'Vegan dinner',
     prompt:
       'Create a vegan dinner for my brief — balanced and delicious, with cost and calories. Save-ready.',
   },
@@ -88,6 +99,7 @@ const COLLECTIONS = [
     blurb: 'Wellbeing without sad salads.',
     image:
       'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=900&q=80',
+    label: 'High-protein dinner',
     prompt:
       'Create a high-protein dinner for my brief — good for wellbeing, still tasty, with cost and calories. Save-ready.',
   },
@@ -97,6 +109,7 @@ const COLLECTIONS = [
     blurb: 'Feed well when prices bite.',
     image:
       'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=900&q=80',
+    label: 'Budget-friendly dinner',
     prompt:
       'Build a budget-friendly dinner for my brief — maximum flavour per pound, with clear cost and calories. Save-ready.',
   },
@@ -106,15 +119,40 @@ const COLLECTIONS = [
     blurb: 'Cook what you already have.',
     image:
       'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=900&q=80',
+    label: 'Cook from the cupboard',
     prompt:
       'Create a dinner using mainly the pantry items in my brief. Minimise new shopping. Save-ready with cost and calories.',
   },
 ]
 
-export default function KitchenHome({ onPickCollection, composeDisabled }) {
+const TONIGHT_PROMPT =
+  'What am I cooking tonight? One strong dinner that strictly follows my brief. Realistic UK cost and calories. Save-ready.'
+
+export default function KitchenHome({
+  onPickCollection,
+  onCookTonight,
+  composeDisabled,
+  brief,
+  onChangeBrief,
+  prefs,
+  hideCollections,
+}) {
+  const [query, setQuery] = useState('')
+
+  function submitCook(e) {
+    e?.preventDefault()
+    const trimmed = query.trim()
+    onCookTonight?.(
+      trimmed
+        ? `Cook this tonight, following my brief: ${trimmed}. One strong dinner, realistic UK cost and calories. Save-ready.`
+        : TONIGHT_PROMPT,
+      trimmed || 'What’s for dinner tonight?',
+    )
+  }
+
   return (
     <div className="kitchen-home">
-      <section className="kitchen-home__hero" aria-label="Kitchen welcome">
+      <section className="kitchen-home__hero" aria-label="What’s for dinner">
         <div className="kitchen-home__heroMedia" aria-hidden="true">
           <img
             className="kitchen-home__heroImg"
@@ -124,52 +162,64 @@ export default function KitchenHome({ onPickCollection, composeDisabled }) {
           <div className="kitchen-home__heroShade" />
         </div>
         <div className="kitchen-home__heroContent">
-          <p className="kitchen-home__heroLabel">Your kitchen library</p>
+          <p className="kitchen-home__heroLabel">Tonight</p>
           <h1 className="kitchen-home__heroTitle">
-            Find a classic.<br />
-            <em>Make it yours.</em>
+            What’s for<br />
+            <em>dinner?</em>
           </h1>
-          <p className="kitchen-home__heroBody">
-            Browse traditions and diets below, remix for budget and wellbeing,
-            then keep what you love in your collection.
-          </p>
+          <form className="kitchen-home__compose" onSubmit={submitCook}>
+            <input
+              type="search"
+              className="kitchen-home__search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Carbonara, leftover chicken, 20 minutes…"
+              aria-label="What do you want to cook"
+              disabled={composeDisabled}
+            />
+            <button type="submit" className="btn kitchen-home__cookBtn" disabled={composeDisabled}>
+              {composeDisabled ? 'Cooking…' : 'Cook tonight'}
+            </button>
+          </form>
         </div>
       </section>
 
-      <section className="kitchen-home__browse" aria-labelledby="browse-heading">
-        <div className="kitchen-home__browseIntro">
-          <p className="kitchen-home__browseLabel">Start from a collection</p>
-          <h2 id="browse-heading" className="kitchen-home__browseTitle">
-            Traditions & ways of eating
-          </h2>
-          <p className="kitchen-home__browseBody">
-            Tap a box to compose a recipe in that spirit — then remix, save, or share.
-          </p>
-        </div>
+      <MealBriefPanel brief={brief} onChange={onChangeBrief} prefs={prefs} />
 
-        <ul className="kitchen-home__grid">
-          {COLLECTIONS.map((item) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                className="kitchen-home__tile"
-                disabled={composeDisabled}
-                onClick={() => onPickCollection?.(item)}
-              >
-                <span className="kitchen-home__tileMedia" aria-hidden="true">
-                  <img src={item.image} alt="" loading="lazy" />
-                </span>
-                <span className="kitchen-home__tileCopy">
-                  <span className="kitchen-home__tileTitle">{item.title}</span>
-                  <span className="kitchen-home__tileBlurb">{item.blurb}</span>
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {!hideCollections && (
+        <section className="kitchen-home__browse" aria-labelledby="browse-heading">
+          <div className="kitchen-home__browseIntro">
+            <p className="kitchen-home__browseLabel">Or tap a mood</p>
+            <h2 id="browse-heading" className="kitchen-home__browseTitle">
+              Classics & ways of eating
+            </h2>
+          </div>
+
+          <ul className="kitchen-home__grid">
+            {COLLECTIONS.map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  className="kitchen-home__tile"
+                  disabled={composeDisabled}
+                  onClick={() => onPickCollection?.(item)}
+                >
+                  <span className="kitchen-home__tileMedia" aria-hidden="true">
+                    <img src={item.image} alt="" loading="lazy" />
+                    <span className="kitchen-home__tileShade" />
+                    <span className="kitchen-home__tileOnImage">
+                      <span className="kitchen-home__tileTitle">{item.title}</span>
+                      <span className="kitchen-home__tileBlurb">{item.blurb}</span>
+                    </span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   )
 }
 
-export { COLLECTIONS }
+export { COLLECTIONS, TONIGHT_PROMPT }

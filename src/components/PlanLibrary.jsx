@@ -46,13 +46,13 @@ function PlanLibrary({
         <p className="plan-library__label">Library</p>
         <h2 className="plan-library__title">Your collection</h2>
         <p className="plan-library__subtitle">
-          Saved recipes and weekly lists — reopen, remix, or share a public link for Instagram and friends.
+          Saved recipes — reopen, remix, or share a link.
         </p>
       </div>
 
       {!plans?.length && !loading && (
         <p className="plan-library__empty">
-          Your library is empty. Ask for a classic, invent from the cupboard, or build a week — then add it here like a playlist.
+          Your library is empty. Cook tonight, then add the dish here.
         </p>
       )}
 

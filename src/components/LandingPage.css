@@ -70,8 +70,8 @@
 /* ── Hero (full-bleed) ── */
 .landing__hero {
   position: relative;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 88vh;
+  min-height: 88dvh;
   display: flex;
   align-items: center;
   padding: 0;
@@ -220,6 +220,134 @@
   line-height: 1.7;
   color: var(--text-secondary);
   max-width: 42ch;
+}
+
+/* ── Featured dishes ── */
+.landing__dishes {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: calc(var(--space-16) * 0.85) var(--space-8);
+  scroll-margin-top: 24px;
+}
+.landing__dishesLabel {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 var(--space-3);
+}
+.landing__dishesTitle {
+  font-size: clamp(1.85rem, 4vw, 2.75rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--space-8);
+}
+.landing__dishGrid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.landing__dish {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+.landing__dish:hover {
+  border-color: rgba(110, 58, 62, 0.35);
+}
+.landing__dishMedia {
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #2a241f;
+}
+.landing__dishMedia img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.landing__dishCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: var(--space-4);
+}
+.landing__dishEyebrow {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.landing__dishName {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.landing__dishBlurb {
+  font-size: var(--text-sm);
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.landing__cook {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(28, 27, 25, 0.45);
+  overflow: auto;
+  padding: var(--space-6) var(--space-4);
+}
+.landing__cookPanel {
+  max-width: 720px;
+  margin: 0 auto;
+  background: var(--page-bg);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+}
+.landing__cookBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.landing__cookEyebrow {
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.landing__cookKeep {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.landing__cookKeep p {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 300;
+  color: var(--text-secondary);
 }
 
 /* ── Moods / playlists ── */
@@ -382,6 +510,8 @@
 @media (max-width: 700px) {
   .landing__nav { padding: var(--space-4); }
   .landing__heroContent { padding: 6.5rem var(--space-4) 3.25rem; }
+  .landing__dishes { padding: 3rem var(--space-4); }
+  .landing__dishGrid { grid-template-columns: 1fr; }
   .landing__moods { padding: 3rem var(--space-4) 0; }
   .landing__moodsList {
     grid-template-columns: 1fr 1fr;
