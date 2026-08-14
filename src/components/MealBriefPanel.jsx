@@ -11,27 +11,32 @@ const MEAL_SLOTS = [
 ]
 
 function toggleInList(list, value) {
-  return list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
+  const current = Array.isArray(list) ? list : []
+  return current.includes(value) ? current.filter((v) => v !== value) : [...current, value]
 }
 
 function TickGroup({ label, options, selected, onChange }) {
+  const current = Array.isArray(selected) ? selected : []
   return (
     <fieldset className="meal-brief__group">
       <legend className="meal-brief__legend">{label}</legend>
-      <div className="meal-brief__ticks">
+      <div className="meal-brief__ticks" role="group" aria-label={label}>
         {options.map((opt) => {
           const value = typeof opt === 'string' ? opt : opt.id
           const text = typeof opt === 'string' ? opt : opt.label
-          const checked = selected.includes(value)
+          const checked = current.includes(value)
           return (
-            <label key={value} className={`meal-brief__tick ${checked ? 'meal-brief__tick--on' : ''}`}>
-              <input
-                type="checkbox"
-                checked={checked}
-                onChange={() => onChange(toggleInList(selected, value))}
-              />
+            <button
+              key={value}
+              type="button"
+              role="checkbox"
+              aria-checked={checked}
+              className={`meal-brief__tick ${checked ? 'meal-brief__tick--on' : ''}`}
+              onClick={() => onChange(toggleInList(current, value))}
+            >
+              <span className="meal-brief__box" aria-hidden="true" />
               <span>{text}</span>
-            </label>
+            </button>
           )
         })}
       </div>
@@ -75,7 +80,12 @@ export function formatBriefForChat(brief) {
 
 function MealBriefPanel({ brief, onChange, prefs, requireNotes = false }) {
   const value = brief ?? defaultBrief
-  const setField = (key, next) => onChange({ ...value, [key]: next })
+  const setField = (key, next) => {
+    onChange((prev) => {
+      const base = prev && typeof prev === 'object' ? prev : defaultBrief
+      return { ...defaultBrief, ...base, [key]: next }
+    })
+  }
   const household = prefs?.household_size
   const notesEmpty = !value.notes?.trim()
 

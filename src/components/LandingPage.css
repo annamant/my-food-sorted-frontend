@@ -150,7 +150,7 @@
   font-weight: 300;
   line-height: 1.65;
   color: rgba(247, 245, 241, 0.78);
-  max-width: 34ch;
+  max-width: 42ch;
   margin: 0 0 var(--space-8);
   animation: landing-rise 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.24s both;
 }
@@ -518,6 +518,7 @@
   margin: 0 auto;
   padding: var(--space-16) var(--space-8);
   text-align: left;
+  border-top: 1px solid var(--border);
 }
 .landing__shareLabel {
   font-size: var(--text-xs);
@@ -539,7 +540,7 @@
   font-weight: 300;
   line-height: 1.7;
   color: var(--text-secondary);
-  max-width: 44ch;
+  max-width: 48ch;
 }
 
 /* ── Auth ── */
