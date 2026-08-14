@@ -124,6 +124,14 @@
   outline-offset: 2px;
 }
 
+.app__navItem--logout {
+  color: var(--text-muted);
+}
+
+.app__navItem--logout:hover {
+  color: var(--accent);
+}
+
 .app__avatar {
   width: 2rem;
   height: 2rem;

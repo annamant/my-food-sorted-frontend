@@ -593,6 +593,13 @@ function AppContent() {
               >
                 <span className="app__avatar" aria-hidden="true">{accountInitial}</span>
               </button>
+              <button
+                type="button"
+                className="app__navItem app__navItem--logout"
+                onClick={handleLogout}
+              >
+                Log out
+              </button>
             </nav>
           </div>
         </div>

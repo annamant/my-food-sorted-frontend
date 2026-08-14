@@ -8,7 +8,7 @@ const SECTIONS = [
   { id: 'billing', label: 'Billing', soon: true },
 ]
 
-function ProfileSection({ prefs }) {
+function ProfileSection({ prefs, onLogout }) {
   const remaining =
     prefs?.message_quota != null && prefs?.message_count != null
       ? Math.max(0, prefs.message_quota - prefs.message_count)
@@ -42,11 +42,14 @@ function ProfileSection({ prefs }) {
           </dd>
         </div>
       </dl>
+      <button type="button" className="btn btn--ghost account-section__logout" onClick={onLogout}>
+        Log out
+      </button>
     </div>
   )
 }
 
-function SecuritySection({ onChangePassword, loading, onLogout }) {
+function SecuritySection({ onChangePassword, loading }) {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -89,7 +92,7 @@ function SecuritySection({ onChangePassword, loading, onLogout }) {
     <div className="account-section">
       <h2 className="account-section__title">Security & login</h2>
       <p className="account-section__lead">
-        Change your password or sign out of this device.
+        Change the password for this kitchen.
       </p>
 
       <form className="account-section__form" onSubmit={handleSubmit}>
@@ -132,9 +135,6 @@ function SecuritySection({ onChangePassword, loading, onLogout }) {
         <div className="account-section__actions">
           <button type="submit" className="btn btn--primary" disabled={busy || loading}>
             {busy ? 'Updating…' : 'Update password'}
-          </button>
-          <button type="button" className="btn btn--ghost" onClick={onLogout}>
-            Log out
           </button>
         </div>
       </form>
@@ -289,15 +289,21 @@ export default function AccountPage({
           >
             ← Back to library
           </button>
+          <button
+            type="button"
+            className="account-page__logout"
+            onClick={onLogout}
+          >
+            Log out
+          </button>
         </aside>
 
         <div className="account-page__content">
-          {section === 'profile' && <ProfileSection prefs={prefs} />}
+          {section === 'profile' && <ProfileSection prefs={prefs} onLogout={onLogout} />}
           {section === 'security' && (
             <SecuritySection
               onChangePassword={onChangePassword}
               loading={loading}
-              onLogout={onLogout}
             />
           )}
           {section === 'preferences' && (
