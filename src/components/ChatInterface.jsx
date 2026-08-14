@@ -29,14 +29,14 @@ function ChatInterface({
       <div className="chat-interface__top">
         <div>
           <p className="chat-interface__label">
-            {kitchenMode === 'tweak' ? 'Tweak this' : 'The kitchen'}
+            {kitchenMode === 'tweak' ? 'Tweak this' : 'Recipes'}
           </p>
           <h2 className="chat-interface__title">
             {kitchenMode === 'tweak'
               ? 'One change at a time'
               : kitchenMode === 'create'
-                ? 'Make your own'
-                : 'Find a dish'}
+                ? 'Create a recipe'
+                : 'Search recipes'}
           </h2>
         </div>
         {(hasRecipe || messages.length > 0) && onClearChat && (
@@ -52,50 +52,36 @@ function ChatInterface({
       </div>
 
       {kitchenMode !== 'tweak' && (
-        <div className="chat-interface__modes" role="tablist" aria-label="How to cook">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={kitchenMode === 'search'}
-            className={`chat-interface__mode ${kitchenMode === 'search' ? 'chat-interface__mode--on' : ''}`}
-            disabled={loading}
-            onClick={() => onModeChange?.('search')}
-          >
-            Find a dish
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={kitchenMode === 'create'}
-            className={`chat-interface__mode ${kitchenMode === 'create' ? 'chat-interface__mode--on' : ''}`}
-            disabled={loading}
-            onClick={() => onModeChange?.('create')}
-          >
-            Make my own
-          </button>
-        </div>
-      )}
-
-      {kitchenMode === 'search' && (
-        <p className="chat-interface__disclaimer">
-          Name a dish or a mood. One search, one recipe. Mood tiles below fill this box — they don’t cook until you hit Find.
-        </p>
-      )}
-
-      {kitchenMode === 'create' && (
         <>
-          <MealBriefPanel brief={brief} onChange={onChangeBrief} prefs={prefs} />
-          <div className="chat-interface__createActions">
+          <div className="chat-interface__modes" role="tablist" aria-label="Search or create">
             <button
               type="button"
-              className="btn btn--primary"
+              role="tab"
+              aria-selected={kitchenMode === 'search'}
+              className={`chat-interface__mode ${kitchenMode === 'search' ? 'chat-interface__mode--on' : ''}`}
               disabled={loading}
-              onClick={onCreate}
+              onClick={() => onModeChange?.('search')}
             >
-              {loading ? 'Cooking…' : 'Cook this once'}
+              Search
             </button>
-            <p className="chat-interface__createHint">Uses one kitchen message. Then you can tweak.</p>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={kitchenMode === 'create'}
+              className={`chat-interface__mode ${kitchenMode === 'create' ? 'chat-interface__mode--on' : ''}`}
+              disabled={loading}
+              onClick={() => onModeChange?.('create')}
+            >
+              Create
+            </button>
           </div>
+
+          <MealBriefPanel
+            brief={brief}
+            onChange={onChangeBrief}
+            prefs={prefs}
+            requireNotes={kitchenMode === 'create'}
+          />
         </>
       )}
 
@@ -129,20 +115,16 @@ function ChatInterface({
         </>
       )}
 
-      {kitchenMode !== 'create' && (
+      {kitchenMode === 'search' && (
         <div className="chat-interface__inputWrap">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-            placeholder={
-              kitchenMode === 'tweak'
-                ? 'Make it cheaper, no garlic, extra crispy…'
-                : 'Carbonara, leftover chicken, Japanese…'
-            }
+            placeholder="Carbonara, leftover chicken…"
             className="chat-interface__input"
-            aria-label={kitchenMode === 'tweak' ? 'Tweak this recipe' : 'Find a dish'}
+            aria-label="Search recipes"
             disabled={loading}
           />
           <button
@@ -151,7 +133,46 @@ function ChatInterface({
             disabled={loading || !input.trim()}
             className="btn btn--primary"
           >
-            {loading ? 'Cooking…' : kitchenMode === 'tweak' ? 'Tweak' : 'Find'}
+            {loading ? 'Cooking…' : 'Search'}
+          </button>
+        </div>
+      )}
+
+      {kitchenMode === 'create' && (
+        <div className="chat-interface__createActions">
+          <button
+            type="button"
+            className="btn btn--primary"
+            disabled={loading || !brief?.notes?.trim()}
+            onClick={onCreate}
+          >
+            {loading ? 'Cooking…' : 'Create'}
+          </button>
+          {!brief?.notes?.trim() && (
+            <p className="chat-interface__createHint">The chef’s waiting — tell them what you want, then we’ll cook.</p>
+          )}
+        </div>
+      )}
+
+      {kitchenMode === 'tweak' && (
+        <div className="chat-interface__inputWrap">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+            placeholder="Make it cheaper, no garlic, extra crispy…"
+            className="chat-interface__input"
+            aria-label="Tweak this recipe"
+            disabled={loading}
+          />
+          <button
+            type="button"
+            onClick={sendMessage}
+            disabled={loading || !input.trim()}
+            className="btn btn--primary"
+          >
+            {loading ? 'Cooking…' : 'Tweak'}
           </button>
         </div>
       )}

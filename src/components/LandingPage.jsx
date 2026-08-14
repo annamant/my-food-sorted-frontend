@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import AuthForm from './AuthForm'
 import MealPlanDisplay from './MealPlanDisplay'
 import { FEATURED_DISHES } from '../data/featuredDishes'
+import { INSPIRATIONS } from '../data/inspirations'
 import './LandingPage.css'
 
 function LogoMark({ size = 'md', tone = 'ink' }) {
@@ -19,7 +20,7 @@ function LogoMark({ size = 'md', tone = 'ink' }) {
 const STEPS = [
   {
     title: 'Ask for tonight',
-    body: 'Type carbonara, leftover chicken, or twenty minutes. Or tap a dish below and cook it as-is.',
+    body: 'Search a dish you know, or create one with filters. Inspirations need a kitchen — join first.',
   },
   {
     title: 'Remix it for your life',
@@ -31,9 +32,16 @@ const STEPS = [
   },
 ]
 
-export default function LandingPage({ loading, handleAuth, initialAuthMode = 'register' }) {
+export default function LandingPage({
+  loading,
+  handleAuth,
+  initialAuthMode = 'register',
+  pendingInspiration,
+  onPickInspiration,
+}) {
   const authRef = useRef(null)
   const dishesRef = useRef(null)
+  const inspireRef = useRef(null)
   const [openDish, setOpenDish] = useState(null)
   const [authMode, setAuthMode] = useState(initialAuthMode)
 
@@ -56,8 +64,17 @@ export default function LandingPage({ loading, handleAuth, initialAuthMode = 're
     authRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
+  function scrollToInspirations() {
+    inspireRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   function scrollToDishes() {
     dishesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function pickInspiration(item) {
+    onPickInspiration?.(item)
+    scrollToAuth('register')
   }
 
   return (
@@ -95,10 +112,12 @@ export default function LandingPage({ loading, handleAuth, initialAuthMode = 're
             wellbeing — then keep the version you actually make.
           </p>
           <div className="landing__heroCtas">
-            <button type="button" className="btn landing__ctaPrimary" onClick={scrollToDishes}>
+            <button type="button" className="btn landing__ctaPrimary" onClick={scrollToInspirations}>
+              Choose an inspiration
+            </button>
+            <button type="button" className="btn landing__ctaGhost" onClick={scrollToDishes}>
               See tonight’s dishes
             </button>
-            <span className="landing__ctaNote">No account needed to look</span>
           </div>
         </div>
       </header>
@@ -130,6 +149,36 @@ export default function LandingPage({ loading, handleAuth, initialAuthMode = 're
         </ul>
       </section>
 
+      <section className="landing__inspire" ref={inspireRef} aria-labelledby="inspire-heading">
+        <p className="landing__dishesLabel">Inspirations</p>
+        <h2 id="inspire-heading" className="landing__dishesTitle">
+          Choose an inspiration
+        </h2>
+        <p className="landing__inspireLead">
+          A mood for the kitchen, not a recipe list. Tap one, then join or log in to search and create.
+        </p>
+        <ul className="landing__inspireGrid">
+          {INSPIRATIONS.map((item) => (
+            <li key={item.id}>
+              <button
+                type="button"
+                className={`landing__inspireTile ${pendingInspiration?.id === item.id ? 'landing__inspireTile--on' : ''}`}
+                onClick={() => pickInspiration(item)}
+              >
+                <span className="landing__inspireMedia" aria-hidden="true">
+                  <img src={item.image} alt="" />
+                  <span className="landing__inspireShade" />
+                  <span className="landing__inspireOnImage">
+                    <span className="landing__inspireName">{item.title}</span>
+                    <span className="landing__inspireBlurb">{item.blurb}</span>
+                  </span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <section className="landing__steps" aria-labelledby="steps-heading">
         <p className="landing__stepsLabel">How it works</p>
         <h2 id="steps-heading" className="landing__stepsTitle">
@@ -152,14 +201,22 @@ export default function LandingPage({ loading, handleAuth, initialAuthMode = 're
 
       <section className="landing__authSection" ref={authRef}>
         <div className="landing__authInner">
-          <p className="landing__authLabel">Keep what you cook</p>
+          <p className="landing__authLabel">
+            {pendingInspiration ? 'Continue to the kitchen' : 'Keep what you cook'}
+          </p>
           <h2 className="landing__authTitle">
-            {authMode === 'login' ? 'Welcome back.' : 'Join to save it.'}
+            {pendingInspiration
+              ? (authMode === 'login'
+                ? `Log in to cook ${pendingInspiration.title}.`
+                : `Join to cook ${pendingInspiration.title}.`)
+              : (authMode === 'login' ? 'Welcome back.' : 'Join to save it.')}
           </h2>
           <p className="landing__authSub">
-            {authMode === 'login'
-              ? 'Log in, or enter Eve’s demo kitchen.'
-              : 'Free. Under a minute. Remix and lists wait here.'}
+            {pendingInspiration
+              ? 'Create an account or log in — then the kitchen opens with this inspiration.'
+              : authMode === 'login'
+                ? 'Log in, or enter Eve’s demo kitchen.'
+                : 'Free. Under a minute. Remix and lists wait here.'}
           </p>
           <AuthForm
             loading={loading}

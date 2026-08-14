@@ -4,11 +4,12 @@ import ChatInterface from './components/ChatInterface'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
-import { defaultBrief, formatBriefForChat, formatSearchBrief } from './components/MealBriefPanel'
+import { defaultBrief, formatBriefForChat } from './components/MealBriefPanel'
 import LandingPage from './components/LandingPage'
 import SharedRecipeView from './components/SharedRecipeView'
 import AccountPage from './components/AccountPage'
 import KitchenHome from './components/KitchenHome'
+import { INSPIRATION_FILTERS } from './data/inspirations'
 import './App.css'
 
 const API = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
@@ -95,6 +96,7 @@ function AppContent() {
   const [prefsLoading, setPrefsLoading] = useState(false)
   const [mealBrief, setMealBrief] = useState(() => ({ ...defaultBrief }))
   const [cookMode, setCookMode] = useState('search') // 'search' | 'create'
+  const [pendingInspiration, setPendingInspiration] = useState(null)
 
   /* ── Shopping list ── */
   const [shoppingList, setShoppingList] = useState(null)
@@ -156,6 +158,33 @@ function AppContent() {
     }
   }, [prefs]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const applyInspiration = useCallback((collection) => {
+    if (!collection) return
+    pendingCoverRef.current = collection.image || null
+    const extras = INSPIRATION_FILTERS[collection.id]
+    if (extras) {
+      setMealBrief((prev) => {
+        const next = { ...prev }
+        if (extras.cuisines) {
+          next.cuisines = [...new Set([...(prev.cuisines || []), ...extras.cuisines])]
+        }
+        if (extras.proteins) {
+          next.proteins = [...new Set([...(prev.proteins || []), ...extras.proteins])]
+        }
+        if (extras.budget_per_day != null) next.budget_per_day = extras.budget_per_day
+        if (extras.notes) {
+          next.notes = prev.notes?.includes(extras.notes)
+            ? prev.notes
+            : [prev.notes, extras.notes].filter(Boolean).join(', ')
+        }
+        return next
+      })
+    }
+    setCookMode('search')
+    setInput(collection.label || collection.title)
+    setView('tonight')
+  }, [])
+
   /* ── Auth handler ── */
   const handleAuth = useCallback(async (endpoint, email, password) => {
     try {
@@ -178,10 +207,14 @@ function AppContent() {
       setLoggedInUserId(String(userId))
       loadPrefs(accessToken)
       loadSavedPlans(accessToken)
+      if (pendingInspiration) {
+        applyInspiration(pendingInspiration)
+        setPendingInspiration(null)
+      }
     } catch (err) {
       addToast(err.message, 'error')
     }
-  }, [loadPrefs, loadSavedPlans, addToast])
+  }, [loadPrefs, loadSavedPlans, addToast, pendingInspiration, applyInspiration])
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token')
@@ -198,6 +231,7 @@ function AppContent() {
     setPrefs(null)
     setView('tonight')
     setLandingAuthMode('login')
+    setPendingInspiration(null)
   }, [])
 
   const savePrefs = useCallback(async (nextPrefs) => {
@@ -224,10 +258,7 @@ function AppContent() {
     const text = String(rawText || '').trim()
     if (!text || chatLoading) return
 
-    const briefBlock =
-      intent === 'search'
-        ? formatSearchBrief(mealBrief, prefs)
-        : formatBriefForChat(mealBrief)
+    const briefBlock = formatBriefForChat(mealBrief)
     const userMessage = briefBlock
       ? `${text}\n\n${briefBlock}\n\nDo not ask questions. Cook now. Obey the constraints above.`
       : `${text}\n\nDo not ask questions. Cook now.`
@@ -250,7 +281,7 @@ function AppContent() {
         body: JSON.stringify({
           user_message: userMessage,
           conversation_id: conversationId,
-          meal_brief: intent === 'search' ? null : mealBrief,
+          meal_brief: mealBrief,
           intent,
         }),
       })
@@ -291,7 +322,7 @@ function AppContent() {
     } finally {
       setChatLoading(false)
     }
-  }, [chatLoading, authHeaders, conversationId, mealBrief, prefs, loadPrefs, addToast])
+  }, [chatLoading, authHeaders, conversationId, mealBrief, loadPrefs, addToast])
 
   const sendMessage = useCallback(() => {
     const text = input.trim()
@@ -306,7 +337,7 @@ function AppContent() {
       return
     }
     sendMessageText(
-      `Find this for tonight: ${text}. One recipe, realistic UK cost and calories. Save-ready. Do not ask questions.`,
+      `Search for this recipe: ${text}. One recipe, realistic UK cost and calories. Save-ready. Follow my filters. Do not ask questions.`,
       text,
       'search',
     )
@@ -314,12 +345,13 @@ function AppContent() {
 
   const handleCreate = useCallback(() => {
     if (chatLoading) return
+    if (!mealBrief?.notes?.trim()) return
     sendMessageText(
-      'Create one dish from my brief. One strong recipe, realistic UK cost and calories. Save-ready. Do not ask questions — cook now.',
-      'Make my own',
+      'Create one recipe from my filters and instructions. One strong dish, realistic UK cost and calories. Save-ready. Do not ask questions — cook now.',
+      'Create',
       'create',
     )
-  }, [chatLoading, sendMessageText])
+  }, [chatLoading, sendMessageText, mealBrief])
 
   const clearChat = useCallback(() => {
     setMessages([])
@@ -338,16 +370,10 @@ function AppContent() {
     sendMessageText(prompt, label ? `Tweak: ${label}` : 'Tweak this', 'tweak')
   }, [sendMessageText])
 
-  const handlePickCollection = useCallback((collection) => {
-    if (!collection || chatLoading) return
-    pendingCoverRef.current = collection.image || null
-    setCookMode('search')
-    setInput(collection.label || collection.title)
-    setView('tonight')
-    requestAnimationFrame(() => {
-      recipeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    })
-  }, [chatLoading])
+  const handleLandingInspiration = useCallback((collection) => {
+    setPendingInspiration(collection)
+    setLandingAuthMode('register')
+  }, [])
 
   /* ── Save plan ── */
   const savePlan = useCallback(async () => {
@@ -578,6 +604,8 @@ function AppContent() {
         loading={loading}
         handleAuth={handleAuth}
         initialAuthMode={landingAuthMode}
+        pendingInspiration={pendingInspiration}
+        onPickInspiration={handleLandingInspiration}
       />
     )
   }
@@ -700,12 +728,7 @@ function AppContent() {
           </>
         ) : (
           <>
-            <KitchenHome
-              onPickCollection={handlePickCollection}
-              composeDisabled={chatLoading}
-              hideHero={Boolean(mealPlan)}
-              hideCollections={Boolean(mealPlan) || chatLoading || cookMode === 'create'}
-            >
+            <KitchenHome hideHero={Boolean(mealPlan)}>
               <div ref={recipeRef} className="app__recipe">
                 {chatLoading && !mealPlan && (
                   <p className="app__cooking" aria-live="polite">Cooking tonight’s dish…</p>

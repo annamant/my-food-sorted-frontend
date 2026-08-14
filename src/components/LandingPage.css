@@ -177,6 +177,22 @@
   border-color: #fff;
   color: #0a0a09;
 }
+.landing__ctaGhost {
+  background: transparent;
+  color: #f7f5f1;
+  border-color: rgba(247, 245, 241, 0.45);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.9rem 1.5rem;
+  border-radius: var(--radius-md);
+}
+.landing__ctaGhost:hover:not(:disabled) {
+  background: rgba(247, 245, 241, 0.1);
+  border-color: #f7f5f1;
+  color: #f7f5f1;
+}
 .landing__ctaNote {
   font-size: var(--text-sm);
   font-weight: 300;
@@ -271,6 +287,86 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-4);
+}
+
+.landing__inspire {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 var(--space-8) calc(var(--space-16) * 0.85);
+  scroll-margin-top: 24px;
+}
+.landing__inspire .landing__dishesTitle {
+  margin-bottom: var(--space-3);
+}
+.landing__inspireLead {
+  margin: 0 0 var(--space-8);
+  max-width: 46ch;
+  font-size: var(--text-sm);
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.landing__inspireGrid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.landing__inspireTile {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+.landing__inspireTile:hover,
+.landing__inspireTile--on {
+  border-color: rgba(110, 58, 62, 0.4);
+}
+.landing__inspireMedia {
+  display: block;
+  aspect-ratio: 4 / 3;
+  position: relative;
+  overflow: hidden;
+  background: #2a241f;
+}
+.landing__inspireMedia img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.landing__inspireShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 35%, rgba(22, 18, 14, 0.78) 100%);
+}
+.landing__inspireOnImage {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.landing__inspireName {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #f7f5f1;
+}
+.landing__inspireBlurb {
+  font-size: var(--text-xs);
+  font-weight: 300;
+  line-height: 1.4;
+  color: rgba(247, 245, 241, 0.82);
 }
 .landing__dish {
   appearance: none;
@@ -533,6 +629,8 @@
   .landing__heroContent { padding: 6.5rem var(--space-4) 3.25rem; }
   .landing__dishes { padding: 3rem var(--space-4); }
   .landing__dishGrid { grid-template-columns: 1fr; }
+  .landing__inspire { padding: 0 var(--space-4) 3rem; }
+  .landing__inspireGrid { grid-template-columns: 1fr 1fr; }
   .landing__moods { padding: 3rem var(--space-4) 0; }
   .landing__moodsList {
     grid-template-columns: 1fr 1fr;

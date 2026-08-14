@@ -1,6 +1,6 @@
 import './MealBriefPanel.css'
 
-const CUISINES = ['Italian', 'Asian', 'Japanese', 'Mexican', 'British', 'Indian', 'Mediterranean']
+const CUISINES = ['Italian', 'French', 'Asian', 'Japanese', 'Mexican', 'British', 'Indian', 'Mediterranean']
 const METHODS = ['Stir-fry', 'Grilled', 'Baked', 'Boiled', 'Steamed', 'Roasted', 'One-pan', 'Air-fryer']
 const PROTEINS = ['Chicken', 'Beef', 'Pork', 'Fish', 'Eggs', 'Tofu', 'Lamb', 'Vegetarian']
 const PANTRY = ['Pasta', 'Rice', 'Noodles', 'Potatoes', 'Onion', 'Garlic', 'Olive oil', 'Soy sauce', 'Tinned tomatoes', 'Beans', 'Cheese', 'Eggs']
@@ -14,17 +14,17 @@ function toggleInList(list, value) {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
 }
 
-function ChipGroup({ label, options, selected, onChange }) {
+function TickGroup({ label, options, selected, onChange }) {
   return (
     <fieldset className="meal-brief__group">
       <legend className="meal-brief__legend">{label}</legend>
-      <div className="meal-brief__chips">
+      <div className="meal-brief__ticks">
         {options.map((opt) => {
           const value = typeof opt === 'string' ? opt : opt.id
           const text = typeof opt === 'string' ? opt : opt.label
           const checked = selected.includes(value)
           return (
-            <label key={value} className={`meal-brief__chip ${checked ? 'meal-brief__chip--on' : ''}`}>
+            <label key={value} className={`meal-brief__tick ${checked ? 'meal-brief__tick--on' : ''}`}>
               <input
                 type="checkbox"
                 checked={checked}
@@ -53,7 +53,6 @@ const defaultBrief = {
   notes: '',
 }
 
-/** Full brief for Make my own — every line is a hard constraint. */
 export function formatBriefForChat(brief) {
   const value = brief ?? defaultBrief
   const lines = []
@@ -67,38 +66,24 @@ export function formatBriefForChat(brief) {
   if (value.proteins?.length) lines.push(`- Proteins REQUIRED (do not substitute): ${value.proteins.join(', ')}`)
   if (value.pantry?.length) lines.push(`- Pantry / already have: ${value.pantry.join(', ')}`)
   if (value.avoid?.trim()) lines.push(`- Avoid / FORBIDDEN: ${value.avoid.trim()}`)
-  if (value.notes?.trim()) lines.push(`- Extra notes REQUIRED: ${value.notes.trim()}`)
+  if (value.notes?.trim()) {
+    lines.push(`- What they told the chef (follow exactly, this is the brief): ${value.notes.trim()}`)
+  }
   if (!lines.length) return ''
   return `My kitchen brief — follow exactly:\n${lines.join('\n')}`
 }
 
-/** Light constraints for Find a dish — do not invent a 30-minute budget dinner around a named plate. */
-export function formatSearchBrief(brief, prefs) {
-  const lines = []
-  const servings = brief?.servings || prefs?.household_size
-  if (servings) lines.push(`- People / servings: ${servings}`)
-  const diet = prefs?.dietary_preferences?.trim()
-  if (diet && diet.toLowerCase() !== 'none') lines.push(`- Diet: ${diet}`)
-  const avoid = [brief?.avoid?.trim(), prefs?.allergies?.trim()].filter(Boolean).join('; ')
-  if (avoid) lines.push(`- Avoid / FORBIDDEN: ${avoid}`)
-  if (!lines.length) return ''
-  return `Household constraints — follow these, but cook the dish they asked for:\n${lines.join('\n')}`
-}
-
-function MealBriefPanel({ brief, onChange, prefs }) {
+function MealBriefPanel({ brief, onChange, prefs, requireNotes = false }) {
   const value = brief ?? defaultBrief
   const setField = (key, next) => onChange({ ...value, [key]: next })
   const household = prefs?.household_size
+  const notesEmpty = !value.notes?.trim()
 
   return (
     <div className="meal-brief meal-brief--intake">
-      <p className="meal-brief__intakeLead">
-        Answer these once. Then I’ll cook one dish — not a guessing round.
-      </p>
-
       <div className="meal-brief__row">
         <label className="meal-brief__field">
-          <span>Who’s eating</span>
+          <span>People</span>
           <input
             type="number"
             min={1}
@@ -109,7 +94,7 @@ function MealBriefPanel({ brief, onChange, prefs }) {
           />
         </label>
         <label className="meal-brief__field">
-          <span>How long (mins)</span>
+          <span>Mins</span>
           <input
             type="number"
             min={5}
@@ -130,7 +115,7 @@ function MealBriefPanel({ brief, onChange, prefs }) {
           />
         </label>
         <label className="meal-brief__field">
-          <span>Budget / day (£)</span>
+          <span>£ / day</span>
           <input
             type="number"
             min={0}
@@ -139,56 +124,65 @@ function MealBriefPanel({ brief, onChange, prefs }) {
             onChange={(e) => setField('budget_per_day', Number(e.target.value) || 0)}
           />
         </label>
+        <label className="meal-brief__field meal-brief__field--avoid">
+          <span>Won’t eat</span>
+          <input
+            type="text"
+            value={value.avoid}
+            onChange={(e) => setField('avoid', e.target.value)}
+            placeholder="garlic, shellfish…"
+          />
+        </label>
       </div>
 
-      <label className="meal-brief__field meal-brief__field--wide">
-        <span>Anything we won’t eat</span>
-        <input
-          type="text"
-          value={value.avoid}
-          onChange={(e) => setField('avoid', e.target.value)}
-          placeholder="no garlic, no shellfish…"
+      <div className="meal-brief__tickGrid">
+        <TickGroup
+          label="Meals"
+          options={MEAL_SLOTS}
+          selected={value.meal_slots}
+          onChange={(next) => setField('meal_slots', next)}
         />
-      </label>
+        <TickGroup
+          label="Cuisines"
+          options={CUISINES}
+          selected={value.cuisines}
+          onChange={(next) => setField('cuisines', next)}
+        />
+        <TickGroup
+          label="Cooking style"
+          options={METHODS}
+          selected={value.cooking_methods}
+          onChange={(next) => setField('cooking_methods', next)}
+        />
+        <TickGroup
+          label="Proteins"
+          options={PROTEINS}
+          selected={value.proteins}
+          onChange={(next) => setField('proteins', next)}
+        />
+        <TickGroup
+          label="Cupboard"
+          options={PANTRY}
+          selected={value.pantry}
+          onChange={(next) => setField('pantry', next)}
+        />
+      </div>
 
-      <ChipGroup
-        label="Meals"
-        options={MEAL_SLOTS}
-        selected={value.meal_slots}
-        onChange={(next) => setField('meal_slots', next)}
-      />
-      <ChipGroup
-        label="Cuisines"
-        options={CUISINES}
-        selected={value.cuisines}
-        onChange={(next) => setField('cuisines', next)}
-      />
-      <ChipGroup
-        label="Cooking style"
-        options={METHODS}
-        selected={value.cooking_methods}
-        onChange={(next) => setField('cooking_methods', next)}
-      />
-      <ChipGroup
-        label="Proteins"
-        options={PROTEINS}
-        selected={value.proteins}
-        onChange={(next) => setField('proteins', next)}
-      />
-      <ChipGroup
-        label="Already in the cupboard"
-        options={PANTRY}
-        selected={value.pantry}
-        onChange={(next) => setField('pantry', next)}
-      />
-
-      <label className="meal-brief__field meal-brief__field--wide">
-        <span>Must-use flavours or notes</span>
-        <input
-          type="text"
+      <label className="meal-brief__instructions">
+        <span className="meal-brief__instructionsTitle">
+          Tell your chef
+          {requireNotes && <em>The fun bit</em>}
+        </span>
+        <span className="meal-brief__instructionsHint">
+          Don’t be polite. What’s in your head, what you fancy, what’s in the fridge, the night you’ve got, what you won’t eat — say the lot. The more you tell them, the better the recipe.
+        </span>
+        <textarea
+          rows={5}
           value={value.notes}
           onChange={(e) => setField('notes', e.target.value)}
-          placeholder="lots of onions, extra crispy…"
+          placeholder="Friday, I want something messy and garlicky… leftover roast chicken in the fridge… keep it cheap… no cream… extra crispy…"
+          required={requireNotes}
+          aria-invalid={requireNotes && notesEmpty}
         />
       </label>
     </div>
