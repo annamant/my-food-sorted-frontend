@@ -4,10 +4,12 @@ import './SharedRecipeView.css'
 
 const API = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
 
-export default function SharedRecipeView({ slug, onClose }) {
+export default function SharedRecipeView({ slug, kind = 'recipe', onClose }) {
   const [plan, setPlan] = useState(null)
+  const [list, setList] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const isList = kind === 'list'
 
   useEffect(() => {
     let cancelled = false
@@ -15,18 +17,23 @@ export default function SharedRecipeView({ slug, onClose }) {
       setLoading(true)
       setError('')
       try {
-        const res = await fetch(`${API}/share/${encodeURIComponent(slug)}`)
+        const path = isList
+          ? `${API}/share/list/${encodeURIComponent(slug)}`
+          : `${API}/share/${encodeURIComponent(slug)}`
+        const res = await fetch(path)
         const text = await res.text()
         let data = {}
         try {
           data = text ? JSON.parse(text) : {}
         } catch {
-          throw new Error('Could not load this shared recipe.')
+          throw new Error(isList ? 'Could not load this shared list.' : 'Could not load this shared recipe.')
         }
-        if (!res.ok) throw new Error(data.error || data.message || 'Recipe not found')
-        if (!cancelled) setPlan(data)
+        if (!res.ok) throw new Error(data.error || data.message || 'Not found')
+        if (cancelled) return
+        if (isList) setList(data)
+        else setPlan(data)
       } catch (err) {
-        if (!cancelled) setError(err.message || 'Could not load this shared recipe.')
+        if (!cancelled) setError(err.message || 'Could not load this share.')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -35,7 +42,7 @@ export default function SharedRecipeView({ slug, onClose }) {
     return () => {
       cancelled = true
     }
-  }, [slug])
+  }, [slug, isList])
 
   return (
     <div className="shared-recipe">
@@ -52,8 +59,10 @@ export default function SharedRecipeView({ slug, onClose }) {
       </header>
 
       <main className="shared-recipe__main">
-        <p className="shared-recipe__eyebrow">Shared from someone’s library</p>
-        {loading && <p className="shared-recipe__status">Opening recipe…</p>}
+        <p className="shared-recipe__eyebrow">
+          {isList ? 'A list someone actually cooks' : 'Shared from someone’s kitchen'}
+        </p>
+        {loading && <p className="shared-recipe__status">{isList ? 'Opening list…' : 'Opening recipe…'}</p>}
         {error && <p className="shared-recipe__error">{error}</p>}
         {plan && (
           <MealPlanDisplay
@@ -63,8 +72,33 @@ export default function SharedRecipeView({ slug, onClose }) {
             isPublic
           />
         )}
+        {list && (
+          <div className="shared-recipe__list">
+            <header className="shared-recipe__listHead">
+              <h1 className="shared-recipe__listTitle">{list.title}</h1>
+              {list.blurb && <p className="shared-recipe__listBlurb">{list.blurb}</p>}
+              <p className="shared-recipe__listMeta">
+                {list.tracks_count ?? list.dishes?.length ?? 0} dishes
+              </p>
+            </header>
+            {(list.dishes || []).map((dish) => (
+              <MealPlanDisplay
+                key={dish.meal_plan_id}
+                mealPlan={{
+                  plan_name: dish.plan_name,
+                  servings: dish.servings,
+                  image: dish.image,
+                  recipes: dish.recipes,
+                }}
+                alreadySaved
+                readOnly
+                isPublic
+              />
+            ))}
+          </div>
+        )}
         <p className="shared-recipe__ctaNote">
-          Want your own library of remixed recipes? Open the app and start a collection.
+          Want your own lists? Join, keep a dish, make a playlist, share it.
         </p>
       </main>
     </div>

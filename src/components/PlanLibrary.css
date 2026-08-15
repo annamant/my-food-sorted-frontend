@@ -157,3 +157,166 @@
     animation: none;
   }
 }
+
+.plan-library__create {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-6);
+}
+
+.plan-library__create input {
+  flex: 1;
+}
+
+.plan-library__grid {
+  list-style: none;
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-3);
+}
+
+.plan-library__card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--page-bg);
+}
+
+.plan-library__card--on {
+  border-color: rgba(110, 58, 62, 0.4);
+}
+
+.plan-library__cardBtn {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.plan-library__cover {
+  display: block;
+  aspect-ratio: 1;
+  background: #e8e2d8;
+}
+
+.plan-library__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.plan-library__cardCopy {
+  display: block;
+  padding: var(--space-3);
+}
+
+.plan-library__header--dishes {
+  margin-top: var(--space-8);
+}
+
+.plan-library__listTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 500;
+}
+
+.plan-library__expand--list {
+  margin-bottom: var(--space-6);
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.plan-library__listHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.plan-library__listActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.plan-library__shareUrl {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  word-break: break-all;
+}
+
+.plan-library__tracks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.plan-library__track {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.plan-library__trackMain {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.plan-library__trackCover {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #e8e2d8;
+  flex-shrink: 0;
+}
+
+.plan-library__trackCover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.plan-library__trackTools {
+  display: flex;
+  gap: 6px;
+}
+
+.plan-library__tiny {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.plan-library__tiny:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

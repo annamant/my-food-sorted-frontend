@@ -287,7 +287,7 @@ export default function AccountPage({
             className="account-page__libraryLink"
             onClick={onOpenLibrary}
           >
-            ← Back to library
+            ← Back to lists
           </button>
           <button
             type="button"

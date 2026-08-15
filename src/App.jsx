@@ -4,6 +4,7 @@ import ChatInterface from './components/ChatInterface'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
+import PlaylistPicker from './components/PlaylistPicker'
 import { defaultBrief, formatBriefForChat } from './components/MealBriefPanel'
 import LandingPage from './components/LandingPage'
 import SharedRecipeView from './components/SharedRecipeView'
@@ -17,23 +18,41 @@ import './App.css'
 
 const API = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
 
-function getShareSlugFromUrl() {
+function getShareFromUrl() {
   try {
     const params = new URLSearchParams(window.location.search)
+    const list = params.get('list')
+    if (list) return { kind: 'list', slug: list.trim() }
     const fromQuery = params.get('share') || params.get('s')
-    if (fromQuery) return fromQuery.trim()
+    if (fromQuery) return { kind: 'recipe', slug: fromQuery.trim() }
+    const listPath = window.location.pathname.match(/^\/share\/list\/([^/]+)\/?$/)
+    if (listPath) return { kind: 'list', slug: decodeURIComponent(listPath[1]) }
     const match = window.location.pathname.match(/^\/share\/([^/]+)\/?$/)
-    return match ? decodeURIComponent(match[1]) : ''
+    return match ? { kind: 'recipe', slug: decodeURIComponent(match[1]) } : null
   } catch {
-    return ''
+    return null
   }
 }
 
-function buildShareUrl(slug) {
+function buildShareUrl(slug, kind = 'recipe') {
   if (!slug) return ''
   const url = new URL(window.location.origin)
-  url.searchParams.set('share', slug)
+  url.searchParams.set(kind === 'list' ? 'list' : 'share', slug)
   return url.toString()
+}
+
+async function shareOut(url, title) {
+  const text = `${title}\n${url}`
+  if (typeof navigator.share === 'function') {
+    try {
+      await navigator.share({ title, text, url })
+      return 'shared'
+    } catch (err) {
+      if (err?.name === 'AbortError') return 'cancelled'
+    }
+  }
+  await navigator.clipboard.writeText(text)
+  return 'copied'
 }
 
 /** Parse JSON from response; on failure return {} and set a friendly error message. */
@@ -63,7 +82,7 @@ function AppContent() {
   const { addToast } = useToast()
 
   /* ── Public share view ── */
-  const [shareSlug, setShareSlug] = useState(() => getShareSlugFromUrl())
+  const [shareFrom, setShareFrom] = useState(() => getShareFromUrl())
 
   /* ── Navigation ── */
   const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'account'
@@ -103,6 +122,10 @@ function AppContent() {
   const [catalogHits, setCatalogHits] = useState([])
   const [catalogMiss, setCatalogMiss] = useState('')
   const [activeMood, setActiveMood] = useState(null)
+  const [playlists, setPlaylists] = useState([])
+  const [activePlaylist, setActivePlaylist] = useState(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [pickerPlanId, setPickerPlanId] = useState(null)
 
   /* ── Shopping list ── */
   const [shoppingList, setShoppingList] = useState(null)
@@ -127,6 +150,8 @@ function AppContent() {
     setSavedPlanId(null)
     setShoppingList(null)
     setSavedPlans([])
+    setPlaylists([])
+    setActivePlaylist(null)
     setPrefs(null)
     setView('tonight')
     setLandingAuthMode('login')
@@ -143,9 +168,10 @@ function AppContent() {
     const url = new URL(window.location.href)
     url.searchParams.delete('share')
     url.searchParams.delete('s')
+    url.searchParams.delete('list')
     if (url.pathname.startsWith('/share/')) url.pathname = '/'
     window.history.replaceState({}, '', url.pathname + url.search)
-    setShareSlug('')
+    setShareFrom(null)
   }, [])
 
   const loadPrefs = useCallback(async (accessToken = token) => {
@@ -184,11 +210,30 @@ function AppContent() {
     }
   }, [token, expireSession])
 
+  const loadPlaylists = useCallback(async (accessToken = token) => {
+    if (!accessToken) return
+    try {
+      const res = await fetch(`${API}/playlists`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      if (res.status === 401) {
+        expireSession()
+        return
+      }
+      const { data, error } = await parseRes(res, 'Cannot load lists.')
+      if (error || !res.ok) return
+      setPlaylists(data.playlists ?? [])
+    } catch {
+      // non-blocking
+    }
+  }, [token, expireSession])
+
   useEffect(() => {
     if (!token) return
     loadPrefs()
     loadSavedPlans()
-  }, [token, loadPrefs, loadSavedPlans])
+    loadPlaylists()
+  }, [token, loadPrefs, loadSavedPlans, loadPlaylists])
 
   useEffect(() => {
     if (prefs?.household_size && mealBrief.servings === defaultBrief.servings) {
@@ -245,6 +290,7 @@ function AppContent() {
       setLoggedInUserId(String(userId))
       loadPrefs(accessToken)
       loadSavedPlans(accessToken)
+      loadPlaylists(accessToken)
       if (pendingInspiration) {
         applyInspiration(pendingInspiration)
         setCatalogHits(dishesForCollection(pendingInspiration.id))
@@ -256,7 +302,7 @@ function AppContent() {
     } finally {
       setAuthLoading(false)
     }
-  }, [loadPrefs, loadSavedPlans, addToast, pendingInspiration, applyInspiration])
+  }, [loadPrefs, loadSavedPlans, loadPlaylists, addToast, pendingInspiration, applyInspiration])
 
   const handleLogout = useCallback(() => {
     clearSession()
@@ -453,8 +499,11 @@ function AppContent() {
       if (planId == null) throw new Error('No plan ID in response')
       setSavedPlanId(planId)
       setActiveShareMeta({ is_public: false, share_slug: null })
-      addToast('Added to your library', 'success')
+      addToast('Kept — on Liked. Add it to another list if you want.', 'success')
       await loadSavedPlans()
+      await loadPlaylists()
+      setPickerPlanId(planId)
+      setPickerOpen(true)
       const listRes = await fetch(`${API}/shopping-list/${planId}`, {
         headers: authHeaders(),
       })
@@ -465,7 +514,7 @@ function AppContent() {
     } finally {
       setPlanLoading(false)
     }
-  }, [mealPlan, planLoading, authHeaders, loadSavedPlans, addToast])
+  }, [mealPlan, planLoading, authHeaders, loadSavedPlans, loadPlaylists, addToast])
 
   const openPlan = useCallback(async (planId) => {
     if (savedPlanId === planId) {
@@ -529,15 +578,9 @@ function AppContent() {
 
       const slug = data.share_slug
       const url = buildShareUrl(slug)
-      const caption =
-        `Cooked this on my food. SORTED. — remixed for my kitchen.\n${url}`
-
-      try {
-        await navigator.clipboard.writeText(caption)
-        addToast('Public link copied — paste it on Instagram or send to a friend', 'success')
-      } catch {
-        addToast(`Shared. Link: ${url}`, 'success')
-      }
+      const result = await shareOut(url, 'Cooked this on my food. SORTED.')
+      if (result === 'shared') addToast('Shared', 'success')
+      else if (result === 'copied') addToast('Link copied — paste it anywhere', 'success')
 
       setActiveShareMeta({ is_public: true, share_slug: slug })
       setMealPlan((prev) => (prev ? { ...prev, is_public: true, share_slug: slug } : prev))
@@ -572,6 +615,198 @@ function AppContent() {
     }
   }, [shareBusy, authHeaders, addToast, loadSavedPlans])
 
+  const openPlaylist = useCallback(async (playlistId) => {
+    if (activePlaylist?.id === playlistId) {
+      setActivePlaylist(null)
+      setShoppingList(null)
+      return
+    }
+    setLibraryLoading(true)
+    try {
+      const res = await fetch(`${API}/playlists/${playlistId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const { data, error } = await parseRes(res, 'Cannot open list.')
+      if (error) throw new Error(error)
+      if (!res.ok) throw new Error(getErrorMsg(data, 'Could not open list'))
+      setActivePlaylist(data)
+      setSavedPlanId(null)
+      setMealPlan(null)
+      const listRes = await fetch(`${API}/playlists/${playlistId}/shopping-list`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const listParsed = await parseRes(listRes, 'Cannot load shopping list.')
+      if (!listParsed.error && listRes.ok) setShoppingList(listParsed.data)
+      else setShoppingList(null)
+    } catch (err) {
+      addToast(err.message, 'error')
+    } finally {
+      setLibraryLoading(false)
+    }
+  }, [activePlaylist, token, addToast])
+
+  const createPlaylist = useCallback(async (title) => {
+    try {
+      const res = await fetch(`${API}/playlists`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ title }),
+      })
+      const { data, error } = await parseRes(res, 'Cannot create list.')
+      if (error) throw new Error(error)
+      if (!res.ok) throw new Error(getErrorMsg(data, 'Could not create list'))
+      await loadPlaylists()
+      setActivePlaylist(data)
+      addToast(`Created “${data.title}”`, 'success')
+      return data
+    } catch (err) {
+      addToast(err.message, 'error')
+      return null
+    }
+  }, [authHeaders, loadPlaylists, addToast])
+
+  const addPlanToPlaylist = useCallback(async (playlistId, mealPlanId) => {
+    const res = await fetch(`${API}/playlists/${playlistId}/items`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ meal_plan_id: mealPlanId }),
+    })
+    const { data, error } = await parseRes(res, 'Cannot add to list.')
+    if (error) throw new Error(error)
+    if (!res.ok) throw new Error(getErrorMsg(data, 'Could not add to list'))
+    await loadPlaylists()
+    if (activePlaylist?.id === playlistId) setActivePlaylist(data)
+    return data
+  }, [authHeaders, loadPlaylists, activePlaylist])
+
+  const handlePickPlaylist = useCallback(async (list) => {
+    const planId = pickerPlanId || savedPlanId
+    if (!planId) return
+    try {
+      await addPlanToPlaylist(list.id, planId)
+      addToast(`Added to ${list.title}`, 'success')
+    } catch (err) {
+      addToast(err.message, 'error')
+    }
+  }, [pickerPlanId, savedPlanId, addPlanToPlaylist, addToast])
+
+  const handleCreateAndAdd = useCallback(async (title) => {
+    const created = await createPlaylist(title)
+    const planId = pickerPlanId || savedPlanId
+    if (!created || !planId) return
+    try {
+      await addPlanToPlaylist(created.id, planId)
+      addToast(`Added to ${created.title}`, 'success')
+    } catch (err) {
+      addToast(err.message, 'error')
+    }
+  }, [createPlaylist, pickerPlanId, savedPlanId, addPlanToPlaylist, addToast])
+
+  const deletePlaylist = useCallback(async (playlistId) => {
+    try {
+      const res = await fetch(`${API}/playlists/${playlistId}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      })
+      const { data, error } = await parseRes(res, 'Cannot delete list.')
+      if (error) throw new Error(error)
+      if (!res.ok) throw new Error(getErrorMsg(data, 'Could not delete list'))
+      if (activePlaylist?.id === playlistId) {
+        setActivePlaylist(null)
+        setShoppingList(null)
+      }
+      await loadPlaylists()
+      addToast('List deleted', 'success')
+    } catch (err) {
+      addToast(err.message, 'error')
+    }
+  }, [authHeaders, activePlaylist, loadPlaylists, addToast])
+
+  const removeTrack = useCallback(async (playlistId, mealPlanId) => {
+    try {
+      const res = await fetch(`${API}/playlists/${playlistId}/items/${mealPlanId}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      })
+      const { data, error } = await parseRes(res, 'Cannot remove dish.')
+      if (error) throw new Error(error)
+      if (!res.ok) throw new Error(getErrorMsg(data, 'Could not remove dish'))
+      setActivePlaylist(data)
+      await loadPlaylists()
+    } catch (err) {
+      addToast(err.message, 'error')
+    }
+  }, [authHeaders, loadPlaylists, addToast])
+
+  const moveTrack = useCallback(async (playlistId, mealPlanId, direction) => {
+    const tracks = activePlaylist?.tracks || []
+    const ids = tracks.map((t) => t.meal_plan_id)
+    const index = ids.indexOf(mealPlanId)
+    const next = index + direction
+    if (index < 0 || next < 0 || next >= ids.length) return
+    const reordered = [...ids]
+    const [moved] = reordered.splice(index, 1)
+    reordered.splice(next, 0, moved)
+    try {
+      const res = await fetch(`${API}/playlists/${playlistId}/items/order`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({ meal_plan_ids: reordered }),
+      })
+      const { data, error } = await parseRes(res, 'Cannot reorder.')
+      if (error) throw new Error(error)
+      if (!res.ok) throw new Error(getErrorMsg(data, 'Could not reorder'))
+      setActivePlaylist(data)
+    } catch (err) {
+      addToast(err.message, 'error')
+    }
+  }, [activePlaylist, authHeaders, addToast])
+
+  const publishAndCopyPlaylist = useCallback(async (playlistId) => {
+    if (!playlistId || shareBusy) return
+    setShareBusy(true)
+    try {
+      const res = await fetch(`${API}/playlists/${playlistId}/share`, {
+        method: 'POST',
+        headers: authHeaders(),
+      })
+      const { data, error } = await parseRes(res, 'Cannot share list.')
+      if (error) throw new Error(error)
+      if (!res.ok) throw new Error(getErrorMsg(data, 'Share failed'))
+      const url = buildShareUrl(data.share_slug, 'list')
+      const result = await shareOut(url, data.title || 'A list from my food. SORTED.')
+      if (result === 'shared') addToast('List shared', 'success')
+      else if (result === 'copied') addToast('List link copied — paste it anywhere', 'success')
+      setActivePlaylist((prev) => prev ? { ...prev, is_public: true, share_slug: data.share_slug } : prev)
+      await loadPlaylists()
+    } catch (err) {
+      addToast(err.message, 'error')
+    } finally {
+      setShareBusy(false)
+    }
+  }, [shareBusy, authHeaders, addToast, loadPlaylists])
+
+  const unsharePlaylist = useCallback(async (playlistId) => {
+    if (!playlistId || shareBusy) return
+    setShareBusy(true)
+    try {
+      const res = await fetch(`${API}/playlists/${playlistId}/unshare`, {
+        method: 'POST',
+        headers: authHeaders(),
+      })
+      const { data, error } = await parseRes(res, 'Cannot update sharing.')
+      if (error) throw new Error(error)
+      if (!res.ok) throw new Error(getErrorMsg(data, 'Could not make private'))
+      setActivePlaylist((prev) => prev ? { ...prev, is_public: false } : prev)
+      await loadPlaylists()
+      addToast('List is private again', 'success')
+    } catch (err) {
+      addToast(err.message, 'error')
+    } finally {
+      setShareBusy(false)
+    }
+  }, [shareBusy, authHeaders, addToast, loadPlaylists])
+
   const changePassword = useCallback(async ({ current_password, new_password }) => {
     const res = await fetch(`${API}/me/password`, {
       method: 'POST',
@@ -585,10 +820,15 @@ function AppContent() {
 
   /* ── Shopping list ── */
   const generateShoppingList = useCallback(async () => {
-    if (!savedPlanId || shopLoading) return
+    if (shopLoading) return
+    const playlistId = activePlaylist?.id
+    if (!savedPlanId && !playlistId) return
     setShopLoading(true)
     try {
-      const res = await fetch(`${API}/shopping-list/${savedPlanId}/generate`, {
+      const path = playlistId && !savedPlanId
+        ? `${API}/playlists/${playlistId}/shopping-list/generate`
+        : `${API}/shopping-list/${savedPlanId}/generate`
+      const res = await fetch(path, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -601,11 +841,12 @@ function AppContent() {
     } finally {
       setShopLoading(false)
     }
-  }, [savedPlanId, shopLoading, token, addToast])
+  }, [savedPlanId, activePlaylist, shopLoading, token, addToast])
 
   const toggleShoppingItem = useCallback(async (item) => {
     if (item?.id == null) return
     const nextChecked = !item.checked
+    const playlistScoped = Boolean(activePlaylist && !savedPlanId)
     setShoppingList((prev) => {
       if (!prev?.items) return prev
       return {
@@ -614,13 +855,15 @@ function AppContent() {
       }
     })
     try {
-      const res = await fetch(`${API}/shopping-list/items/${item.id}`, {
+      const path = playlistScoped
+        ? `${API}/playlist-list/items/${item.id}`
+        : `${API}/shopping-list/items/${item.id}`
+      const res = await fetch(path, {
         method: 'PATCH',
         headers: authHeaders(),
         body: JSON.stringify({ checked: nextChecked }),
       })
       if (!res.ok) {
-        // revert
         setShoppingList((prev) => {
           if (!prev?.items) return prev
           return {
@@ -638,13 +881,18 @@ function AppContent() {
         }
       })
     }
-  }, [authHeaders])
+  }, [authHeaders, activePlaylist, savedPlanId])
 
   const clearChecks = useCallback(async () => {
-    if (!savedPlanId || shopLoading) return
+    if (shopLoading) return
+    const playlistId = activePlaylist?.id
+    if (!savedPlanId && !playlistId) return
     setShopLoading(true)
     try {
-      const res = await fetch(`${API}/shopping-list/${savedPlanId}/clear-checks`, {
+      const path = playlistId && !savedPlanId
+        ? `${API}/playlists/${playlistId}/shopping-list/clear-checks`
+        : `${API}/shopping-list/${savedPlanId}/clear-checks`
+      const res = await fetch(path, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -657,11 +905,17 @@ function AppContent() {
     } finally {
       setShopLoading(false)
     }
-  }, [savedPlanId, shopLoading, token, addToast])
+  }, [savedPlanId, activePlaylist, shopLoading, token, addToast])
 
   /* ── Render ── */
-  if (shareSlug) {
-    return <SharedRecipeView slug={shareSlug} onClose={closeSharedView} />
+  if (shareFrom?.slug) {
+    return (
+      <SharedRecipeView
+        slug={shareFrom.slug}
+        kind={shareFrom.kind}
+        onClose={closeSharedView}
+      />
+    )
   }
 
   if (!token) {
@@ -712,7 +966,7 @@ function AppContent() {
                 className={`app__navItem ${view === 'library' ? 'app__navItem--active' : ''}`}
                 onClick={() => setView('library')}
               >
-                Library
+                Lists
               </button>
               <button
                 type="button"
@@ -749,9 +1003,21 @@ function AppContent() {
           <>
             <section className="app__panel app__panel--library">
               <PlanLibrary
+                playlists={playlists}
+                activePlaylist={activePlaylist}
+                onSelectPlaylist={openPlaylist}
+                onCreatePlaylist={createPlaylist}
+                onDeletePlaylist={deletePlaylist}
+                onSharePlaylist={publishAndCopyPlaylist}
+                onUnsharePlaylist={unsharePlaylist}
+                onRemoveTrack={removeTrack}
+                onMoveTrack={moveTrack}
+                onOpenTrack={(planId) => {
+                  openPlan(planId)
+                }}
                 plans={savedPlans}
                 activePlanId={savedPlanId}
-                onSelect={openPlan}
+                onSelectPlan={openPlan}
                 loading={libraryLoading}
                 expandedPlan={
                   savedPlanId != null && mealPlan
@@ -770,17 +1036,22 @@ function AppContent() {
                   handleRemix(prompt, label)
                   setView('tonight')
                 }}
-                onShare={publishAndCopyShare}
-                onUnshare={unsharePlan}
+                onSharePlan={publishAndCopyShare}
+                onUnsharePlan={unsharePlan}
+                onAddToList={(planId) => {
+                  setPickerPlanId(planId)
+                  setPickerOpen(true)
+                }}
                 shareBusy={shareBusy}
-                shareUrlFor={(plan) =>
+                shareUrlForPlan={(plan) =>
                   buildShareUrl(
                     plan.share_slug || activeShareMeta.share_slug || mealPlan?.share_slug
                   )
                 }
+                shareUrlForPlaylist={(list) => buildShareUrl(list.share_slug, 'list')}
               />
             </section>
-            {savedPlanId && (
+            {(savedPlanId || activePlaylist) && (
               <section className="app__panel app__panel--muted">
                 <ShoppingListDisplay
                   shoppingList={shoppingList}
@@ -836,6 +1107,10 @@ function AppContent() {
                       onRemix={(prompt, label) => handleRemix(prompt, label)}
                       onShare={() => publishAndCopyShare(savedPlanId)}
                       onUnshare={() => unsharePlan(savedPlanId)}
+                      onAddToList={() => {
+                        setPickerPlanId(savedPlanId)
+                        setPickerOpen(true)
+                      }}
                       shareBusy={shareBusy}
                       isPublic={libraryShareIsPublic}
                       shareUrl={buildShareUrl(
@@ -879,6 +1154,14 @@ function AppContent() {
           </>
         )}
       </main>
+      <PlaylistPicker
+        open={pickerOpen}
+        playlists={playlists}
+        loading={planLoading || libraryLoading}
+        onClose={() => setPickerOpen(false)}
+        onPick={handlePickPlaylist}
+        onCreate={handleCreateAndAdd}
+      />
     </div>
   )
 }

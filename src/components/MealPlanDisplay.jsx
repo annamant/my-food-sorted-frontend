@@ -73,6 +73,7 @@ function MealPlanDisplay({
   shareUrl,
   readOnly,
   onRemix,
+  onAddToList,
 }) {
   if (!mealPlan?.recipes?.length) return null
 
@@ -181,7 +182,7 @@ function MealPlanDisplay({
         <div className="meal-plan-display__actions">
           {alreadySaved ? (
             embedded ? null : (
-              <p className="meal-plan-display__savedNote">Saved to your library</p>
+              <p className="meal-plan-display__savedNote">Kept — now on Liked</p>
             )
           ) : (
             <button
@@ -191,6 +192,17 @@ function MealPlanDisplay({
               className="btn btn--primary meal-plan-display__saveBtn"
             >
         {loading ? 'Saving…' : 'Keep this'}
+            </button>
+          )}
+
+          {alreadySaved && onAddToList && (
+            <button
+              type="button"
+              className="btn btn--ghost"
+              disabled={loading}
+              onClick={onAddToList}
+            >
+              Add to a list
             </button>
           )}
 

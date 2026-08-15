@@ -103,7 +103,7 @@ export default function LandingPage({
             <em>dinner?</em>
           </h1>
           <p className="landing__sub">
-            Real dishes, already on the shelf. Tap one and cook. Save it when you want to keep it.
+            Real dishes on the shelf. Remix one, keep it, add it to a list — then share the list.
           </p>
           <div className="landing__heroCtas">
             <button type="button" className="btn landing__ctaPrimary" onClick={scrollToDishes}>
@@ -210,7 +210,7 @@ export default function LandingPage({
               ? 'Create an account or log in — then the kitchen opens with this inspiration.'
               : authMode === 'login'
                 ? 'Log in, or enter Eve’s demo kitchen.'
-                : 'Free. Under a minute. Save, remix, take the list.'}
+                : 'Free. Under a minute. Remix, keep, list, share.'}
           </p>
           <AuthForm
             loading={loading}
@@ -241,7 +241,7 @@ export default function LandingPage({
             </header>
             <MealPlanDisplay mealPlan={openDish.mealPlan} readOnly alreadySaved />
             <div className="landing__cookKeep">
-              <p>Like it? Join to keep it, remix it, and take the shopping list.</p>
+              <p>Like it? Join to keep it, add it to a list, and share that list.</p>
               <button type="button" className="btn btn--primary" onClick={scrollToAuth}>
                 Keep this in your library
               </button>
