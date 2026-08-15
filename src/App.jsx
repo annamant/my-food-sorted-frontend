@@ -74,6 +74,7 @@ function AppContent() {
   const [token,          setToken]          = useState(() => localStorage.getItem('token') ?? '')
   const [loggedInUserId, setLoggedInUserId] = useState(() => localStorage.getItem('userId') ?? '')
   const [landingAuthMode, setLandingAuthMode] = useState('register')
+  const [authLoading, setAuthLoading] = useState(false)
 
   /* ── Chat ── */
   const [messages,      setMessages]      = useState([])
@@ -101,12 +102,36 @@ function AppContent() {
   const [shoppingList, setShoppingList] = useState(null)
   const [shopLoading,  setShopLoading]  = useState(false)
 
-  const loading = chatLoading || planLoading || shopLoading || prefsLoading || libraryLoading
+  const loading = chatLoading || planLoading || shopLoading || prefsLoading || libraryLoading || authLoading
 
   const authHeaders = useCallback(() => ({
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
   }), [token])
+
+  const clearSession = useCallback(() => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('userId')
+    setToken('')
+    setLoggedInUserId('')
+    setMessages([])
+    setInput('')
+    setConversationId(crypto.randomUUID())
+    setMealPlan(null)
+    setSavedPlanId(null)
+    setShoppingList(null)
+    setSavedPlans([])
+    setPrefs(null)
+    setView('tonight')
+    setLandingAuthMode('login')
+    setPendingInspiration(null)
+  }, [])
+
+  const expireSession = useCallback(() => {
+    if (!localStorage.getItem('token')) return
+    clearSession()
+    addToast('Session ended — log in again to open Eve’s kitchen.', 'error')
+  }, [clearSession, addToast])
 
   const closeSharedView = useCallback(() => {
     const url = new URL(window.location.href)
@@ -123,13 +148,17 @@ function AppContent() {
       const res = await fetch(`${API}/me`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
+      if (res.status === 401) {
+        expireSession()
+        return
+      }
       const { data, error } = await parseRes(res, 'Cannot load preferences.')
       if (error || !res.ok) return
       setPrefs(data)
     } catch {
       // non-blocking
     }
-  }, [token])
+  }, [token, expireSession])
 
   const loadSavedPlans = useCallback(async (accessToken = token) => {
     if (!accessToken) return
@@ -137,13 +166,17 @@ function AppContent() {
       const res = await fetch(`${API}/meal-plans`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
+      if (res.status === 401) {
+        expireSession()
+        return
+      }
       const { data, error } = await parseRes(res, 'Cannot load plans.')
       if (error || !res.ok) return
       setSavedPlans(data.plans ?? [])
     } catch {
       // non-blocking
     }
-  }, [token])
+  }, [token, expireSession])
 
   useEffect(() => {
     if (!token) return
@@ -185,13 +218,14 @@ function AppContent() {
 
   /* ── Auth handler ── */
   const handleAuth = useCallback(async (endpoint, email, password) => {
+    setAuthLoading(true)
     try {
       const res = await fetch(`${API}/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
-      const { data, error } = await parseRes(res, 'Cannot reach server. Is the backend running?')
+      const { data, error } = await parseRes(res, 'Cannot reach the kitchen. Try again.')
       if (error) throw new Error(error)
       if (!res.ok) throw new Error(getErrorMsg(data, 'Authentication failed'))
 
@@ -211,26 +245,14 @@ function AppContent() {
       }
     } catch (err) {
       addToast(err.message, 'error')
+    } finally {
+      setAuthLoading(false)
     }
   }, [loadPrefs, loadSavedPlans, addToast, pendingInspiration, applyInspiration])
 
   const handleLogout = useCallback(() => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('userId')
-    setToken('')
-    setLoggedInUserId('')
-    setMessages([])
-    setInput('')
-    setConversationId(crypto.randomUUID())
-    setMealPlan(null)
-    setSavedPlanId(null)
-    setShoppingList(null)
-    setSavedPlans([])
-    setPrefs(null)
-    setView('tonight')
-    setLandingAuthMode('login')
-    setPendingInspiration(null)
-  }, [])
+    clearSession()
+  }, [clearSession])
 
   const savePrefs = useCallback(async (nextPrefs) => {
     setPrefsLoading(true)
