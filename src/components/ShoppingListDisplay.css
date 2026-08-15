@@ -6,6 +6,15 @@
   background: var(--surface);
 }
 
+.shopping-list-display__label {
+  margin: 0 0 var(--space-2);
+  color: var(--accent);
+  font-size: var(--panel-label-size);
+  font-weight: 600;
+  letter-spacing: var(--panel-label-tracking);
+  text-transform: uppercase;
+}
+
 .shopping-list-display__title {
   margin: 0 0 var(--space-2);
   font-family: var(--font-display);
@@ -99,8 +108,43 @@
   color: var(--text-muted);
 }
 
-.shopping-list-display__footnote a {
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+.shopping-list-display__retailers {
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: #e7e1d7;
+}
+
+.shopping-list-display__retailers h3 {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-xl);
+}
+
+.shopping-list-display__retailers p {
+  margin: 0;
+  max-width: 32rem;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+.shopping-list-display__retailerActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+@media (max-width: 640px) {
+  .shopping-list-display__retailers {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .shopping-list-display__retailerActions {
+    justify-content: flex-start;
+  }
 }

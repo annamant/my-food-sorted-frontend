@@ -482,6 +482,18 @@ function AppContent() {
     setLandingAuthMode('register')
   }, [])
 
+  const handleLandingQuery = useCallback((query) => {
+    const nextQuery = String(query || '').trim()
+    if (!nextQuery) return
+    setInput(nextQuery)
+    setCatalogMiss(nextQuery)
+    setMealBrief((prev) => ({
+      ...prev,
+      notes: prev.notes?.trim() ? prev.notes : nextQuery,
+    }))
+    setLandingAuthMode('register')
+  }, [])
+
   /* ── Save plan ── */
   const savePlan = useCallback(async () => {
     if (!mealPlan || planLoading) return
@@ -907,6 +919,26 @@ function AppContent() {
     }
   }, [savedPlanId, activePlaylist, shopLoading, token, addToast])
 
+  const openRetailer = useCallback(async (retailer) => {
+    const nextTab = window.open('about:blank', '_blank')
+    if (nextTab) nextTab.opener = null
+    try {
+      const res = await fetch(`${API}/affiliate-link`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ retailer }),
+      })
+      const { data, error } = await parseRes(res, 'Cannot open that retailer.')
+      if (error) throw new Error(error)
+      if (!res.ok || !data.url) throw new Error(getErrorMsg(data, 'Retailer link unavailable'))
+      if (nextTab) nextTab.location.href = data.url
+      else window.location.assign(data.url)
+    } catch (err) {
+      nextTab?.close()
+      addToast(err.message, 'error')
+    }
+  }, [authHeaders, addToast])
+
   /* ── Render ── */
   if (shareFrom?.slug) {
     return (
@@ -926,6 +958,7 @@ function AppContent() {
         initialAuthMode={landingAuthMode}
         pendingInspiration={pendingInspiration}
         onPickInspiration={handleLandingInspiration}
+        onStartCooking={handleLandingQuery}
       />
     )
   }
@@ -951,6 +984,7 @@ function AppContent() {
               <span className="app__logoTop">my food.</span>
               <span className="app__logoBottom">SORTED.</span>
             </span>
+            <span className="app__logoClaim">Your personal kitchen</span>
           </button>
           <div className="app__headerRight">
             <nav className="app__nav" aria-label="Main">
@@ -959,14 +993,14 @@ function AppContent() {
                 className={`app__navItem ${view === 'tonight' ? 'app__navItem--active' : ''}`}
                 onClick={() => setView('tonight')}
               >
-                Tonight
+                Cook tonight
               </button>
               <button
                 type="button"
                 className={`app__navItem ${view === 'library' ? 'app__navItem--active' : ''}`}
                 onClick={() => setView('library')}
               >
-                Lists
+                My kitchen
               </button>
               <button
                 type="button"
@@ -1059,6 +1093,8 @@ function AppContent() {
                   loading={shopLoading}
                   onToggleItem={toggleShoppingItem}
                   onClearChecks={clearChecks}
+                  onOpenRetailer={openRetailer}
+                  preferredRetailer={prefs?.preferred_retailer}
                 />
               </section>
             )}
@@ -1146,6 +1182,8 @@ function AppContent() {
                       loading={shopLoading}
                       onToggleItem={toggleShoppingItem}
                       onClearChecks={clearChecks}
+                      onOpenRetailer={openRetailer}
+                      preferredRetailer={prefs?.preferred_retailer}
                     />
                   </section>
                 )}
@@ -1154,6 +1192,17 @@ function AppContent() {
           </>
         )}
       </main>
+      <footer className="app__footer">
+        <div>
+          <span className="app__footerBrand">my food. <strong>SORTED.</strong></span>
+          <span>Trusted recipes, adapted to your kitchen.</span>
+        </div>
+        <nav aria-label="Footer">
+          <button type="button" onClick={() => setView('tonight')}>Cook tonight</button>
+          <button type="button" onClick={() => setView('library')}>My kitchen</button>
+          <button type="button" onClick={() => setView('account')}>Preferences</button>
+        </nav>
+      </footer>
       <PlaylistPicker
         open={pickerOpen}
         playlists={playlists}

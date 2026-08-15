@@ -41,6 +41,12 @@ function ProfileSection({ prefs, onLogout }) {
             {prefs?.default_budget != null ? `£${prefs.default_budget}` : '—'}
           </dd>
         </div>
+        <div>
+          <dt>Preferred shop</dt>
+          <dd>
+            {prefs?.preferred_retailer === 'sainsburys' ? 'Sainsbury’s' : 'Tesco'}
+          </dd>
+        </div>
       </dl>
       <button type="button" className="btn btn--ghost account-section__logout" onClick={onLogout}>
         Log out
@@ -147,6 +153,7 @@ function PreferencesSection({ prefs, onSave, loading }) {
   const [allergies, setAllergies] = useState('')
   const [household, setHousehold] = useState(2)
   const [budget, setBudget] = useState('')
+  const [retailer, setRetailer] = useState('tesco')
   const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
@@ -155,6 +162,7 @@ function PreferencesSection({ prefs, onSave, loading }) {
     setAllergies(prefs.allergies ?? '')
     setHousehold(prefs.household_size ?? 2)
     setBudget(prefs.default_budget != null ? String(prefs.default_budget) : '')
+    setRetailer(prefs.preferred_retailer ?? 'tesco')
     setDirty(false)
   }, [prefs])
 
@@ -165,6 +173,7 @@ function PreferencesSection({ prefs, onSave, loading }) {
       allergies,
       household_size: Number(household) || 1,
       default_budget: budgetNum != null && !Number.isNaN(budgetNum) ? budgetNum : null,
+      preferred_retailer: retailer,
     })
     setDirty(false)
   }
@@ -215,6 +224,16 @@ function PreferencesSection({ prefs, onSave, loading }) {
             onChange={(e) => { setBudget(e.target.value); setDirty(true) }}
             placeholder="e.g. 60"
           />
+        </label>
+        <label className="account-section__field">
+          <span>Preferred supermarket</span>
+          <select
+            value={retailer}
+            onChange={(e) => { setRetailer(e.target.value); setDirty(true) }}
+          >
+            <option value="tesco">Tesco</option>
+            <option value="sainsburys">Sainsbury&apos;s</option>
+          </select>
         </label>
       </div>
 

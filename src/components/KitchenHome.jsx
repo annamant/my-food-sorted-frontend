@@ -24,11 +24,14 @@ export default function KitchenHome({
             <div className="kitchen-home__heroShade" />
           </div>
           <div className="kitchen-home__heroContent">
-            <p className="kitchen-home__heroLabel">Tonight</p>
+            <p className="kitchen-home__heroLabel">Your personal kitchen</p>
             <h1 className="kitchen-home__heroTitle">
-              What’s for<br />
-              <em>dinner?</em>
+              Start with a trusted dish.<br />
+              <em>Make it work tonight.</em>
             </h1>
+            <p className="kitchen-home__heroBody">
+              Search the shelf or describe your time, budget, pantry and household.
+            </p>
             <form
               className="kitchen-home__compose"
               onSubmit={(e) => {
@@ -41,7 +44,7 @@ export default function KitchenHome({
                 type="search"
                 value={query}
                 onChange={(e) => onQuery?.(e.target.value)}
-                placeholder="Carbonara, leftover chicken, 20 minutes"
+                placeholder="Carbonara, leftover chicken, dinner under £10…"
                 aria-label="What’s for dinner"
                 disabled={loading}
               />
@@ -61,8 +64,11 @@ export default function KitchenHome({
         <section className="kitchen-home__browseIntro" aria-labelledby="moods-heading">
           <p className="kitchen-home__browseLabel">Or pick a mood</p>
           <h2 id="moods-heading" className="kitchen-home__browseTitle">
-            Classics, already on the shelf.
+            Choose a trusted starting point.
           </h2>
+          <p className="kitchen-home__browseBody">
+            Open a foundation recipe, then keep it faithful or adapt it to your kitchen.
+          </p>
           <ul className="kitchen-home__grid">
             {INSPIRATIONS.map((item) => (
               <li key={item.id}>

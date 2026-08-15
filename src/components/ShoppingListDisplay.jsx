@@ -17,6 +17,8 @@ function ShoppingListDisplay({
   loading,
   onToggleItem,
   onClearChecks,
+  onOpenRetailer,
+  preferredRetailer = 'tesco',
 }) {
   const [copyMsg, setCopyMsg] = useState('')
 
@@ -50,9 +52,10 @@ function ShoppingListDisplay({
 
   return (
     <div className="shopping-list-display">
-      <h2 className="shopping-list-display__title">Ingredients</h2>
+      <p className="shopping-list-display__label">From recipe to shop</p>
+      <h2 className="shopping-list-display__title">Your shopping list</h2>
       <p className="shopping-list-display__lede">
-        Tick it off or copy it for the shop.
+        Everything from this dish or playlist, combined into one practical list.
       </p>
 
       <div className="shopping-list-display__actions">
@@ -138,13 +141,34 @@ function ShoppingListDisplay({
         </div>
       ))}
 
+      {shoppingList && totalCount > 0 && (
+        <div className="shopping-list-display__retailers">
+          <div>
+            <h3>Ready to shop?</h3>
+            <p>Keep this list open while you shop with your preferred supermarket.</p>
+          </div>
+          <div className="shopping-list-display__retailerActions">
+            {[
+              { id: 'tesco', label: 'Tesco' },
+              { id: 'sainsburys', label: 'Sainsbury’s' },
+            ].map((retailer) => (
+              <button
+                key={retailer.id}
+                type="button"
+                className={`btn ${preferredRetailer === retailer.id ? 'btn--retailerActive' : 'btn--retailer'}`}
+                onClick={() => onOpenRetailer?.(retailer.id)}
+              >
+                Open {retailer.label}
+                {preferredRetailer === retailer.id ? ' · preferred' : ''}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <p className="shopping-list-display__footnote">
-        No basket checkout here — this is your recipe library. When you’re ready to buy,
-        open{' '}
-        <a href="https://www.tesco.com" target="_blank" rel="noopener noreferrer">Tesco</a>
-        {' '}or{' '}
-        <a href="https://www.sainsburys.co.uk" target="_blank" rel="noopener noreferrer">Sainsbury’s</a>
-        {' '}with this list beside you.
+        Retailer availability and product matching vary. You stay in control of
+        what enters your basket and complete your purchase with the retailer.
       </p>
     </div>
   )
