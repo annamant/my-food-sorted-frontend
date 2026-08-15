@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './MealBriefPanel.css'
 
 const CUISINES = ['Italian', 'French', 'Asian', 'Japanese', 'Mexican', 'British', 'Indian', 'Mediterranean']
@@ -99,6 +99,10 @@ function MealBriefPanel({ brief, onChange, prefs, requireNotes = false }) {
   const household = prefs?.household_size
   const notesEmpty = !value.notes?.trim()
   const [more, setMore] = useState(requireNotes)
+
+  useEffect(() => {
+    if (requireNotes) setMore(true)
+  }, [requireNotes])
 
   return (
     <div className="meal-brief meal-brief--intake">

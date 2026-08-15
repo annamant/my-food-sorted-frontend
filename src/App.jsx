@@ -9,8 +9,6 @@ import { defaultBrief, formatBriefForChat } from './components/MealBriefPanel'
 import LandingPage from './components/LandingPage'
 import SharedRecipeView from './components/SharedRecipeView'
 import AccountPage from './components/AccountPage'
-import KitchenHome from './components/KitchenHome'
-import CatalogGrid from './components/CatalogGrid'
 import { INSPIRATION_FILTERS } from './data/inspirations'
 import { searchCatalog, dishesForCollection } from './data/catalog'
 import { REMIX_ACTIONS } from './components/MealPlanDisplay'
@@ -103,6 +101,10 @@ function AppContent() {
   const [input,         setInput]         = useState('')
   const [chatLoading,   setChatLoading]   = useState(false)
   const [conversationId, setConversationId] = useState(() => crypto.randomUUID())
+  const [cookStage, setCookStage] = useState('start')
+  const [cookPath, setCookPath] = useState('')
+  const [dishOptions, setDishOptions] = useState([])
+  const [selectedOption, setSelectedOption] = useState(null)
 
   /* ── Meal plan ── */
   const [mealPlan,    setMealPlan]    = useState(null)
@@ -146,6 +148,10 @@ function AppContent() {
     setMessages([])
     setInput('')
     setConversationId(crypto.randomUUID())
+    setCookStage('start')
+    setCookPath('')
+    setDishOptions([])
+    setSelectedOption(null)
     setMealPlan(null)
     setSavedPlanId(null)
     setShoppingList(null)
@@ -372,11 +378,13 @@ function AppContent() {
       }
       if (data.meal_plan) {
         setMealPlan(data.meal_plan)
+        setCookStage('recipe')
         setSavedPlanId(null)
         setShoppingList(null)
         setActiveShareMeta({ is_public: false, share_slug: null })
       } else if (!content) {
         setMessages(prev => [...prev, { role: 'assistant', content: 'I could not build a recipe from that. Try another dish or mood.' }])
+        if (intent === 'finalize') setCookStage('tweak')
       }
       loadPrefs()
     } catch (err) {
@@ -384,14 +392,111 @@ function AppContent() {
         ? 'The kitchen could not be reached. Try again in a moment.'
         : err.message
       setMessages(prev => [...prev, { role: 'assistant', content: friendly }])
+      if (intent === 'finalize') setCookStage('tweak')
       addToast(friendly, 'error')
     } finally {
       setChatLoading(false)
     }
   }, [chatLoading, authHeaders, conversationId, mealBrief, loadPrefs, addToast])
 
+  const beginCookFlow = useCallback((path) => {
+    setCookPath(path)
+    setCookStage('describe')
+    setDishOptions([])
+    setSelectedOption(null)
+    setMealPlan(null)
+    setSavedPlanId(null)
+    setShoppingList(null)
+    setCatalogHits([])
+    setCatalogMiss('')
+    setMessages([])
+    setInput('')
+    setMealBrief((prev) => ({ ...defaultBrief, ...prev, notes: '' }))
+  }, [])
+
+  const submitCookIdea = useCallback(() => {
+    const text = input.trim()
+    if (!text) return
+    setMessages((prev) => [...prev, { role: 'user', content: text }])
+    setMealBrief((prev) => ({ ...prev, notes: text }))
+    setInput('')
+    setCookStage('preferences')
+  }, [input])
+
+  const requestDishOptions = useCallback(async () => {
+    if (chatLoading) return
+    const idea = mealBrief.notes?.trim() || 'I am open to ideas'
+    const pathInstruction = cookPath === 'recipe'
+      ? 'Start from established, recognisable recipes from trusted cooking traditions. Do not invent novelty dishes.'
+      : 'Create three original but practical home-cooking directions from this brief.'
+    const userMessage = `${pathInstruction}\nWhat I want: ${idea}\nSuggest three options only.`
+
+    setChatLoading(true)
+    setCookStage('suggesting')
+    try {
+      const res = await fetch(`${API}/chat`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          user_message: userMessage,
+          conversation_id: conversationId,
+          meal_brief: mealBrief,
+          intent: 'suggest',
+        }),
+      })
+      const { data, error } = await parseRes(res, 'Cannot reach the kitchen right now.')
+      if (error) throw new Error(error)
+      if (!res.ok) throw new Error(getErrorMsg(data, 'Could not suggest dishes just now'))
+      if (!Array.isArray(data.options) || data.options.length === 0) {
+        throw new Error('The kitchen did not return any dish options. Please try again.')
+      }
+      setDishOptions(data.options.slice(0, 3))
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: data.message || 'Here are three directions that fit your kitchen.',
+        },
+      ])
+      setCookStage('options')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not suggest dishes just now'
+      setMessages((prev) => [...prev, { role: 'assistant', content: message }])
+      setCookStage('preferences')
+      addToast(message, 'error')
+    } finally {
+      setChatLoading(false)
+    }
+  }, [chatLoading, mealBrief, cookPath, authHeaders, conversationId, addToast])
+
+  const chooseDishOption = useCallback((option) => {
+    setSelectedOption(option)
+    setMessages((prev) => [...prev, { role: 'user', content: `I choose ${option.title}.` }])
+    setInput('')
+    setCookStage('tweak')
+  }, [])
+
+  const finalizeDishOption = useCallback((tweak = '') => {
+    if (!selectedOption || chatLoading) return
+    const cleanTweak = String(tweak || '').trim()
+    const raw = [
+      `Create the complete recipe for the selected dish: “${selectedOption.title}”.`,
+      `Selected description: ${selectedOption.description}.`,
+      cleanTweak ? `Final requested tweak: ${cleanTweak}.` : 'No further tweaks requested.',
+      'Keep the selected dish recognisable and obey the complete kitchen brief.',
+    ].join(' ')
+    setCookStage('finalizing')
+    setInput('')
+    sendMessageText(
+      raw,
+      cleanTweak ? `Tweak: ${cleanTweak}` : `Make ${selectedOption.title}`,
+      'finalize',
+    )
+  }, [selectedOption, chatLoading, sendMessageText])
+
   const openCatalogDish = useCallback((dish) => {
     setMealPlan(dish.mealPlan)
+    setCookStage('recipe')
     setSavedPlanId(null)
     setShoppingList(null)
     setCatalogHits([])
@@ -465,6 +570,10 @@ function AppContent() {
     setMessages([])
     setInput('')
     setConversationId(crypto.randomUUID())
+    setCookStage('start')
+    setCookPath('')
+    setDishOptions([])
+    setSelectedOption(null)
     setMealPlan(null)
     setSavedPlanId(null)
     setShoppingList(null)
@@ -1109,96 +1218,77 @@ function AppContent() {
             )}
           </>
         ) : (
-          <>
-            <KitchenHome
-              hideHero={Boolean(mealPlan)}
-              query={input}
-              onQuery={setInput}
-              onCook={cookTonight}
+          <div ref={recipeRef} className="app__conversation">
+            <ChatInterface
+              stage={cookStage}
+              path={cookPath}
+              messages={messages}
+              input={input}
+              setInput={setInput}
               loading={chatLoading}
-              onPickMood={pickMood}
-              activeMood={activeMood}
-            >
-              <div ref={recipeRef} className="app__recipe">
-                {chatLoading && !mealPlan && (
-                  <p className="app__cooking" aria-live="polite">Cooking tonight’s dish…</p>
-                )}
+              onClearChat={clearChat}
+              brief={mealBrief}
+              onChangeBrief={setMealBrief}
+              prefs={prefs}
+              options={dishOptions}
+              selectedOption={selectedOption}
+              onChoosePath={beginCookFlow}
+              onSubmitIdea={submitCookIdea}
+              onRequestOptions={requestDishOptions}
+              onSelectOption={chooseDishOption}
+              onFinalize={finalizeDishOption}
+              onTweakRecipe={sendMessage}
+            />
 
-                {!mealPlan && catalogHits.length > 0 && (
-                  <CatalogGrid
-                    title="On the shelf"
-                    dishes={catalogHits}
-                    onPick={openCatalogDish}
-                  />
-                )}
-
-                {mealPlan && savedPlanId == null && (
-                  <section className="app__panel">
-                    <MealPlanDisplay
-                      mealPlan={mealPlan}
-                      savePlan={savePlan}
-                      loading={planLoading || chatLoading}
-                      alreadySaved={false}
-                      onRemix={(prompt, label) => handleRemix(prompt, label)}
-                    />
-                  </section>
-                )}
-
-                {mealPlan && savedPlanId != null && view === 'tonight' && (
-                  <section className="app__panel">
-                    <MealPlanDisplay
-                      mealPlan={mealPlan}
-                      alreadySaved
-                      onRemix={(prompt, label) => handleRemix(prompt, label)}
-                      onShare={() => publishAndCopyShare(savedPlanId)}
-                      onUnshare={() => unsharePlan(savedPlanId)}
-                      onAddToList={() => {
-                        setPickerPlanId(savedPlanId)
-                        setPickerOpen(true)
-                      }}
-                      shareBusy={shareBusy}
-                      isPublic={libraryShareIsPublic}
-                      shareUrl={buildShareUrl(
-                        activeShareMeta.share_slug ||
-                        activePlanFromLibrary?.share_slug ||
-                        mealPlan.share_slug
-                      )}
-                    />
-                  </section>
-                )}
-
-                <ChatInterface
-                  messages={messages}
-                  input={mealPlan ? input : ''}
-                  setInput={setInput}
-                  sendMessage={sendMessage}
-                  loading={chatLoading}
-                  onClearChat={clearChat}
-                  hasRecipe={Boolean(mealPlan)}
-                  brief={mealBrief}
-                  onChangeBrief={setMealBrief}
-                  prefs={prefs}
-                  onCreate={handleCreate}
-                  catalogMiss={catalogMiss}
-                  missQuery={catalogMiss}
+            {mealPlan && savedPlanId == null && (
+              <section className="app__panel">
+                <MealPlanDisplay
+                  mealPlan={mealPlan}
+                  savePlan={savePlan}
+                  loading={planLoading || chatLoading}
+                  alreadySaved={false}
+                  onRemix={(prompt, label) => handleRemix(prompt, label)}
                 />
+              </section>
+            )}
 
-                {savedPlanId && mealPlan && (
-                  <section className="app__panel app__panel--muted">
-                    <ShoppingListDisplay
-                      shoppingList={shoppingList}
-                      generateShoppingList={generateShoppingList}
-                      loading={shopLoading}
-                      onToggleItem={toggleShoppingItem}
-                      onClearChecks={clearChecks}
-                      onOpenRetailer={openRetailer}
-                      preferredRetailer={prefs?.preferred_retailer}
-                    />
-                  </section>
-                )}
-              </div>
-            </KitchenHome>
-          </>
+            {mealPlan && savedPlanId != null && view === 'tonight' && (
+              <section className="app__panel">
+                <MealPlanDisplay
+                  mealPlan={mealPlan}
+                  alreadySaved
+                  onRemix={(prompt, label) => handleRemix(prompt, label)}
+                  onShare={() => publishAndCopyShare(savedPlanId)}
+                  onUnshare={() => unsharePlan(savedPlanId)}
+                  onAddToList={() => {
+                    setPickerPlanId(savedPlanId)
+                    setPickerOpen(true)
+                  }}
+                  shareBusy={shareBusy}
+                  isPublic={libraryShareIsPublic}
+                  shareUrl={buildShareUrl(
+                    activeShareMeta.share_slug ||
+                    activePlanFromLibrary?.share_slug ||
+                    mealPlan.share_slug
+                  )}
+                />
+              </section>
+            )}
+
+            {savedPlanId && mealPlan && (
+              <section className="app__panel app__panel--muted">
+                <ShoppingListDisplay
+                  shoppingList={shoppingList}
+                  generateShoppingList={generateShoppingList}
+                  loading={shopLoading}
+                  onToggleItem={toggleShoppingItem}
+                  onClearChecks={clearChecks}
+                  onOpenRetailer={openRetailer}
+                  preferredRetailer={prefs?.preferred_retailer}
+                />
+              </section>
+            )}
+          </div>
         )}
       </main>
       <footer className="app__footer">
