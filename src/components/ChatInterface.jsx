@@ -77,6 +77,7 @@ export default function ChatInterface({
   onSubmitIdea,
   onRequestOptions,
   onSelectOption,
+  onRejectOptions,
   onFinalize,
   onTweakRecipe,
 }) {
@@ -161,6 +162,9 @@ export default function ChatInterface({
               </button>
             ))}
           </div>
+          <button type="button" className="chat-interface__noneOption" onClick={onRejectOptions}>
+            None of these — let’s continue chatting
+          </button>
         </div>
       )}
 

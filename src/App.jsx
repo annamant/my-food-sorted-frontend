@@ -476,6 +476,14 @@ function AppContent() {
     setCookStage('tweak')
   }, [])
 
+  const rejectDishOptions = useCallback(() => {
+    setDishOptions([])
+    setSelectedOption(null)
+    setMessages((prev) => [...prev, { role: 'user', content: 'None of these—let’s keep talking.' }])
+    setInput('')
+    setCookStage('describe')
+  }, [])
+
   const finalizeDishOption = useCallback((tweak = '') => {
     if (!selectedOption || chatLoading) return
     const cleanTweak = String(tweak || '').trim()
@@ -1236,6 +1244,7 @@ function AppContent() {
               onSubmitIdea={submitCookIdea}
               onRequestOptions={requestDishOptions}
               onSelectOption={chooseDishOption}
+              onRejectOptions={rejectDishOptions}
               onFinalize={finalizeDishOption}
               onTweakRecipe={sendMessage}
             />
