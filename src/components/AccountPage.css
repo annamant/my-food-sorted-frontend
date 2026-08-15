@@ -306,3 +306,55 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Personal kitchen account */
+.account-page__hero {
+  max-width: 48rem;
+  padding-bottom: var(--space-8);
+  border-bottom: 1px solid var(--border);
+}
+
+.account-page__title {
+  font-size: clamp(2.75rem, 6vw, 5rem);
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.account-page__body {
+  max-width: 50ch;
+  font-size: var(--text-lg);
+}
+
+.account-page__layout {
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 5rem);
+}
+
+.account-page__menu {
+  border-top-color: var(--text-primary);
+}
+
+.account-page__menuItem {
+  padding: 0.9rem 0;
+}
+
+.account-section {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  box-shadow: none;
+  background: var(--surface);
+}
+
+.account-section__title {
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+}
+
+.account-section__meta > div {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: #e7e1d7;
+}
+
+@media (max-width: 720px) {
+  .account-page__layout { grid-template-columns: 1fr; }
+  .account-page__menu { border-top: 0; }
+}

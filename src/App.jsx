@@ -993,14 +993,14 @@ function AppContent() {
                 className={`app__navItem ${view === 'tonight' ? 'app__navItem--active' : ''}`}
                 onClick={() => setView('tonight')}
               >
-                Cook tonight
+                Cook
               </button>
               <button
                 type="button"
                 className={`app__navItem ${view === 'library' ? 'app__navItem--active' : ''}`}
                 onClick={() => setView('library')}
               >
-                My kitchen
+                Playlists
               </button>
               <button
                 type="button"
@@ -1023,7 +1023,13 @@ function AppContent() {
         </div>
       </header>
 
-      <main className="app__main">
+      <div className="app__principles" aria-label="Your kitchen">
+        <span>Trusted foundations</span>
+        <span>Personal adaptations</span>
+        <span>One combined shop</span>
+      </div>
+
+      <main className={`app__main app__main--${view}`}>
         {view === 'account' ? (
           <AccountPage
             prefs={prefs}

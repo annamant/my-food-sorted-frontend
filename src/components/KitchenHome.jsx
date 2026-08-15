@@ -56,13 +56,18 @@ export default function KitchenHome({
                 {loading ? 'Cooking…' : 'Cook tonight'}
               </button>
             </form>
+            <div className="kitchen-home__trustRow" aria-label="Recipe types">
+              <span>Foundation recipes</span>
+              <span>Adapted for you</span>
+              <span>Community-tested</span>
+            </div>
           </div>
         </section>
       )}
 
       {!hideHero && (
         <section className="kitchen-home__browseIntro" aria-labelledby="moods-heading">
-          <p className="kitchen-home__browseLabel">Or pick a mood</p>
+          <p className="kitchen-home__browseLabel">The kitchen shelf</p>
           <h2 id="moods-heading" className="kitchen-home__browseTitle">
             Choose a trusted starting point.
           </h2>

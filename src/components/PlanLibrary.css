@@ -320,3 +320,99 @@
   opacity: 0.4;
   cursor: default;
 }
+
+/* Personal kitchen presentation */
+.plan-library {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.plan-library--hero {
+  padding: 0;
+}
+
+.plan-library__header {
+  max-width: 48rem;
+  margin-bottom: var(--space-8);
+}
+
+.plan-library__title {
+  font-size: clamp(2.75rem, 6vw, 5rem);
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.plan-library__subtitle {
+  margin-top: var(--space-4);
+  max-width: 55ch;
+  color: var(--text-secondary);
+  font-size: var(--text-base);
+}
+
+.plan-library__create {
+  max-width: 44rem;
+  margin-bottom: var(--space-10);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.plan-library__grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-5);
+  margin-bottom: var(--space-12);
+}
+
+.plan-library__card {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.plan-library__card--on {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.plan-library__cover {
+  border-radius: var(--radius-lg);
+  background: #d7c5aa;
+}
+
+.plan-library__card:nth-child(2n) .plan-library__cover {
+  border-radius: 50%;
+}
+
+.plan-library__card:nth-child(3n) .plan-library__cover {
+  border-radius: 6rem 6rem var(--radius-lg) var(--radius-lg);
+}
+
+.plan-library__cardCopy {
+  padding: var(--space-4) 0;
+}
+
+.plan-library__expand--list {
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+}
+
+.plan-library__track {
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: #f6f3ed;
+}
+
+@media (max-width: 900px) {
+  .plan-library__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .plan-library__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .plan-library__create { flex-direction: column; }
+  .plan-library__expand--list { padding: var(--space-5); }
+}

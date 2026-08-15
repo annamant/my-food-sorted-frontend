@@ -1,286 +1,121 @@
-.kitchen-home {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-}
+.kitchen-home { display: flex; flex-direction: column; gap: clamp(3rem, 7vw, 6rem); }
 
 .kitchen-home__hero {
-  position: relative;
-  min-height: clamp(20rem, 46vw, 28rem);
-  border-radius: var(--radius-xl);
+  min-height: 38rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(21rem, 0.95fr);
   overflow: hidden;
-  color: #f7f5f1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: #e7e1d7;
 }
-
-.kitchen-home__heroMedia {
-  position: absolute;
-  inset: 0;
-}
-
-.kitchen-home__heroImg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 40%;
-  transform: scale(1.03);
-  animation: kitchen-hero-drift 26s ease-in-out infinite alternate;
-}
-
-.kitchen-home__heroShade {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(105deg, rgba(22, 18, 14, 0.78) 0%, rgba(22, 18, 14, 0.42) 55%, rgba(22, 18, 14, 0.22) 100%),
-    linear-gradient(180deg, rgba(22, 18, 14, 0.15) 0%, transparent 40%, rgba(22, 18, 14, 0.4) 100%);
-}
-
+.kitchen-home__heroMedia { position: relative; grid-column: 2; grid-row: 1; min-height: 100%; overflow: hidden; }
+.kitchen-home__heroImg { width: 100%; height: 100%; object-fit: cover; object-position: 55% center; transition: transform 0.6s ease; }
+.kitchen-home__hero:hover .kitchen-home__heroImg { transform: scale(1.025); }
+.kitchen-home__heroShade { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(22,18,14,0.28)); }
 .kitchen-home__heroContent {
   position: relative;
   z-index: 1;
-  max-width: 34rem;
-  padding: clamp(1.75rem, 4vw, 3rem);
-  animation: kitchen-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+  padding: clamp(2.5rem, 6vw, 5rem);
+  animation: kitchen-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-
-.kitchen-home__heroLabel {
+.kitchen-home__heroLabel, .kitchen-home__browseLabel {
   margin: 0 0 var(--space-3);
+  color: var(--accent);
   font-size: var(--panel-label-size);
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: var(--panel-label-tracking);
   text-transform: uppercase;
-  color: rgba(247, 245, 241, 0.72);
 }
-
 .kitchen-home__heroTitle {
-  margin: 0 0 var(--space-4);
+  margin: 0 0 var(--space-5);
+  color: var(--text-primary);
   font-family: var(--font-display);
-  font-size: clamp(2.1rem, 5vw, 3.4rem);
+  font-size: clamp(2.75rem, 5vw, 4.7rem);
   font-weight: 500;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
-  color: #f7f5f1;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
 }
-
-.kitchen-home__heroTitle em {
-  font-style: italic;
-  font-weight: 500;
-}
-
-.kitchen-home__heroBody {
-  margin: 0;
-  max-width: 34ch;
-  font-size: var(--text-base);
-  font-weight: 300;
-  line-height: 1.65;
-  color: rgba(247, 245, 241, 0.78);
-}
-
+.kitchen-home__heroTitle em { color: var(--accent); font-weight: 500; }
+.kitchen-home__heroBody { margin: 0; max-width: 40ch; color: var(--text-secondary); font-size: var(--text-base); line-height: 1.7; }
 .kitchen-home__compose {
+  margin-top: var(--space-8);
+  padding: var(--space-3);
   display: flex;
   gap: var(--space-2);
-  margin-top: var(--space-6);
-  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
 }
-
-.kitchen-home__search {
-  flex: 1;
-  min-width: 12rem;
-  padding: 0.9rem var(--space-4);
-  border: 1px solid rgba(247, 245, 241, 0.28);
-  border-radius: var(--radius-md);
-  background: rgba(247, 245, 241, 0.12);
-  color: #f7f5f1;
-  font-size: var(--text-base);
-  font-weight: 300;
-}
-
-.kitchen-home__search::placeholder {
-  color: rgba(247, 245, 241, 0.55);
-}
-
-.kitchen-home__search:focus {
-  outline: none;
-  border-color: #f7f5f1;
-  box-shadow: 0 0 0 3px rgba(247, 245, 241, 0.15);
-}
-
-.kitchen-home__compose .kitchen-home__cookBtn {
-  background: #f7f5f1;
-  color: #1c1b19;
-  border-color: #f7f5f1;
-  font-size: var(--text-sm);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0.9rem 1.35rem;
-}
-
-.kitchen-home__compose .kitchen-home__cookBtn:hover:not(:disabled) {
-  background: #fff;
-  border-color: #fff;
-  color: #0a0a09;
-}
-
-.kitchen-home__browseIntro {
-  margin-bottom: var(--space-5);
-}
-
-.kitchen-home__browseLabel {
-  margin: 0 0 var(--space-2);
-  font-size: var(--panel-label-size);
-  font-weight: 500;
-  letter-spacing: var(--panel-label-tracking);
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.kitchen-home__browseTitle {
-  margin: 0 0 var(--space-2);
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 3vw, 2.1rem);
-  font-weight: 500;
-  letter-spacing: -0.02em;
-}
-
-.kitchen-home__browseBody {
-  margin: 0;
-  max-width: 44ch;
-  font-size: var(--text-sm);
-  font-weight: 300;
-  line-height: 1.6;
+.kitchen-home__search { flex: 1; min-width: 10rem; padding: 0.9rem var(--space-4); border-color: transparent; background: #fff; }
+.kitchen-home__search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--primary-alpha); }
+.kitchen-home__compose .kitchen-home__cookBtn { padding: 0.9rem 1.3rem; background: var(--primary); color: var(--primary-text); border-color: var(--primary); }
+.kitchen-home__compose .kitchen-home__cookBtn:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); }
+.kitchen-home__trustRow { margin-top: var(--space-4); display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.kitchen-home__trustRow span {
+  padding: 0.35rem 0.55rem;
+  border: 1px solid rgba(110,58,62,0.18);
+  border-radius: 999px;
   color: var(--text-secondary);
+  font-size: 0.68rem;
 }
 
-.kitchen-home__grid {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-4);
+.kitchen-home__browseIntro { margin: 0; }
+.kitchen-home__browseTitle {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 4vw, 3.6rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
 }
-
+.kitchen-home__browseBody { margin: 0 0 var(--space-8); max-width: 50ch; color: var(--text-secondary); font-size: var(--text-base); line-height: 1.65; }
+.kitchen-home__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); }
 .kitchen-home__tile {
   appearance: none;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  padding: 0;
   width: 100%;
+  min-height: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
   text-align: left;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-  transition: border-color 0.15s, transform 0.2s ease;
 }
-
-.kitchen-home__tile:hover:not(:disabled),
-.kitchen-home__tile--on {
-  border-color: rgba(110, 58, 62, 0.35);
-  transform: translateY(-2px);
-}
-
-.kitchen-home__tile:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.kitchen-home__tileMedia {
-  display: block;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  background: #2a241f;
-  position: relative;
-}
-
-.kitchen-home__tileMedia img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.45s ease;
-}
-
-.kitchen-home__tile:hover:not(:disabled) .kitchen-home__tileMedia img {
-  transform: scale(1.04);
-}
-
-.kitchen-home__tileShade {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 35%, rgba(22, 18, 14, 0.78) 100%);
-  pointer-events: none;
-}
-
-.kitchen-home__tileOnImage {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.kitchen-home__tileTitle {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: #f7f5f1;
-}
-
-.kitchen-home__tileBlurb {
-  font-size: var(--text-sm);
-  font-weight: 300;
-  line-height: 1.45;
-  color: rgba(247, 245, 241, 0.78);
-}
-
-.kitchen-home__tileCopy {
-  display: none;
-}
+.kitchen-home__tile:disabled { opacity: 0.55; cursor: not-allowed; }
+.kitchen-home__tile--on { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kitchen-home__tileMedia { position: relative; display: block; aspect-ratio: 4 / 3; overflow: hidden; background: #2a241f; }
+.kitchen-home__tileMedia img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.45s ease; }
+.kitchen-home__tile:hover:not(:disabled) .kitchen-home__tileMedia img { transform: scale(1.04); }
+.kitchen-home__tileShade { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 28%, rgba(22,18,14,0.84)); pointer-events: none; }
+.kitchen-home__tileOnImage { position: absolute; right: 0; bottom: 0; left: 0; padding: var(--space-4); display: flex; flex-direction: column; gap: 0.2rem; }
+.kitchen-home__tileTitle { color: #f7f5f1; font-family: var(--font-display); font-size: 1.2rem; font-weight: 500; }
+.kitchen-home__tileBlurb { color: rgba(247,245,241,0.78); font-size: var(--text-xs); line-height: 1.45; }
+.kitchen-home__tileCopy { display: none; }
 
 @keyframes kitchen-rise {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
-@keyframes kitchen-hero-drift {
-  from { transform: scale(1.03) translate3d(0, 0, 0); }
-  to   { transform: scale(1.07) translate3d(-1%, -0.8%, 0); }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .kitchen-home__heroImg,
-  .kitchen-home__heroContent,
-  .kitchen-home__tile,
-  .kitchen-home__tileMedia img {
-    animation: none;
-    transition: none;
-  }
+  .kitchen-home__heroContent, .kitchen-home__heroImg, .kitchen-home__tileMedia img { animation: none; transition: none; }
 }
-
-@media (max-width: 820px) {
-  .kitchen-home__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+@media (max-width: 960px) {
+  .kitchen-home__hero { grid-template-columns: 1fr 0.75fr; }
+  .kitchen-home__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-
-@media (max-width: 520px) {
-  .kitchen-home__grid {
-    grid-template-columns: 1fr;
-  }
-
-  .kitchen-home__hero {
-    min-height: 16rem;
-  }
+@media (max-width: 720px) {
+  .kitchen-home { gap: var(--space-12); }
+  .kitchen-home__hero { min-height: auto; grid-template-columns: 1fr; }
+  .kitchen-home__heroContent, .kitchen-home__heroMedia { grid-column: 1; }
+  .kitchen-home__heroContent { grid-row: 1; padding: 2.5rem var(--space-5); }
+  .kitchen-home__heroMedia { grid-row: 2; min-height: 23rem; }
+  .kitchen-home__compose { flex-direction: column; }
+  .kitchen-home__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .kitchen-home__grid { grid-template-columns: 1fr; }
 }
