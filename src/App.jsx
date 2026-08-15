@@ -65,7 +65,6 @@ function AppContent() {
   /* ── Navigation ── */
   const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'account'
   const recipeRef = useRef(null)
-  const pendingCoverRef = useRef(null)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -160,7 +159,6 @@ function AppContent() {
 
   const applyInspiration = useCallback((collection) => {
     if (!collection) return
-    pendingCoverRef.current = collection.image || null
     const extras = INSPIRATION_FILTERS[collection.id]
     if (extras) {
       setMealBrief((prev) => {
@@ -294,18 +292,7 @@ function AppContent() {
         setMessages(prev => [...prev, { role: 'assistant', content }])
       }
       if (data.meal_plan) {
-        const cover = pendingCoverRef.current
-        pendingCoverRef.current = null
-        const plan = cover
-          ? {
-              ...data.meal_plan,
-              image: data.meal_plan.image || cover,
-              recipes: (data.meal_plan.recipes || []).map((r, i) =>
-                i === 0 && !r.image ? { ...r, image: cover } : r
-              ),
-            }
-          : data.meal_plan
-        setMealPlan(plan)
+        setMealPlan(data.meal_plan)
         setSavedPlanId(null)
         setShoppingList(null)
         setActiveShareMeta({ is_public: false, share_slug: null })
@@ -362,7 +349,6 @@ function AppContent() {
     setShoppingList(null)
     setActiveShareMeta({ is_public: false, share_slug: null })
     setCookMode('search')
-    pendingCoverRef.current = null
     addToast('Starting over', 'success')
   }, [addToast])
 
