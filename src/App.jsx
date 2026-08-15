@@ -161,7 +161,7 @@ function AppContent() {
   const expireSession = useCallback(() => {
     if (!localStorage.getItem('token')) return
     clearSession()
-    addToast('Session ended — log in again to open Eve’s kitchen.', 'error')
+    addToast('Session ended — log in again to open your kitchen.', 'error')
   }, [clearSession, addToast])
 
   const closeSharedView = useCallback(() => {
@@ -1000,7 +1000,7 @@ function AppContent() {
                 className={`app__navItem ${view === 'library' ? 'app__navItem--active' : ''}`}
                 onClick={() => setView('library')}
               >
-                Playlists
+                Collections
               </button>
               <button
                 type="button"

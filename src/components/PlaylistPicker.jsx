@@ -25,7 +25,7 @@ export default function PlaylistPicker({
           </button>
         </header>
         <p className="playlist-picker__lede">
-          Kept dishes land in Liked. Put this one on another list — like a playlist.
+          Kept dishes land in Liked. Put this one into another recipe collection.
         </p>
         <ul className="playlist-picker__lists">
           {(playlists || []).map((list) => (

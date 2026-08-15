@@ -55,7 +55,7 @@ function ShoppingListDisplay({
       <p className="shopping-list-display__label">From recipe to shop</p>
       <h2 className="shopping-list-display__title">Your shopping list</h2>
       <p className="shopping-list-display__lede">
-        Everything from this dish or playlist, combined into one practical list.
+        Everything from this dish or collection, combined into one practical list.
       </p>
 
       <div className="shopping-list-display__actions">

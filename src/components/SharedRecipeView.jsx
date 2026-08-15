@@ -98,7 +98,7 @@ export default function SharedRecipeView({ slug, kind = 'recipe', onClose }) {
           </div>
         )}
         <p className="shared-recipe__ctaNote">
-          Want your own lists? Join, keep a dish, make a playlist, share it.
+          Want your own lists? Join, keep a dish, make a collection, share it.
         </p>
       </main>
     </div>

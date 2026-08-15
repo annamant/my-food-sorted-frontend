@@ -59,7 +59,7 @@ export default function PlanLibrary({
         <p className="plan-library__label">My kitchen</p>
         <h2 className="plan-library__title">Recipes worth keeping</h2>
         <p className="plan-library__subtitle">
-          Keep trusted dishes and personal adaptations, arrange them into playlists,
+          Keep trusted dishes and personal adaptations, arrange them into collections,
           combine the shop, and share the lists that work.
         </p>
       </div>
@@ -78,18 +78,18 @@ export default function PlanLibrary({
           type="text"
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
-          placeholder="New playlist — Five dinners under £40"
+          placeholder="New collection — Five dinners under £40"
           aria-label="New list name"
           disabled={loading}
         />
         <button type="submit" className="btn btn--primary" disabled={loading || !newTitle.trim()}>
-          New playlist
+          New collection
         </button>
       </form>
 
       {!playlists?.length && !loading && (
         <p className="plan-library__empty">
-          Keep a dish tonight. It lands in Liked, ready for your first playlist.
+          Keep a dish tonight. It lands in Liked, ready for your first collection.
         </p>
       )}
 

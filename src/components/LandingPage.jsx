@@ -159,7 +159,7 @@ export default function LandingPage({
             </div>
           </details>
           <a href="#personal-kitchen">Cook tonight</a>
-          <a href="#community">Playlists</a>
+          <a href="#community">Collections</a>
           <a href="#shopping">Shopping</a>
           <a href="#how-it-works">How it works</a>
         </nav>
@@ -184,7 +184,7 @@ export default function LandingPage({
             </h1>
             <p className="landing__sub">
               Start with a proper dish. Adapt it to your time, budget, pantry and
-              household. Keep what works, build playlists, and shop one clear list.
+              household. Keep what works, build collections, and shop one clear list.
             </p>
             <form className="landing__search" onSubmit={submitHeroSearch}>
               <label htmlFor="landing-search">What do you want to cook?</label>
@@ -229,7 +229,7 @@ export default function LandingPage({
           <span aria-hidden="true">·</span>
           <p>Personal adaptations</p>
           <span aria-hidden="true">·</span>
-          <p>Community playlists</p>
+          <p>Community collections</p>
           <span aria-hidden="true">·</span>
           <p>Combined shopping lists</p>
         </section>
@@ -283,7 +283,7 @@ export default function LandingPage({
             <ol className="landing__steps">
               <li><span>01</span><div><strong>Choose a foundation</strong><p>Search the Canon or discover a community favourite.</p></div></li>
               <li><span>02</span><div><strong>Make it work tonight</strong><p>Set your time, spend, pantry, diet and household needs.</p></div></li>
-              <li><span>03</span><div><strong>Keep and shop it</strong><p>Add recipes to a playlist and combine them into one shopping list.</p></div></li>
+              <li><span>03</span><div><strong>Keep and shop it</strong><p>Add recipes to a collection and combine them into one shopping list.</p></div></li>
             </ol>
           </div>
         </section>
@@ -344,7 +344,7 @@ export default function LandingPage({
         <section className="landing__community" id="community">
           <div className="landing__communityIntro">
             <p className="landing__eyebrow">The community kitchen</p>
-            <h2>Playlists made to be cooked.</h2>
+            <h2>Recipe collections made to be cooked.</h2>
             <p>
               Save dishes into lists for a week, a budget or a mood. Share yours,
               discover what other households actually cook, and keep the best ideas moving.
@@ -363,7 +363,7 @@ export default function LandingPage({
             ))}
           </div>
           <button type="button" className="btn landing__lightButton" onClick={() => scrollToAuth('register')}>
-            Start your first playlist
+            Start your first collection
           </button>
         </section>
 
@@ -372,7 +372,7 @@ export default function LandingPage({
             <p className="landing__eyebrow">From plan to shop</p>
             <h2>One list for everything you chose.</h2>
             <p>
-              Combine ingredients across a recipe or an entire playlist, check off
+              Combine ingredients across a recipe or an entire collection, check off
               what is already in the cupboard, then take the remaining list to your
               preferred supermarket.
             </p>
@@ -423,7 +423,7 @@ export default function LandingPage({
                 : 'Keep the recipes that work for your household.'}
             </h2>
             <p>
-              Join free to adapt dishes, create playlists, combine shopping lists
+              Join free to adapt dishes, create collections, combine shopping lists
               and share what you cook.
             </p>
           </div>
@@ -448,7 +448,7 @@ export default function LandingPage({
           </div>
           <div className="landing__footerLinks">
             <div><strong>Cook</strong><a href="#canon">The Canon</a><a href="#explore">Cuisines</a><a href="#personal-kitchen">Cook tonight</a></div>
-            <div><strong>Keep</strong><a href="#community">Playlists</a><a href="#shopping">Shopping lists</a><button type="button" onClick={() => scrollToAuth('register')}>Join free</button></div>
+            <div><strong>Keep</strong><a href="#community">Collections</a><a href="#shopping">Shopping lists</a><button type="button" onClick={() => scrollToAuth('register')}>Join free</button></div>
             <div><strong>About</strong><a href="#how-it-works">How it works</a><span>Recipe standards</span><span>Community guidelines</span></div>
           </div>
         </div>
@@ -474,7 +474,7 @@ export default function LandingPage({
             <div className="landing__cookKeep">
               <div>
                 <strong>Make this recipe yours.</strong>
-                <p>Join to adapt it, keep it in a playlist and build its shopping list.</p>
+                <p>Join to adapt it, keep it in a collection and build its shopping list.</p>
               </div>
               <button type="button" className="btn btn--primary" onClick={() => scrollToAuth('register')}>
                 Build your kitchen
