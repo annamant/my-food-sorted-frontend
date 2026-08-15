@@ -6,21 +6,42 @@ import { INSPIRATIONS } from '../data/inspirations'
 import { dishesForCollection, searchCatalog } from '../data/catalog'
 import './LandingPage.css'
 
-const PLAYLIST_PREVIEWS = [
+const COLLECTION_PREVIEWS = [
   {
     label: 'Budget cooking',
     title: 'Five proper dinners under £40',
     body: 'A practical week of filling dishes with one combined shopping list.',
+    basket: '£38.40 basket',
+    images: [
+      'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80',
+    ],
+    dishes: ['Tomato chickpea curry', 'Chicken traybake', 'Italian bean stew'],
   },
   {
     label: 'The Canon',
     title: 'An Italian week',
     body: 'Classics worth learning, ready to keep faithful or adapt carefully.',
+    basket: '6 foundation recipes',
+    images: [
+      'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1612874742237-6526221588e8?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=600&q=80',
+    ],
+    dishes: ['Weeknight ragù', 'Proper carbonara', 'Mushroom risotto'],
   },
   {
     label: 'Family table',
     title: 'Meals everyone can share',
     body: 'Flexible favourites that can account for dislikes and dietary needs.',
+    basket: '4 household adaptations',
+    images: [
+      'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80',
+    ],
+    dishes: ['Sunday roast chicken', 'Teriyaki salmon', 'Build-your-own noodles'],
   },
 ]
 
@@ -266,26 +287,63 @@ export default function LandingPage({
           </ul>
         </section>
 
-        <section className="landing__section landing__adapt" id="how-it-works">
-          <div className="landing__adaptImage">
-            <img
-              src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1400&q=85"
-              alt="Fresh ingredients ready for a home-cooked meal"
-            />
-          </div>
-          <div className="landing__adaptCopy">
-            <p className="landing__eyebrow">Keep the dish. Change the constraints.</p>
-            <h2>Your kitchen is the context.</h2>
+        <section className="landing__section landing__journey" id="how-it-works">
+          <div className="landing__sectionHead">
+            <div>
+              <p className="landing__eyebrow">How your kitchen works</p>
+              <h2>See the whole journey.</h2>
+            </div>
             <p>
-              My Food Sorted starts with trustworthy recipes, then helps them fit
-              real life without pretending every substitution is the original.
+              Start with a trustworthy dish, make only the changes your household
+              needs, then turn several dinners into one practical shop.
             </p>
-            <ol className="landing__steps">
-              <li><span>01</span><div><strong>Choose a foundation</strong><p>Search the Canon or discover a community favourite.</p></div></li>
-              <li><span>02</span><div><strong>Make it work tonight</strong><p>Set your time, spend, pantry, diet and household needs.</p></div></li>
-              <li><span>03</span><div><strong>Keep and shop it</strong><p>Add recipes to a collection and combine them into one shopping list.</p></div></li>
-            </ol>
           </div>
+          <ol className="landing__journeyGrid">
+            <li className="landing__journeyCard">
+              <div className="landing__journeyVisual landing__journeyVisual--choose">
+                {FEATURED_DISHES.slice(0, 3).map((dish) => (
+                  <span key={dish.id}>
+                    <img src={dish.image} alt="" />
+                    <small>{dish.title}</small>
+                  </span>
+                ))}
+              </div>
+              <div className="landing__journeyCopy">
+                <span>01</span>
+                <div><strong>Choose a trusted recipe</strong><p>Browse clear sources, real dishes and community favourites.</p></div>
+              </div>
+            </li>
+            <li className="landing__journeyCard">
+              <div className="landing__journeyVisual landing__journeyVisual--adapt">
+                <img src={FEATURED_DISHES[0].image} alt="" />
+                <div>
+                  <strong>Make it work tonight</strong>
+                  <span><b>People</b> 4</span>
+                  <span><b>Time</b> 30 mins</span>
+                  <span><b>Budget</b> Under £12</span>
+                  <span><b>Swap</b> No dairy</span>
+                </div>
+              </div>
+              <div className="landing__journeyCopy">
+                <span>02</span>
+                <div><strong>Adapt it to your kitchen</strong><p>Change time, budget or diet while keeping the original dish visible.</p></div>
+              </div>
+            </li>
+            <li className="landing__journeyCard">
+              <div className="landing__journeyVisual landing__journeyVisual--shop">
+                <div><strong>Weeknight collection</strong><small>3 dinners · 12 ingredients</small></div>
+                <p><i>✓</i><span>Onions</span><small>In the cupboard</small></p>
+                <p><i>○</i><span>Chicken thighs</span><small>800g</small></p>
+                <p><i>○</i><span>Chopped tomatoes</span><small>2 tins</small></p>
+                <p><i>○</i><span>Fresh parsley</span><small>1 bunch</small></p>
+                <span className="landing__journeyShopAction">Open at your supermarket</span>
+              </div>
+              <div className="landing__journeyCopy">
+                <span>03</span>
+                <div><strong>Combine and shop</strong><p>Merge recipes, remove what you own and send one list to your shop.</p></div>
+              </div>
+            </li>
+          </ol>
         </section>
 
         <section className="landing__section" ref={exploreRef} id="explore">
@@ -350,15 +408,27 @@ export default function LandingPage({
               discover what other households actually cook, and keep the best ideas moving.
             </p>
           </div>
-          <div className="landing__playlistGrid">
-            {PLAYLIST_PREVIEWS.map((playlist, index) => (
-              <article className="landing__playlist" key={playlist.title}>
-                <div className={`landing__playlistArt landing__playlistArt--${index + 1}`}>
-                  <span>{String(index + 1).padStart(2, '0')}</span>
+          <div className="landing__collectionGrid">
+            {COLLECTION_PREVIEWS.map((collection) => (
+              <article className="landing__collection" key={collection.title}>
+                <div className="landing__collectionImages">
+                  <img src={collection.images[0]} alt="" />
+                  <div>
+                    <img src={collection.images[1]} alt="" />
+                    <img src={collection.images[2]} alt="" />
+                  </div>
                 </div>
-                <p>{playlist.label}</p>
-                <h3>{playlist.title}</h3>
-                <span>{playlist.body}</span>
+                <div className="landing__collectionCopy">
+                  <p>{collection.label}</p>
+                  <h3>{collection.title}</h3>
+                  <span>{collection.body}</span>
+                  <ul>
+                    {collection.dishes.map((dish, index) => (
+                      <li key={dish}><b>{String(index + 1).padStart(2, '0')}</b><span>{dish}</span></li>
+                    ))}
+                  </ul>
+                  <footer><span>{collection.dishes.length} dishes</span><strong>{collection.basket}</strong></footer>
+                </div>
               </article>
             ))}
           </div>
