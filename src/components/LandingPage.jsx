@@ -3,6 +3,7 @@ import AuthForm from './AuthForm'
 import MealPlanDisplay from './MealPlanDisplay'
 import { FEATURED_DISHES } from '../data/featuredDishes'
 import { INSPIRATIONS } from '../data/inspirations'
+import { dishesForCollection } from '../data/catalog'
 import './LandingPage.css'
 
 function LogoMark({ size = 'md', tone = 'ink' }) {
@@ -17,25 +18,6 @@ function LogoMark({ size = 'md', tone = 'ink' }) {
   )
 }
 
-const STEPS = [
-  {
-    title: 'Find a classic',
-    body: 'Search recipes that already exist — a carbonara, a budget week, a plate from someone else’s kitchen. The dish is already there. You just cook it.',
-  },
-  {
-    title: 'Make your own',
-    body: 'Tell the chef what’s in your head: the craving, the leftovers, the night you’ve got. One brief, one recipe that fits your life.',
-  },
-  {
-    title: 'Keep the week',
-    body: 'Save what you cook. Line up the days. See the cost and the nutrition as you go — not as homework after dinner.',
-  },
-  {
-    title: 'Share, and follow',
-    body: 'Send a dish or a whole week. Open how someone else is eating — the plates, the macros, the plan — and cook along.',
-  },
-]
-
 export default function LandingPage({
   loading,
   handleAuth,
@@ -47,6 +29,7 @@ export default function LandingPage({
   const dishesRef = useRef(null)
   const inspireRef = useRef(null)
   const [openDish, setOpenDish] = useState(null)
+  const [shelf, setShelf] = useState(null)
   const [authMode, setAuthMode] = useState(initialAuthMode)
 
   useEffect(() => {
@@ -77,8 +60,16 @@ export default function LandingPage({
   }
 
   function pickInspiration(item) {
+    const dishes = dishesForCollection(item.id).map((d) => ({
+      id: d.id,
+      eyebrow: item.title,
+      title: d.title,
+      blurb: d.blurb,
+      image: d.image,
+      mealPlan: d.mealPlan,
+    }))
+    setShelf({ mood: item, dishes })
     onPickInspiration?.(item)
-    scrollToAuth('register')
   }
 
   return (
@@ -112,39 +103,18 @@ export default function LandingPage({
             <em>dinner?</em>
           </h1>
           <p className="landing__sub">
-            Find a classic, or make your own. Keep the week you actually cook.
-            Share it — and follow how other people eat, nutrition included.
+            Real dishes, already on the shelf. Tap one and cook. Save it when you want to keep it.
           </p>
           <div className="landing__heroCtas">
-            <button type="button" className="btn landing__ctaPrimary" onClick={scrollToInspirations}>
-              Choose an inspiration
+            <button type="button" className="btn landing__ctaPrimary" onClick={scrollToDishes}>
+              Cook tonight
             </button>
-            <button type="button" className="btn landing__ctaGhost" onClick={scrollToDishes}>
-              See tonight’s dishes
+            <button type="button" className="btn landing__ctaGhost" onClick={scrollToInspirations}>
+              Browse classics
             </button>
           </div>
         </div>
       </header>
-
-      <section className="landing__steps" aria-labelledby="steps-heading">
-        <p className="landing__stepsLabel">How it works</p>
-        <h2 id="steps-heading" className="landing__stepsTitle">
-          Your kitchen. Other people’s kitchens.
-        </h2>
-        <ol className="landing__stepsList">
-          {STEPS.map((step, i) => (
-            <li key={step.title} className="landing__step">
-              <span className="landing__stepNum" aria-hidden="true">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <div className="landing__stepCopy">
-                <h3 className="landing__stepTitle">{step.title}</h3>
-                <p className="landing__stepBody">{step.body}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
 
       <section className="landing__dishes" ref={dishesRef} aria-labelledby="dishes-heading">
         <p className="landing__dishesLabel">Already here</p>
@@ -179,7 +149,7 @@ export default function LandingPage({
           Choose an inspiration
         </h2>
         <p className="landing__inspireLead">
-          A mood to start from. Tap one, then join — search a classic or make your own.
+          Tap a mood. The dishes are already there — no account to look.
         </p>
         <ul className="landing__inspireGrid">
           {INSPIRATIONS.map((item) => (
@@ -201,18 +171,26 @@ export default function LandingPage({
             </li>
           ))}
         </ul>
-      </section>
-
-      <section className="landing__sharePitch" aria-labelledby="share-heading">
-        <p className="landing__shareLabel">Pass it on</p>
-        <h2 id="share-heading" className="landing__shareTitle">
-          A week you can send.
-        </h2>
-        <p className="landing__shareBody">
-          Share the version you actually made — a single plate or the whole week.
-          Someone else can open how you’re eating: the food, the plan, the nutrition.
-          Follow a kitchen you like, and cook along.
-        </p>
+        {shelf?.dishes?.length > 0 && (
+          <div className="landing__shelf">
+            <h3 className="landing__shelfTitle">{shelf.mood.title}</h3>
+            <ul className="landing__dishGrid">
+              {shelf.dishes.map((dish) => (
+                <li key={dish.id}>
+                  <button type="button" className="landing__dish" onClick={() => setOpenDish(dish)}>
+                    <span className="landing__dishMedia" aria-hidden="true">
+                      <img src={dish.image} alt="" />
+                    </span>
+                    <span className="landing__dishCopy">
+                      <span className="landing__dishName">{dish.title}</span>
+                      <span className="landing__dishBlurb">{dish.blurb}</span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </section>
 
       <section className="landing__authSection" ref={authRef}>
@@ -225,14 +203,14 @@ export default function LandingPage({
               ? (authMode === 'login'
                 ? `Log in to cook ${pendingInspiration.title}.`
                 : `Join to cook ${pendingInspiration.title}.`)
-              : (authMode === 'login' ? 'Welcome back.' : 'Join to cook, keep, and share.')}
+              : (authMode === 'login' ? 'Welcome back.' : 'Join to keep what you cook.')}
           </h2>
           <p className="landing__authSub">
             {pendingInspiration
               ? 'Create an account or log in — then the kitchen opens with this inspiration.'
               : authMode === 'login'
                 ? 'Log in, or enter Eve’s demo kitchen.'
-                : 'Free. Under a minute. Your kitchen, your week, your share.'}
+                : 'Free. Under a minute. Save, remix, take the list.'}
           </p>
           <AuthForm
             loading={loading}
@@ -248,7 +226,7 @@ export default function LandingPage({
       <footer className="landing__footer">
         <LogoMark size="sm" tone="ink" />
         <p className="landing__footerNote">
-          © {new Date().getFullYear()} my food. SORTED. — find it, make it, share the week.
+          © {new Date().getFullYear()} my food. SORTED. — dinner first.
         </p>
       </footer>
 
@@ -263,7 +241,7 @@ export default function LandingPage({
             </header>
             <MealPlanDisplay mealPlan={openDish.mealPlan} readOnly alreadySaved />
             <div className="landing__cookKeep">
-              <p>Like it? Join to keep it, remix it, and share the week you actually cook.</p>
+              <p>Like it? Join to keep it, remix it, and take the shopping list.</p>
               <button type="button" className="btn btn--primary" onClick={scrollToAuth}>
                 Keep this in your library
               </button>

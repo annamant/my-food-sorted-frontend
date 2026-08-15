@@ -9,7 +9,10 @@ import LandingPage from './components/LandingPage'
 import SharedRecipeView from './components/SharedRecipeView'
 import AccountPage from './components/AccountPage'
 import KitchenHome from './components/KitchenHome'
+import CatalogGrid from './components/CatalogGrid'
 import { INSPIRATION_FILTERS } from './data/inspirations'
+import { searchCatalog, dishesForCollection } from './data/catalog'
+import { REMIX_ACTIONS } from './components/MealPlanDisplay'
 import './App.css'
 
 const API = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
@@ -95,8 +98,11 @@ function AppContent() {
   const [prefs, setPrefs] = useState(null)
   const [prefsLoading, setPrefsLoading] = useState(false)
   const [mealBrief, setMealBrief] = useState(() => ({ ...defaultBrief }))
-  const [cookMode, setCookMode] = useState('search') // 'search' | 'create'
+  const [cookMode, setCookMode] = useState('search')
   const [pendingInspiration, setPendingInspiration] = useState(null)
+  const [catalogHits, setCatalogHits] = useState([])
+  const [catalogMiss, setCatalogMiss] = useState('')
+  const [activeMood, setActiveMood] = useState(null)
 
   /* ── Shopping list ── */
   const [shoppingList, setShoppingList] = useState(null)
@@ -241,6 +247,8 @@ function AppContent() {
       loadSavedPlans(accessToken)
       if (pendingInspiration) {
         applyInspiration(pendingInspiration)
+        setCatalogHits(dishesForCollection(pendingInspiration.id))
+        setActiveMood(pendingInspiration.id)
         setPendingInspiration(null)
       }
     } catch (err) {
@@ -333,6 +341,43 @@ function AppContent() {
     }
   }, [chatLoading, authHeaders, conversationId, mealBrief, loadPrefs, addToast])
 
+  const openCatalogDish = useCallback((dish) => {
+    setMealPlan(dish.mealPlan)
+    setSavedPlanId(null)
+    setShoppingList(null)
+    setCatalogHits([])
+    setCatalogMiss('')
+    setInput('')
+    setView('tonight')
+    requestAnimationFrame(() => {
+      recipeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }, [])
+
+  const cookTonight = useCallback(() => {
+    const text = input.trim()
+    if (!text || chatLoading) return
+    const hits = searchCatalog(text)
+    setActiveMood(null)
+    if (hits.length === 1) {
+      openCatalogDish(hits[0])
+      return
+    }
+    if (hits.length > 1) {
+      setCatalogHits(hits)
+      setCatalogMiss('')
+      setMealPlan(null)
+      return
+    }
+    setCatalogHits([])
+    setCatalogMiss(text)
+    setMealPlan(null)
+    setMealBrief((prev) => ({
+      ...prev,
+      notes: prev.notes?.trim() ? prev.notes : text,
+    }))
+  }, [input, chatLoading, openCatalogDish])
+
   const sendMessage = useCallback(() => {
     const text = input.trim()
     if (!text) return
@@ -343,24 +388,29 @@ function AppContent() {
         text,
         'tweak',
       )
-      return
     }
-    sendMessageText(
-      `Search for this recipe: ${text}. One recipe, realistic UK cost and calories. Save-ready. Follow my filters. Do not ask questions.`,
-      text,
-      'search',
-    )
   }, [sendMessageText, input, mealPlan])
 
   const handleCreate = useCallback(() => {
     if (chatLoading) return
-    if (!mealBrief?.notes?.trim()) return
+    const wish = mealBrief?.notes?.trim() || catalogMiss
+    if (!wish) return
     sendMessageText(
-      'Create one recipe from my filters and instructions. One strong dish, realistic UK cost and calories. Save-ready. Do not ask questions — cook now.',
-      'Create',
+      `Create one recipe for: ${wish}. One strong dish, realistic UK cost and calories. Save-ready. Do not ask questions — cook now.`,
+      wish,
       'create',
     )
-  }, [chatLoading, sendMessageText, mealBrief])
+  }, [chatLoading, sendMessageText, mealBrief, catalogMiss])
+
+  const pickMood = useCallback((collection) => {
+    applyInspiration(collection)
+    setActiveMood(collection.id)
+    const hits = dishesForCollection(collection.id)
+    setCatalogHits(hits)
+    setCatalogMiss(hits.length ? '' : collection.title)
+    setMealPlan(null)
+    setInput(collection.title)
+  }, [applyInspiration])
 
   const clearChat = useCallback(() => {
     setMessages([])
@@ -371,6 +421,9 @@ function AppContent() {
     setShoppingList(null)
     setActiveShareMeta({ is_public: false, share_slug: null })
     setCookMode('search')
+    setCatalogHits([])
+    setCatalogMiss('')
+    setActiveMood(null)
     addToast('Starting over', 'success')
   }, [addToast])
 
@@ -402,6 +455,11 @@ function AppContent() {
       setActiveShareMeta({ is_public: false, share_slug: null })
       addToast('Added to your library', 'success')
       await loadSavedPlans()
+      const listRes = await fetch(`${API}/shopping-list/${planId}`, {
+        headers: authHeaders(),
+      })
+      const listParsed = await parseRes(listRes, 'Cannot load shopping list.')
+      if (!listParsed.error && listRes.ok) setShoppingList(listParsed.data)
     } catch (err) {
       addToast(err.message, 'error')
     } finally {
@@ -736,10 +794,26 @@ function AppContent() {
           </>
         ) : (
           <>
-            <KitchenHome hideHero={Boolean(mealPlan)}>
+            <KitchenHome
+              hideHero={Boolean(mealPlan)}
+              query={input}
+              onQuery={setInput}
+              onCook={cookTonight}
+              loading={chatLoading}
+              onPickMood={pickMood}
+              activeMood={activeMood}
+            >
               <div ref={recipeRef} className="app__recipe">
                 {chatLoading && !mealPlan && (
                   <p className="app__cooking" aria-live="polite">Cooking tonight’s dish…</p>
+                )}
+
+                {!mealPlan && catalogHits.length > 0 && (
+                  <CatalogGrid
+                    title="On the shelf"
+                    dishes={catalogHits}
+                    onPick={openCatalogDish}
+                  />
                 )}
 
                 {mealPlan && savedPlanId == null && (
@@ -749,6 +823,7 @@ function AppContent() {
                       savePlan={savePlan}
                       loading={planLoading || chatLoading}
                       alreadySaved={false}
+                      onRemix={(prompt, label) => handleRemix(prompt, label)}
                     />
                   </section>
                 )}
@@ -758,6 +833,7 @@ function AppContent() {
                     <MealPlanDisplay
                       mealPlan={mealPlan}
                       alreadySaved
+                      onRemix={(prompt, label) => handleRemix(prompt, label)}
                       onShare={() => publishAndCopyShare(savedPlanId)}
                       onUnshare={() => unsharePlan(savedPlanId)}
                       shareBusy={shareBusy}
@@ -773,18 +849,18 @@ function AppContent() {
 
                 <ChatInterface
                   messages={messages}
-                  input={input}
+                  input={mealPlan ? input : ''}
                   setInput={setInput}
                   sendMessage={sendMessage}
                   loading={chatLoading}
                   onClearChat={clearChat}
-                  mode={cookMode}
-                  onModeChange={setCookMode}
                   hasRecipe={Boolean(mealPlan)}
                   brief={mealBrief}
                   onChangeBrief={setMealBrief}
                   prefs={prefs}
                   onCreate={handleCreate}
+                  catalogMiss={catalogMiss}
+                  missQuery={catalogMiss}
                 />
 
                 {savedPlanId && mealPlan && (

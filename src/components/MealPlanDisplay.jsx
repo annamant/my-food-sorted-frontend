@@ -72,6 +72,7 @@ function MealPlanDisplay({
   isPublic,
   shareUrl,
   readOnly,
+  onRemix,
 }) {
   if (!mealPlan?.recipes?.length) return null
 
@@ -159,6 +160,22 @@ function MealPlanDisplay({
           )
         })}
       </div>
+
+      {!readOnly && onRemix && (
+        <div className="meal-plan-display__remix" aria-label="Remix this dish">
+          {REMIX_ACTIONS.map((action) => (
+            <button
+              key={action.id}
+              type="button"
+              className="meal-plan-display__remixBtn"
+              disabled={loading}
+              onClick={() => onRemix(action.promptFor(title), action.label)}
+            >
+              {action.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {!readOnly && (
         <div className="meal-plan-display__actions">

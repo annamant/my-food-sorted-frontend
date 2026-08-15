@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import './MealBriefPanel.css'
 
 const CUISINES = ['Italian', 'French', 'Asian', 'Japanese', 'Mexican', 'British', 'Indian', 'Mediterranean']
@@ -97,10 +98,11 @@ function MealBriefPanel({ brief, onChange, prefs, requireNotes = false }) {
   }
   const household = prefs?.household_size
   const notesEmpty = !value.notes?.trim()
+  const [more, setMore] = useState(requireNotes)
 
   return (
     <div className="meal-brief meal-brief--intake">
-      <div className="meal-brief__row">
+      <div className="meal-brief__essentials">
         <label className="meal-brief__field">
           <span>People</span>
           <input
@@ -123,27 +125,7 @@ function MealBriefPanel({ brief, onChange, prefs, requireNotes = false }) {
             onChange={(e) => setField('max_cook_minutes', Number(e.target.value) || 20)}
           />
         </label>
-        <label className="meal-brief__field">
-          <span>Days</span>
-          <input
-            type="number"
-            min={1}
-            max={14}
-            value={value.days}
-            onChange={(e) => setField('days', Number(e.target.value) || 1)}
-          />
-        </label>
-        <label className="meal-brief__field">
-          <span>£ / day</span>
-          <input
-            type="number"
-            min={0}
-            step={1}
-            value={value.budget_per_day}
-            onChange={(e) => setField('budget_per_day', Number(e.target.value) || 0)}
-          />
-        </label>
-        <label className="meal-brief__field meal-brief__field--avoid">
+        <label className="meal-brief__field meal-brief__field--grow">
           <span>Won’t eat</span>
           <input
             type="text"
@@ -152,9 +134,41 @@ function MealBriefPanel({ brief, onChange, prefs, requireNotes = false }) {
             placeholder="garlic, shellfish…"
           />
         </label>
+        <button
+          type="button"
+          className="meal-brief__moreBtn"
+          onClick={() => setMore((v) => !v)}
+        >
+          {more ? 'Less' : 'More'}
+        </button>
       </div>
 
-      <div className="meal-brief__tickGrid">
+      {more && (
+        <div className="meal-brief__row">
+          <label className="meal-brief__field">
+            <span>Days</span>
+            <input
+              type="number"
+              min={1}
+              max={14}
+              value={value.days}
+              onChange={(e) => setField('days', Number(e.target.value) || 1)}
+            />
+          </label>
+          <label className="meal-brief__field">
+            <span>£ / day</span>
+            <input
+              type="number"
+              min={0}
+              step={1}
+              value={value.budget_per_day}
+              onChange={(e) => setField('budget_per_day', Number(e.target.value) || 0)}
+            />
+          </label>
+        </div>
+      )}
+
+      {more && <div className="meal-brief__tickGrid">
         <TickGroup
           label="Meals"
           options={MEAL_SLOTS}
@@ -185,9 +199,9 @@ function MealBriefPanel({ brief, onChange, prefs, requireNotes = false }) {
           selected={value.pantry}
           onChange={(next) => setField('pantry', next)}
         />
-      </div>
+      </div>}
 
-      <label className="meal-brief__instructions">
+      {(more || requireNotes) && <label className="meal-brief__instructions">
         <span className="meal-brief__instructionsTitle">
           Tell your chef
           {requireNotes && <em>The fun bit</em>}
@@ -203,7 +217,7 @@ function MealBriefPanel({ brief, onChange, prefs, requireNotes = false }) {
           required={requireNotes}
           aria-invalid={requireNotes && notesEmpty}
         />
-      </label>
+      </label>}
     </div>
   )
 }

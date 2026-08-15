@@ -56,14 +56,25 @@ function ShoppingListDisplay({
       </p>
 
       <div className="shopping-list-display__actions">
-        <button
-          type="button"
-          onClick={generateShoppingList}
-          disabled={loading}
-          className="btn btn--primary"
-        >
-          {shoppingList ? 'Refresh ingredients' : 'Build ingredient list'}
-        </button>
+        {shoppingList ? (
+          <button
+            type="button"
+            onClick={generateShoppingList}
+            disabled={loading}
+            className="btn btn--ghost"
+          >
+            Refresh list
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={generateShoppingList}
+            disabled={loading}
+            className="btn btn--primary"
+          >
+            {loading ? 'Building…' : 'Build ingredient list'}
+          </button>
+        )}
 
         {shoppingList && (
           <>

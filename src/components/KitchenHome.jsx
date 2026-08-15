@@ -1,6 +1,16 @@
+import { INSPIRATIONS } from '../data/inspirations'
 import './KitchenHome.css'
 
-export default function KitchenHome({ hideHero, children }) {
+export default function KitchenHome({
+  hideHero,
+  query,
+  onQuery,
+  onCook,
+  loading,
+  onPickMood,
+  activeMood,
+  children,
+}) {
   return (
     <div className="kitchen-home">
       {!hideHero && (
@@ -19,10 +29,61 @@ export default function KitchenHome({ hideHero, children }) {
               What’s for<br />
               <em>dinner?</em>
             </h1>
-            <p className="kitchen-home__heroBody">
-              Search a recipe, or create one. Set your filters first.
-            </p>
+            <form
+              className="kitchen-home__compose"
+              onSubmit={(e) => {
+                e.preventDefault()
+                onCook?.()
+              }}
+            >
+              <input
+                className="kitchen-home__search"
+                type="search"
+                value={query}
+                onChange={(e) => onQuery?.(e.target.value)}
+                placeholder="Carbonara, leftover chicken, 20 minutes"
+                aria-label="What’s for dinner"
+                disabled={loading}
+              />
+              <button
+                type="submit"
+                className="btn kitchen-home__cookBtn"
+                disabled={loading || !String(query || '').trim()}
+              >
+                {loading ? 'Cooking…' : 'Cook tonight'}
+              </button>
+            </form>
           </div>
+        </section>
+      )}
+
+      {!hideHero && (
+        <section className="kitchen-home__browseIntro" aria-labelledby="moods-heading">
+          <p className="kitchen-home__browseLabel">Or pick a mood</p>
+          <h2 id="moods-heading" className="kitchen-home__browseTitle">
+            Classics, already on the shelf.
+          </h2>
+          <ul className="kitchen-home__grid">
+            {INSPIRATIONS.map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  className={`kitchen-home__tile ${activeMood === item.id ? 'kitchen-home__tile--on' : ''}`}
+                  disabled={loading}
+                  onClick={() => onPickMood?.(item)}
+                >
+                  <span className="kitchen-home__tileMedia" aria-hidden="true">
+                    <img src={item.image} alt="" />
+                    <span className="kitchen-home__tileShade" />
+                    <span className="kitchen-home__tileOnImage">
+                      <span className="kitchen-home__tileTitle">{item.title}</span>
+                      <span className="kitchen-home__tileBlurb">{item.blurb}</span>
+                    </span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

@@ -105,6 +105,7 @@ function AuthForm({ loading, handleAuth, handleLogout, loggedInUserId, email: us
             Enter Eve’s kitchen
           </button>
           <p className="auth-form__demoHint">Demo · {DEMO_KITCHEN.email}</p>
+          <p className="auth-form__demoHint">Forgot the password? Eve’s kitchen is the demo. Once you’re in, change it in Account.</p>
         </div>
       </form>
     </div>
