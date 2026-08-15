@@ -297,8 +297,11 @@ function AppContent() {
         setActiveMood(pendingInspiration.id)
         setPendingInspiration(null)
       }
+      return { ok: true }
     } catch (err) {
-      addToast(err.message, 'error')
+      const message = err instanceof Error ? err.message : 'Authentication failed'
+      addToast(message, 'error')
+      return { ok: false, error: message }
     } finally {
       setAuthLoading(false)
     }
