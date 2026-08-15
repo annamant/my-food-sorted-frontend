@@ -55,7 +55,7 @@ function ShoppingListDisplay({
       <p className="shopping-list-display__label">From recipe to shop</p>
       <h2 className="shopping-list-display__title">Your shopping list</h2>
       <p className="shopping-list-display__lede">
-        Everything from this dish or collection, combined into one practical list.
+        Everything from this dish or collection, combined into one practical list—with direct buttons for Tesco and Sainsbury’s.
       </p>
 
       <div className="shopping-list-display__actions">
@@ -145,7 +145,7 @@ function ShoppingListDisplay({
         <div className="shopping-list-display__retailers">
           <div>
             <h3>Ready to shop?</h3>
-            <p>Keep this list open while you shop with your preferred supermarket.</p>
+            <p>Open Tesco or Sainsbury’s and use this list while you build your basket.</p>
           </div>
           <div className="shopping-list-display__retailerActions">
             {[

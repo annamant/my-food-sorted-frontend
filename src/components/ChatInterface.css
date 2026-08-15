@@ -409,7 +409,30 @@
 }
 
 .chat-interface__options > div > button {
-  min-height: 15rem;
+  min-height: 20rem;
+}
+
+.chat-interface__optionFacts {
+  width: 100%;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  border-radius: var(--radius-md);
+  background: #f6f3ed;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+.chat-interface__optionCost {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.chat-interface__optionFacts small {
+  color: var(--text-muted);
+  font-size: 0.68rem;
 }
 
 .chat-interface__options em {

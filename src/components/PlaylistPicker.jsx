@@ -17,15 +17,15 @@ export default function PlaylistPicker({
       <div className="playlist-picker__panel">
         <header className="playlist-picker__bar">
           <div>
-            <p className="playlist-picker__label">Your lists</p>
-            <h2 id="picker-title" className="playlist-picker__title">Add to a list</h2>
+            <p className="playlist-picker__label">Your collections</p>
+            <h2 id="picker-title" className="playlist-picker__title">Add to a collection</h2>
           </div>
           <button type="button" className="btn btn--ghost" onClick={onClose}>
             Done
           </button>
         </header>
         <p className="playlist-picker__lede">
-          Kept dishes land in Liked. Put this one into another recipe collection.
+          Saved dishes stay in your kitchen. Organise this one in a recipe collection.
         </p>
         <ul className="playlist-picker__lists">
           {(playlists || []).map((list) => (
@@ -63,8 +63,8 @@ export default function PlaylistPicker({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="New list — Tuesday after gym"
-            aria-label="New list name"
+            placeholder="New collection — Tuesday after gym"
+            aria-label="New collection name"
             disabled={loading}
           />
           <button type="submit" className="btn btn--primary" disabled={loading || !title.trim()}>

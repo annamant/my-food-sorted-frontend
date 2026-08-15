@@ -5,6 +5,28 @@ function messageKey(message, index) {
   return message.id ?? `msg-${index}-${String(message.content).slice(0, 40)}`
 }
 
+function OptionNutrition({ option }) {
+  const facts = [
+    option.calories != null ? `${Math.round(option.calories)} kcal` : null,
+    option.protein != null ? `Protein ${Math.round(option.protein)}g` : null,
+    option.carbs != null ? `Carbs ${Math.round(option.carbs)}g` : null,
+    option.fat != null ? `Fat ${Math.round(option.fat)}g` : null,
+    option.sugar != null ? `Sugar ${Math.round(option.sugar)}g` : null,
+  ].filter(Boolean)
+
+  if (option.estimated_cost == null && facts.length === 0) return null
+
+  return (
+    <div className="chat-interface__optionFacts">
+      {option.estimated_cost != null && (
+        <span className="chat-interface__optionCost">About £{Number(option.estimated_cost).toFixed(2)} total</span>
+      )}
+      {facts.length > 0 && <span>{facts.join(' · ')}</span>}
+      <small>Rough estimate · nutrition per serving</small>
+    </div>
+  )
+}
+
 function Conversation({ messages, loading, stage }) {
   return (
     <div className="chat-interface__messages" aria-live="polite">
@@ -158,6 +180,7 @@ export default function ChatInterface({
                 <span>{String(index + 1).padStart(2, '0')}</span>
                 <strong>{option.title}</strong>
                 <small>{option.description}</small>
+                <OptionNutrition option={option} />
                 {option.reason && <em>{option.reason}</em>}
               </button>
             ))}

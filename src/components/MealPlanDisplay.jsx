@@ -182,7 +182,9 @@ function MealPlanDisplay({
         <div className="meal-plan-display__actions">
           {alreadySaved ? (
             embedded ? null : (
-              <p className="meal-plan-display__savedNote">Kept — now on Liked</p>
+              <p className="meal-plan-display__savedNote">
+                Saved in your kitchen · shopping list ready below
+              </p>
             )
           ) : (
             <button
@@ -191,7 +193,7 @@ function MealPlanDisplay({
               disabled={loading || !savePlan}
               className="btn btn--primary meal-plan-display__saveBtn"
             >
-        {loading ? 'Saving…' : 'Keep this'}
+              {loading ? 'Saving…' : 'Save recipe & build shopping list'}
             </button>
           )}
 
@@ -202,7 +204,7 @@ function MealPlanDisplay({
               disabled={loading}
               onClick={onAddToList}
             >
-              Add to a list
+              Add to collection
             </button>
           )}
 
@@ -216,7 +218,7 @@ function MealPlanDisplay({
                     disabled={shareBusy}
                     onClick={onShare}
                   >
-                    {shareBusy ? 'Working…' : 'Copy share link'}
+                    {shareBusy ? 'Working…' : 'Share recipe again'}
                   </button>
                   {onUnshare && (
                     <button
@@ -236,7 +238,7 @@ function MealPlanDisplay({
                   disabled={shareBusy}
                   onClick={onShare}
                 >
-                  {shareBusy ? 'Publishing…' : 'Share publicly'}
+                  {shareBusy ? 'Publishing…' : 'Share recipe'}
                 </button>
               )}
             </div>

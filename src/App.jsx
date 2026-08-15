@@ -631,7 +631,7 @@ function AppContent() {
       if (planId == null) throw new Error('No plan ID in response')
       setSavedPlanId(planId)
       setActiveShareMeta({ is_public: false, share_slug: null })
-      addToast('Kept — on Liked. Add it to another list if you want.', 'success')
+      addToast('Recipe saved. Add it to a collection or close to keep it in your kitchen.', 'success')
       await loadSavedPlans()
       await loadPlaylists()
       setPickerPlanId(planId)
