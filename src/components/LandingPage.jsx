@@ -26,7 +26,7 @@ const COLLECTION_PREVIEWS = [
     basket: '6 foundation recipes',
     images: [
       'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1612874742237-6526221588e8?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=600&q=80',
       'https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=600&q=80',
     ],
     dishes: ['Weeknight ragù', 'Proper carbonara', 'Mushroom risotto'],
