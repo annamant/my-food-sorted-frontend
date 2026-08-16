@@ -615,8 +615,9 @@ function AppContent() {
   }, [])
 
   /* ── Save plan ── */
-  const savePlan = useCallback(async () => {
-    if (!mealPlan || planLoading) return
+  const persistRecipe = useCallback(async ({ openPicker = false } = {}) => {
+    if (savedPlanId) return savedPlanId
+    if (!mealPlan || planLoading) return null
     setPlanLoading(true)
     try {
       const res = await fetch(`${API}/meal-plan`, {
@@ -631,22 +632,46 @@ function AppContent() {
       if (planId == null) throw new Error('No plan ID in response')
       setSavedPlanId(planId)
       setActiveShareMeta({ is_public: false, share_slug: null })
-      addToast('Recipe saved. Add it to a recipe book, or shop the list below.', 'success')
       await loadSavedPlans()
       await loadPlaylists()
-      setPickerPlanId(planId)
-      setPickerOpen(true)
+      if (openPicker) {
+        setPickerPlanId(planId)
+        setPickerOpen(true)
+      }
       const listRes = await fetch(`${API}/shopping-list/${planId}`, {
         headers: authHeaders(),
       })
       const listParsed = await parseRes(listRes, 'Cannot load shopping list.')
       if (!listParsed.error && listRes.ok) setShoppingList(listParsed.data)
+      return planId
     } catch (err) {
       addToast(err.message, 'error')
+      return null
     } finally {
       setPlanLoading(false)
     }
-  }, [mealPlan, planLoading, authHeaders, loadSavedPlans, loadPlaylists, addToast])
+  }, [savedPlanId, mealPlan, planLoading, authHeaders, loadSavedPlans, loadPlaylists, addToast])
+
+  const savePlan = useCallback(async () => {
+    const planId = await persistRecipe({ openPicker: true })
+    if (planId) addToast('Recipe saved. Add it to a recipe book, or shop the list below.', 'success')
+  }, [persistRecipe, addToast])
+
+  const publishShareLink = useCallback(async (planId) => {
+    const res = await fetch(`${API}/meal-plan/${planId}/share`, {
+      method: 'POST',
+      headers: authHeaders(),
+    })
+    const { data, error } = await parseRes(res, 'Cannot create share link.')
+    if (error) throw new Error(error)
+    if (!res.ok) throw new Error(getErrorMsg(data, 'Share failed'))
+    const slug = data.share_slug
+    const url = buildShareUrl(slug)
+    setActiveShareMeta({ is_public: true, share_slug: slug })
+    setMealPlan((prev) => (prev ? { ...prev, is_public: true, share_slug: slug } : prev))
+    await loadSavedPlans()
+    return url
+  }, [authHeaders, loadSavedPlans])
 
   const openPlan = useCallback(async (planId) => {
     if (savedPlanId === planId) {
@@ -700,29 +725,16 @@ function AppContent() {
     if (!planId || shareBusy) return
     setShareBusy(true)
     try {
-      const res = await fetch(`${API}/meal-plan/${planId}/share`, {
-        method: 'POST',
-        headers: authHeaders(),
-      })
-      const { data, error } = await parseRes(res, 'Cannot create share link.')
-      if (error) throw new Error(error)
-      if (!res.ok) throw new Error(getErrorMsg(data, 'Share failed'))
-
-      const slug = data.share_slug
-      const url = buildShareUrl(slug)
+      const url = await publishShareLink(planId)
       const result = await shareOut(url, 'Cooked this on my food. SORTED.')
       if (result === 'shared') addToast('Shared', 'success')
       else if (result === 'copied') addToast('Link copied — paste it anywhere', 'success')
-
-      setActiveShareMeta({ is_public: true, share_slug: slug })
-      setMealPlan((prev) => (prev ? { ...prev, is_public: true, share_slug: slug } : prev))
-      await loadSavedPlans()
     } catch (err) {
       addToast(err.message, 'error')
     } finally {
       setShareBusy(false)
     }
-  }, [shareBusy, authHeaders, addToast, loadSavedPlans])
+  }, [shareBusy, publishShareLink, addToast])
 
   const unsharePlan = useCallback(async (planId) => {
     if (!planId || shareBusy) return
@@ -951,15 +963,16 @@ function AppContent() {
   }, [authHeaders])
 
   /* ── Shopping list ── */
-  const generateShoppingList = useCallback(async () => {
+  const generateShoppingList = useCallback(async (planIdArg) => {
     if (shopLoading) return
     const playlistId = activePlaylist?.id
-    if (!savedPlanId && !playlistId) return
+    const planId = planIdArg ?? savedPlanId
+    if (!planId && !playlistId) return
     setShopLoading(true)
     try {
-      const path = playlistId && !savedPlanId
+      const path = playlistId && !planId
         ? `${API}/playlists/${playlistId}/shopping-list/generate`
-        : `${API}/shopping-list/${savedPlanId}/generate`
+        : `${API}/shopping-list/${planId}/generate`
       const res = await fetch(path, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -974,6 +987,45 @@ function AppContent() {
       setShopLoading(false)
     }
   }, [savedPlanId, activePlaylist, shopLoading, token, addToast])
+
+  const createShoppingListFromChat = useCallback(async () => {
+    const planId = await persistRecipe({ openPicker: false })
+    if (!planId) return
+    await generateShoppingList(planId)
+    addToast('Shopping list ready — shop it, or send it to Tesco or Sainsbury’s.', 'success')
+    recipeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }, [persistRecipe, generateShoppingList, addToast])
+
+  const shareRecipeTo = useCallback(async (network) => {
+    if (shareBusy) return
+    setShareBusy(true)
+    try {
+      const planId = await persistRecipe({ openPicker: false })
+      if (!planId) return
+      const url = await publishShareLink(planId)
+      const title = mealPlan?.plan_name || mealPlan?.recipes?.[0]?.title || 'A recipe from my food. SORTED.'
+      if (network === 'facebook') {
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+          '_blank',
+          'noopener,noreferrer'
+        )
+        addToast('Facebook opened with your recipe link.', 'success')
+        return
+      }
+      await navigator.clipboard.writeText(`${title}\n${url}`)
+      if (network === 'instagram') {
+        window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer')
+        addToast('Link copied. Paste it in your Instagram story, post or DM.', 'success')
+        return
+      }
+      addToast('Recipe link copied — share it anywhere.', 'success')
+    } catch (err) {
+      addToast(err.message, 'error')
+    } finally {
+      setShareBusy(false)
+    }
+  }, [shareBusy, persistRecipe, publishShareLink, mealPlan, addToast])
 
   const toggleShoppingItem = useCallback(async (item) => {
     if (item?.id == null) return
@@ -1258,6 +1310,16 @@ function AppContent() {
                   loading={planLoading || chatLoading}
                   alreadySaved={false}
                   onRemix={(prompt, label) => handleRemix(prompt, label)}
+                  onCreateShoppingList={createShoppingListFromChat}
+                  shopLoading={shopLoading}
+                  hasShoppingList={Boolean(shoppingList?.items?.length)}
+                  onShareFacebook={() => shareRecipeTo('facebook')}
+                  onShareInstagram={() => shareRecipeTo('instagram')}
+                  onCopyShareLink={() => shareRecipeTo('copy')}
+                  shareBusy={shareBusy}
+                  shareUrl={buildShareUrl(
+                    activeShareMeta.share_slug || mealPlan.share_slug
+                  )}
                 />
               </section>
             )}
@@ -1274,6 +1336,12 @@ function AppContent() {
                     setPickerPlanId(savedPlanId)
                     setPickerOpen(true)
                   }}
+                  onCreateShoppingList={createShoppingListFromChat}
+                  shopLoading={shopLoading}
+                  hasShoppingList={Boolean(shoppingList?.items?.length)}
+                  onShareFacebook={() => shareRecipeTo('facebook')}
+                  onShareInstagram={() => shareRecipeTo('instagram')}
+                  onCopyShareLink={() => shareRecipeTo('copy')}
                   shareBusy={shareBusy}
                   isPublic={libraryShareIsPublic}
                   shareUrl={buildShareUrl(
@@ -1285,7 +1353,7 @@ function AppContent() {
               </section>
             )}
 
-            {savedPlanId && mealPlan && (
+            {mealPlan && view === 'tonight' && (savedPlanId || shoppingList) && (
               <section className="app__panel app__panel--muted">
                 <ShoppingListDisplay
                   shoppingList={shoppingList}

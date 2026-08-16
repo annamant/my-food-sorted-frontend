@@ -74,6 +74,12 @@ function MealPlanDisplay({
   readOnly,
   onRemix,
   onAddToList,
+  onCreateShoppingList,
+  shopLoading,
+  hasShoppingList,
+  onShareFacebook,
+  onShareInstagram,
+  onCopyShareLink,
 }) {
   if (!mealPlan?.recipes?.length) return null
 
@@ -175,6 +181,56 @@ function MealPlanDisplay({
 
       {!readOnly && (
         <div className="meal-plan-display__actions">
+          {(onCreateShoppingList || onShareFacebook || onShareInstagram || onCopyShareLink) && (
+            <div className="meal-plan-display__tonightActions">
+              {onCreateShoppingList && (
+                <button
+                  type="button"
+                  className="btn btn--primary"
+                  disabled={loading || shopLoading}
+                  onClick={onCreateShoppingList}
+                >
+                  {shopLoading ? 'Building list…' : hasShoppingList ? 'Refresh shopping list' : 'Create shopping list'}
+                </button>
+              )}
+              {onCopyShareLink && (
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  disabled={loading || shareBusy}
+                  onClick={onCopyShareLink}
+                >
+                  {shareBusy ? 'Creating link…' : 'Copy recipe link'}
+                </button>
+              )}
+              {onShareFacebook && (
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  disabled={loading || shareBusy}
+                  onClick={onShareFacebook}
+                >
+                  Share on Facebook
+                </button>
+              )}
+              {onShareInstagram && (
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  disabled={loading || shareBusy}
+                  onClick={onShareInstagram}
+                >
+                  Share on Instagram
+                </button>
+              )}
+            </div>
+          )}
+          {shareUrl && (
+            <p className="meal-plan-display__shareStatus">
+              Public link · {shareUrl}
+            </p>
+          )}
+
           {alreadySaved ? (
             embedded ? null : (
               <p className="meal-plan-display__savedNote">
