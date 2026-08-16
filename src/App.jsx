@@ -631,7 +631,7 @@ function AppContent() {
       if (planId == null) throw new Error('No plan ID in response')
       setSavedPlanId(planId)
       setActiveShareMeta({ is_public: false, share_slug: null })
-      addToast('Recipe saved. Add it to a collection or close to keep it in your kitchen.', 'success')
+      addToast('Recipe saved. Add it to a recipe book, or shop the list below.', 'success')
       await loadSavedPlans()
       await loadPlaylists()
       setPickerPlanId(planId)
@@ -1104,7 +1104,7 @@ function AppContent() {
               <span className="app__logoTop">my food.</span>
               <span className="app__logoBottom">SORTED.</span>
             </span>
-            <span className="app__logoClaim">Your personal kitchen</span>
+            <span className="app__logoClaim">Your meals. Your recipe books.</span>
           </button>
           <div className="app__headerRight">
             <nav className="app__nav" aria-label="Main">
@@ -1120,7 +1120,7 @@ function AppContent() {
                 className={`app__navItem ${view === 'library' ? 'app__navItem--active' : ''}`}
                 onClick={() => setView('library')}
               >
-                Collections
+                Recipe books
               </button>
               <button
                 type="button"
@@ -1143,10 +1143,10 @@ function AppContent() {
         </div>
       </header>
 
-      <div className="app__principles" aria-label="Your kitchen">
-        <span>Trusted foundations</span>
-        <span>Personal adaptations</span>
-        <span>One combined shop</span>
+      <div className="app__principles" aria-label="How tonight goes">
+        <span>Chat</span>
+        <span>Cook</span>
+        <span>Keep the book</span>
       </div>
 
       <main className={`app__main app__main--${view}`}>
@@ -1247,6 +1247,7 @@ function AppContent() {
               onRejectOptions={rejectDishOptions}
               onFinalize={finalizeDishOption}
               onTweakRecipe={sendMessage}
+              recipeSaved={Boolean(savedPlanId)}
             />
 
             {mealPlan && savedPlanId == null && (
@@ -1303,11 +1304,11 @@ function AppContent() {
       <footer className="app__footer">
         <div>
           <span className="app__footerBrand">my food. <strong>SORTED.</strong></span>
-          <span>Trusted recipes, adapted to your kitchen.</span>
+          <span>Chat, cook, keep the book.</span>
         </div>
         <nav aria-label="Footer">
           <button type="button" onClick={() => setView('tonight')}>Cook tonight</button>
-          <button type="button" onClick={() => setView('library')}>My kitchen</button>
+          <button type="button" onClick={() => setView('library')}>Recipe books</button>
           <button type="button" onClick={() => setView('account')}>Preferences</button>
         </nav>
       </footer>

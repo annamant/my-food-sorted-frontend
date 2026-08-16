@@ -17,15 +17,15 @@ export default function PlaylistPicker({
       <div className="playlist-picker__panel">
         <header className="playlist-picker__bar">
           <div>
-            <p className="playlist-picker__label">Your collections</p>
-            <h2 id="picker-title" className="playlist-picker__title">Add to a collection</h2>
+            <p className="playlist-picker__label">Your recipe books</p>
+            <h2 id="picker-title" className="playlist-picker__title">Add to a recipe book</h2>
           </div>
           <button type="button" className="btn btn--ghost" onClick={onClose}>
             Done
           </button>
         </header>
         <p className="playlist-picker__lede">
-          Saved dishes stay in your kitchen. Organise this one in a recipe collection.
+          Saved dishes stay in your kitchen. Put this one in a recipe book you own — then share the book or publish it.
         </p>
         <ul className="playlist-picker__lists">
           {(playlists || []).map((list) => (
@@ -36,9 +36,6 @@ export default function PlaylistPicker({
                 disabled={loading}
                 onClick={() => onPick(list)}
               >
-                <span className="playlist-picker__cover" aria-hidden="true">
-                  {list.cover_url ? <img src={list.cover_url} alt="" /> : <span />}
-                </span>
                 <span>
                   <span className="playlist-picker__name">{list.title}</span>
                   <span className="playlist-picker__meta">
@@ -63,8 +60,8 @@ export default function PlaylistPicker({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="New collection — Tuesday after gym"
-            aria-label="New collection name"
+            placeholder="New recipe book — Weeknights"
+            aria-label="New recipe book name"
             disabled={loading}
           />
           <button type="submit" className="btn btn--primary" disabled={loading || !title.trim()}>

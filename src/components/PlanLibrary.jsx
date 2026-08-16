@@ -56,11 +56,10 @@ export default function PlanLibrary({
   return (
     <div className="plan-library plan-library--hero">
       <div className="plan-library__header">
-        <p className="plan-library__label">My kitchen</p>
-        <h2 className="plan-library__title">Recipes worth keeping</h2>
+        <p className="plan-library__label">Your recipe books</p>
+        <h2 className="plan-library__title">Books you actually own</h2>
         <p className="plan-library__subtitle">
-          Keep trusted dishes and personal adaptations, arrange them into collections,
-          combine the shop, and share the lists that work.
+          Dishes you made, and classics you adapted. Keep a book private, share it, or publish it for anyone to cook from.
         </p>
       </div>
 
@@ -78,18 +77,18 @@ export default function PlanLibrary({
           type="text"
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
-          placeholder="New collection — Five dinners under £40"
-          aria-label="New list name"
+          placeholder="New recipe book — Five dinners under £40"
+          aria-label="New recipe book name"
           disabled={loading}
         />
         <button type="submit" className="btn btn--primary" disabled={loading || !newTitle.trim()}>
-          New collection
+          New recipe book
         </button>
       </form>
 
       {!playlists?.length && !loading && (
         <p className="plan-library__empty">
-          Keep a dish tonight. It lands in Liked, ready for your first collection.
+          Keep a dish tonight. Then put it in your first recipe book.
         </p>
       )}
 
@@ -106,9 +105,6 @@ export default function PlanLibrary({
                   disabled={loading}
                   aria-expanded={active}
                 >
-                  <span className="plan-library__cover" aria-hidden="true">
-                    {list.cover_url ? <img src={list.cover_url} alt="" /> : <span />}
-                  </span>
                   <span className="plan-library__cardCopy">
                     <span className="plan-library__itemName">{list.title}</span>
                     <span className="plan-library__itemMeta">
@@ -127,7 +123,7 @@ export default function PlanLibrary({
         <div className="plan-library__expand plan-library__expand--list" ref={expandRef}>
           <div className="plan-library__listHead">
             <div>
-              <p className="plan-library__label">{activePlaylist.kind === 'liked' ? 'Always here' : 'List'}</p>
+              <p className="plan-library__label">{activePlaylist.kind === 'liked' ? 'Always here' : 'Recipe book'}</p>
               <h3 className="plan-library__listTitle">{activePlaylist.title}</h3>
               {activePlaylist.blurb && <p className="plan-library__subtitle">{activePlaylist.blurb}</p>}
             </div>
@@ -140,7 +136,7 @@ export default function PlanLibrary({
                     disabled={shareBusy}
                     onClick={() => onSharePlaylist?.(activePlaylist.id)}
                   >
-                    {shareBusy ? 'Working…' : 'Copy / share list'}
+                    {shareBusy ? 'Working…' : 'Copy / share book'}
                   </button>
                   <button
                     type="button"
@@ -158,7 +154,7 @@ export default function PlanLibrary({
                   disabled={shareBusy}
                   onClick={() => onSharePlaylist?.(activePlaylist.id)}
                 >
-                  {shareBusy ? 'Publishing…' : 'Share this list'}
+                  {shareBusy ? 'Publishing…' : 'Share or publish this book'}
                 </button>
               )}
               {activePlaylist.kind !== 'liked' && (
@@ -188,9 +184,6 @@ export default function PlanLibrary({
                     className="plan-library__trackMain"
                     onClick={() => onOpenTrack?.(track.meal_plan_id)}
                   >
-                    <span className="plan-library__trackCover" aria-hidden="true">
-                      {track.image ? <img src={track.image} alt="" /> : <span />}
-                    </span>
                     <span>
                       <span className="plan-library__itemName">{track.plan_name}</span>
                       <span className="plan-library__itemMeta">
@@ -238,7 +231,7 @@ export default function PlanLibrary({
       </div>
 
       {!plans?.length && !loading && (
-        <p className="plan-library__empty">No saved dishes yet. Cook tonight, then keep one.</p>
+        <p className="plan-library__empty">No saved dishes yet. Chat, cook, then keep one in a book.</p>
       )}
 
       {!!plans?.length && (

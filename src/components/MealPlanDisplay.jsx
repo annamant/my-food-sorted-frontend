@@ -101,11 +101,6 @@ function MealPlanDisplay({
           const ingredients = r.ingredients || []
           return (
             <article key={recipeKey(r, i)} className="meal-plan-display__card">
-              {(r.image || mealPlan.image) && (
-                <div className="meal-plan-display__photo" aria-hidden="true">
-                  <img src={r.image || mealPlan.image} alt="" />
-                </div>
-              )}
               {recipeCount > 1 && (
                 <h3 className="meal-plan-display__cardTitle">{r.title}</h3>
               )}
@@ -183,7 +178,7 @@ function MealPlanDisplay({
           {alreadySaved ? (
             embedded ? null : (
               <p className="meal-plan-display__savedNote">
-                Saved in your kitchen · shopping list ready below
+                Saved · add it to a recipe book, or shop the list below
               </p>
             )
           ) : (
@@ -193,7 +188,7 @@ function MealPlanDisplay({
               disabled={loading || !savePlan}
               className="btn btn--primary meal-plan-display__saveBtn"
             >
-              {loading ? 'Saving…' : 'Save recipe & build shopping list'}
+              {loading ? 'Saving…' : 'Keep this recipe'}
             </button>
           )}
 
@@ -204,7 +199,7 @@ function MealPlanDisplay({
               disabled={loading}
               onClick={onAddToList}
             >
-              Add to collection
+              Add to a recipe book
             </button>
           )}
 
@@ -218,7 +213,7 @@ function MealPlanDisplay({
                     disabled={shareBusy}
                     onClick={onShare}
                   >
-                    {shareBusy ? 'Working…' : 'Share recipe again'}
+                    {shareBusy ? 'Working…' : 'Share or publish again'}
                   </button>
                   {onUnshare && (
                     <button
@@ -238,7 +233,7 @@ function MealPlanDisplay({
                   disabled={shareBusy}
                   onClick={onShare}
                 >
-                  {shareBusy ? 'Publishing…' : 'Share recipe'}
+                  {shareBusy ? 'Publishing…' : 'Share or publish'}
                 </button>
               )}
             </div>

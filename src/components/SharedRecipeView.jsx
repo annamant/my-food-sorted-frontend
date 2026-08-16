@@ -87,7 +87,6 @@ export default function SharedRecipeView({ slug, kind = 'recipe', onClose }) {
                 mealPlan={{
                   plan_name: dish.plan_name,
                   servings: dish.servings,
-                  image: dish.image,
                   recipes: dish.recipes,
                 }}
                 alreadySaved
@@ -98,7 +97,7 @@ export default function SharedRecipeView({ slug, kind = 'recipe', onClose }) {
           </div>
         )}
         <p className="shared-recipe__ctaNote">
-          Want your own lists? Join, keep a dish, make a collection, share it.
+          Want your own books? Join, keep a dish, put it in a recipe book, share it or publish it.
         </p>
       </main>
     </div>

@@ -300,13 +300,47 @@
   box-shadow: none;
 }
 
-.chat-interface__heroTitle {
-  margin: 0;
+.chat-interface__lede {
+  margin: var(--space-3) 0 0;
+  max-width: 46ch;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+
+.chat-interface__flow {
+  margin: var(--space-6) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chat-interface__flowStep {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.chat-interface__flowStep span {
   font-family: var(--font-display);
-  font-size: clamp(2.5rem, 6vw, 5rem);
   font-weight: 500;
-  letter-spacing: -0.045em;
-  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.chat-interface__flowStep--on {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(110, 58, 62, 0.06);
 }
 
 .chat-interface--guided .chat-interface__messages {

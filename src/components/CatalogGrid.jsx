@@ -11,9 +11,6 @@ export default function CatalogGrid({ dishes, onPick, title, empty }) {
         {dishes.map((d) => (
           <li key={d.id}>
             <button type="button" className="catalog-grid__card" onClick={() => onPick(d)}>
-              <span className="catalog-grid__photo" aria-hidden="true">
-                <img src={d.image} alt="" />
-              </span>
               <span className="catalog-grid__copy">
                 <span className="catalog-grid__name">{d.title}</span>
                 <span className="catalog-grid__blurb">{d.blurb}</span>

@@ -27,13 +27,19 @@ function OptionNutrition({ option }) {
   )
 }
 
+function flowStep(stage, recipeSaved) {
+  if (recipeSaved) return 'book'
+  if (stage === 'recipe' || stage === 'finalizing') return 'cook'
+  return 'chat'
+}
+
 function Conversation({ messages, loading, stage }) {
   return (
     <div className="chat-interface__messages" aria-live="polite">
       <div className="chat-interface__message chat-interface__message--assistant">
         <strong className="chat-interface__messageRole">Kitchen</strong>
         <span className="chat-interface__messageContent">
-          What would you like to do tonight? We can begin with a trusted recipe or create something around your kitchen.
+          What are we cooking? Ask anything — a classic to adapt, or your own idea. I’ll use the knowledge base, then you can keep the dish in a recipe book you own.
         </span>
       </div>
       {messages.map((message, index) => (
@@ -49,7 +55,7 @@ function Conversation({ messages, loading, stage }) {
         <div className="chat-interface__message chat-interface__message--assistant">
           <strong className="chat-interface__messageRole">Kitchen</strong>
           <span className="chat-interface__messageContent">
-            Tell me what you have in mind—a dish, cuisine, ingredient, mood, or simply the kind of evening you are having.
+            Tell me the night you have — a dish, a cuisine, what’s in the cupboard, the budget, or the mood.
           </span>
         </div>
       )}
@@ -65,7 +71,7 @@ function Conversation({ messages, loading, stage }) {
         <div className="chat-interface__message chat-interface__message--assistant">
           <strong className="chat-interface__messageRole">Kitchen</strong>
           <span className="chat-interface__messageContent">
-            Good choice. Would you like any final change—cheaper, faster, a swap, more spice—or should I make it exactly like this?
+            Good choice. Any last change — cheaper, faster, a swap — or shall I write it as suggested?
           </span>
         </div>
       )}
@@ -73,7 +79,7 @@ function Conversation({ messages, loading, stage }) {
         <div className="chat-interface__message chat-interface__message--assistant">
           <strong className="chat-interface__messageRole">Kitchen</strong>
           <span className="chat-interface__messageContent">
-            Your recipe is ready below. You can keep it, add it to a collection, or ask for another change.
+            Your recipe is ready below. Keep it, add it to a recipe book, then shop the list or have the supermarket deliver it.
           </span>
         </div>
       )}
@@ -102,6 +108,7 @@ export default function ChatInterface({
   onRejectOptions,
   onFinalize,
   onTweakRecipe,
+  recipeSaved = false,
 }) {
   const submitOnEnter = (event, action) => {
     if (event.key !== 'Enter' || event.shiftKey) return
@@ -109,12 +116,17 @@ export default function ChatInterface({
     action()
   }
 
+  const currentStep = flowStep(stage, recipeSaved)
+
   return (
     <section className="chat-interface chat-interface--guided" aria-labelledby="kitchen-chat-title">
       <header className="chat-interface__top">
         <div>
           <p className="chat-interface__label">Your kitchen conversation</p>
           <h1 id="kitchen-chat-title" className="chat-interface__heroTitle">What are we cooking?</h1>
+          <p className="chat-interface__lede">
+            Chat with the kitchen. Cook the meal. Keep it in a recipe book you can share or publish.
+          </p>
         </div>
         {stage !== 'start' && (
           <button type="button" className="chat-interface__clear" onClick={onClearChat} disabled={loading}>
@@ -123,19 +135,39 @@ export default function ChatInterface({
         )}
       </header>
 
+      <ol className="chat-interface__flow" aria-label="How tonight goes">
+        {[
+          { id: 'chat', n: '01', label: 'Chat' },
+          { id: 'cook', n: '02', label: 'Cook' },
+          { id: 'book', n: '03', label: 'Recipe book' },
+        ].map((step) => (
+          <li
+            key={step.id}
+            className={
+              currentStep === step.id
+                ? 'chat-interface__flowStep chat-interface__flowStep--on'
+                : 'chat-interface__flowStep'
+            }
+          >
+            <span>{step.n}</span>
+            {step.label}
+          </li>
+        ))}
+      </ol>
+
       <Conversation messages={messages} loading={loading} stage={stage} />
 
       {stage === 'start' && (
         <div className="chat-interface__pathGrid">
           <button type="button" onClick={() => onChoosePath('recipe')} disabled={loading}>
             <span>01</span>
-            <strong>Start from a trusted recipe</strong>
-            <small>Choose a classic or reliable foundation, then adapt it carefully.</small>
+            <strong>Adapt a classic</strong>
+            <small>Start from a trusted recipe, then make it yours.</small>
           </button>
           <button type="button" onClick={() => onChoosePath('create')} disabled={loading}>
             <span>02</span>
-            <strong>Create something for me</strong>
-            <small>Begin with your ingredients, mood, budget, or the night you have.</small>
+            <strong>Start from your idea</strong>
+            <small>Time, budget, cupboard, mood — we’ll turn it into a meal.</small>
           </button>
         </div>
       )}
@@ -147,7 +179,7 @@ export default function ChatInterface({
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={(event) => submitOnEnter(event, onSubmitIdea)}
-            placeholder={path === 'recipe' ? 'Carbonara, a French chicken dish, something with aubergine…' : 'Comforting, quick, leftover chicken, under £12…'}
+            placeholder={path === 'recipe' ? 'Carbonara, a French chicken dish, something with aubergine…' : 'Comforting, leftover chicken, under £12, 30 minutes…'}
             className="chat-interface__input"
             aria-label="Tell the kitchen what you want"
             autoFocus
@@ -173,7 +205,7 @@ export default function ChatInterface({
 
       {stage === 'options' && (
         <div className="chat-interface__options" aria-label="Dish options">
-          <p>Choose one. I will ask about tweaks before writing the recipe.</p>
+          <p>Choose one. I’ll ask about tweaks, then write the recipe you can keep in a book.</p>
           <div>
             {options.map((option, index) => (
               <button type="button" key={`${option.title}-${index}`} onClick={() => onSelectOption(option)}>
@@ -227,7 +259,7 @@ export default function ChatInterface({
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={(event) => submitOnEnter(event, onTweakRecipe)}
-            placeholder="Ask for another change…"
+            placeholder="Ask for another change, or keep it as it is below…"
             className="chat-interface__input"
             aria-label="Tweak the finished recipe"
           />

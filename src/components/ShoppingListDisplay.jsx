@@ -55,7 +55,7 @@ function ShoppingListDisplay({
       <p className="shopping-list-display__label">From recipe to shop</p>
       <h2 className="shopping-list-display__title">Your shopping list</h2>
       <p className="shopping-list-display__lede">
-        Everything from this dish or collection, combined into one practical list—with direct buttons for Tesco and Sainsbury’s.
+        Shop this list yourself, or send it to Tesco or Sainsbury’s to deliver. Combined from this dish or recipe book.
       </p>
 
       <div className="shopping-list-display__actions">
