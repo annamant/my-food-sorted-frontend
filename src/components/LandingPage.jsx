@@ -27,21 +27,56 @@ const HOW_IT_WORKS = [
     title: 'Save, organise and shop in one flow',
     body: 'Save recipes to your collections, make them private or public, share them, then shop from one combined list.',
   },
+  {
+    step: '04',
+    title: 'Build your own recipe books',
+    body: 'Put the dishes you made or adapted into books you own. Keep a book private, share it, or publish it for anyone to cook from.',
+  },
 ]
 
-const DIFFERENCE_POINTS = [
-  'Most food tools make you adapt to their format. We do the opposite: the plan adapts to your life.',
-  'You are not stuck scrolling and comparing recipes for ages, and you are not boxed into fixed meal-delivery menus.',
-  'Our base starts with trusted classics and ingredient knowledge across cuisines, then reshapes them to your budget and preferences.',
+const KNOWLEDGE_BASE_VISUALS = [
+  {
+    label: 'Italian classics',
+    image: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    label: 'Asian flavours',
+    image: 'https://images.unsplash.com/photo-1512003867696-6d5ce6835040?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    label: 'Mediterranean',
+    image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80',
+  },
 ]
 
-const BENEFIT_POINTS = [
-  'Choose once, get a practical plan fast',
-  'Keep spend under control with budget-aware cooking',
-  'Use your cupboard first and cut waste',
-  'Save every recipe into your own lists and collections',
-  'Share your favourites or publish them publicly',
-  'Walk into Tesco or Sainsbury’s with one clear list',
+const PRODUCT_JOURNEY = [
+  {
+    step: '01',
+    title: 'Chat with My Food Sorted',
+    body: 'Tell the kitchen what you fancy, how long you have, and what you can spend. It answers with a plan, not another search page.',
+    kind: 'chat',
+    chat: [
+      { role: 'assistant', text: 'What are we cooking?' },
+      { role: 'user', text: 'Something light. Salmon, 30 minutes, under £12.' },
+      { role: 'assistant', text: 'Grilled salmon with lemon salad. I’ll write the recipe and your shop.' },
+    ],
+  },
+  {
+    step: '02',
+    title: 'Happy cooking',
+    body: 'This is the good bit: cooking with a plan, eating well, and using what you already have — so nothing is wasted.',
+    kind: 'image',
+    image: '/happy-cooking.jpg',
+    alt: 'Someone smiling while cooking a fresh meal in a sunlit kitchen',
+  },
+  {
+    step: '03',
+    title: 'The finished dish',
+    body: 'Dinner on the table: the meal you asked for, cooked your way.',
+    kind: 'image',
+    image: '/finished-dish-home.jpg',
+    alt: 'A homemade salmon dinner on a kitchen table at home',
+  },
 ]
 
 const TRUST_PROOF = [
@@ -50,59 +85,7 @@ const TRUST_PROOF = [
   { value: '1 list', label: 'from plan straight to supermarket' },
 ]
 
-const KNOWLEDGE_BASE_VISUALS = [
-  {
-    label: 'Italian classics',
-    image: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    label: 'Asian flavours',
-    image: 'https://images.unsplash.com/photo-1512003867696-6d5ce6835040?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    label: 'Mediterranean',
-    image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    label: 'Vegan',
-    image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    label: 'Vegetarian',
-    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    label: 'Keto & low-carb',
-    image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=1200&q=80',
-  },
-]
-
-const VISUAL_STORY = [
-  {
-    title: 'Real ingredients',
-    body: 'Fresh produce, pantry staples, and classics from every cuisine.',
-    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1400&q=80',
-  },
-  {
-    title: 'Happy cooking',
-    body: 'A kitchen routine that feels easy, social, and sustainable.',
-    image: 'https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1400&q=80',
-  },
-  {
-    title: 'Healthy outcomes',
-    body: 'Balanced meals with clear nutrition and your personal constraints.',
-    image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1400&q=80',
-  },
-]
-
-const EXTRA_PREFERENCE_BADGES = [
-  'High-protein',
-  'Gluten-free',
-  'Low-sugar',
-  'Dairy-free',
-  'Family-friendly',
-  'Budget-first',
-]
+const QUERY_ANYTIME = ['Vegan', 'Vegetarian', 'Keto', 'Gluten-free', 'Budget', 'What’s in the cupboard']
 
 export default function LandingPage({
   loading,
@@ -207,32 +190,100 @@ export default function LandingPage({
           ))}
         </section>
 
-        <section className="landing-story" aria-label="Visual story">
-          {VISUAL_STORY.map((item) => (
-            <article key={item.title}>
-              <img src={item.image} alt={item.title} />
-              <div>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
+        <section className="landing-story" aria-label="From chat to table">
+          <header className="landing-story__intro">
+            <p className="landing-kicker">From chat to table</p>
+            <h2>Chat. Cook. Eat.</h2>
+          </header>
+          <div className="landing-story__grid">
+            {PRODUCT_JOURNEY.map((item) => (
+              <article key={item.step}>
+                {item.kind === 'chat' ? (
+                  <div className="landing-story__chat">
+                    <p className="landing-story__chatLabel">Your kitchen conversation</p>
+                    {item.chat.map((line) => (
+                      <p key={line.text} className={`landing-story__bubble landing-story__bubble--${line.role}`}>
+                        <strong>{line.role === 'user' ? 'You' : 'Kitchen'}</strong>
+                        <span>{line.text}</span>
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <img src={item.image} alt={item.alt} />
+                )}
+                <div>
+                  <span>{item.step}</span>
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="landing-book" aria-labelledby="recipe-books-title">
+          <div className="landing-book__copy">
+            <p className="landing-kicker">Your recipe books</p>
+            <h2 id="recipe-books-title">Then keep the book.</h2>
+            <p className="landing-lede">
+              Every dish you cook can live in a recipe book you own. Meals you invented, and classics you adapted.
+              Keep a book private, share it with someone, or publish it for anyone to cook from.
+            </p>
+            <button type="button" className="btn btn--primary" onClick={() => goToAuth('register')}>
+              Start my first recipe book
+            </button>
+          </div>
+          <div className="landing-book__spread" aria-label="Example recipe book">
+            <div className="landing-book__cover">
+              <p>My kitchen</p>
+              <h3>Weeknight book</h3>
+              <span>12 dishes · yours</span>
+            </div>
+            <div className="landing-book__pages">
+              <p>Inside this book</p>
+              <ul>
+                <li>
+                  <strong>Lemon salmon, 30 min</strong>
+                  <span>Made by you</span>
+                </li>
+                <li>
+                  <strong>Lighter Sunday ragu</strong>
+                  <span>Adapted from tradition</span>
+                </li>
+                <li>
+                  <strong>Thursday dal</strong>
+                  <span>Made by you</span>
+                </li>
+                <li>
+                  <strong>Nonna’s salad, extra lemon</strong>
+                  <span>Adapted from tradition</span>
+                </li>
+              </ul>
+              <div className="landing-book__share">
+                <span>Share the book</span>
+                <span>Publish it</span>
               </div>
-            </article>
-          ))}
+            </div>
+          </div>
         </section>
 
         <section className="landing-section landing-section--split">
           <div>
             <p className="landing-kicker">Why we are different</p>
-            <h2>Not search. Not delivery. Personal planning.</h2>
-            <div className="landing-narrative">
-              {DIFFERENCE_POINTS.map((point) => (
-                <p key={point}>{point}</p>
-              ))}
+            <h2>Your meals. Your recipe books.</h2>
+            <div className="landing-difference">
+              <p>No delivery box. No endless recipe hunt. You create the meals.</p>
+              <p>Shop with our list, or have the supermarket deliver it.</p>
+              <p>Save them into recipe books you actually own — keep them private, share them, or make them public.</p>
             </div>
           </div>
           <div>
             <p className="landing-kicker">What you get</p>
-            <h2>Knowledge base in. Personal plan out.</h2>
-            <div className="landing-knowledgeGrid" aria-label="Cuisine and dietary knowledge base">
+            <h2>A knowledge base you can query anytime.</h2>
+            <p className="landing-lede landing-lede--compact">
+              Trusted classics across cuisines and diets sit underneath every answer. That is the base of what we do — ask whenever you cook.
+            </p>
+            <div className="landing-knowledgeGrid" aria-label="Culinary knowledge base">
               {KNOWLEDGE_BASE_VISUALS.map((item) => (
                 <figure key={item.label}>
                   <img src={item.image} alt={item.label} />
@@ -240,16 +291,11 @@ export default function LandingPage({
                 </figure>
               ))}
             </div>
-            <ul className="landing-preferenceBadges" aria-label="Additional dietary preferences">
-              {EXTRA_PREFERENCE_BADGES.map((badge) => (
+            <ul className="landing-preferenceBadges" aria-label="Ask about any of these">
+              {QUERY_ANYTIME.map((badge) => (
                 <li key={badge}>{badge}</li>
               ))}
             </ul>
-            <div className="landing-benefits">
-              {BENEFIT_POINTS.map((point) => (
-                <p key={point}>{point}</p>
-              ))}
-            </div>
           </div>
         </section>
 
