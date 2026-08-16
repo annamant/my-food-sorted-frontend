@@ -1,480 +1,209 @@
 import { useEffect, useRef, useState } from 'react'
 import AuthForm from './AuthForm'
-import MealPlanDisplay from './MealPlanDisplay'
-import { FEATURED_DISHES } from '../data/featuredDishes'
-import { INSPIRATIONS } from '../data/inspirations'
-import { dishesForCollection, searchCatalog } from '../data/catalog'
 import './LandingPage.css'
 
-const COLLECTION_PREVIEWS = [
-  {
-    label: 'Budget cooking',
-    title: 'Five proper dinners under £40',
-    body: 'A practical week of filling dishes with one combined shopping list.',
-    basket: '£38.40 basket',
-    images: [
-      'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80',
-    ],
-    dishes: ['Tomato chickpea curry', 'Chicken traybake', 'Italian bean stew'],
-  },
-  {
-    label: 'The Canon',
-    title: 'An Italian week',
-    body: 'Classics worth learning, ready to keep faithful or adapt carefully.',
-    basket: '6 foundation recipes',
-    images: [
-      'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=600&q=80',
-    ],
-    dishes: ['Weeknight ragù', 'Proper carbonara', 'Mushroom risotto'],
-  },
-  {
-    label: 'Family table',
-    title: 'Meals everyone can share',
-    body: 'Flexible favourites that can account for dislikes and dietary needs.',
-    basket: '4 household adaptations',
-    images: [
-      'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80',
-    ],
-    dishes: ['Sunday roast chicken', 'Teriyaki salmon', 'Build-your-own noodles'],
-  },
-]
-
-const TRUST_LABELS = [
-  {
-    title: 'Canonical',
-    body: 'A carefully researched foundation with its culinary source made visible.',
-  },
-  {
-    title: 'Adapted for you',
-    body: 'A trusted dish adjusted for your budget, time, pantry or household.',
-  },
-  {
-    title: 'Community-tested',
-    body: 'Cooked, rated and kept by real households in the My Food Sorted community.',
-  },
-]
-
-function LogoMark({ size = 'md', tone = 'ink' }) {
+function LogoMark() {
   return (
-    <span
-      className={`logomark logomark--${size} logomark--${tone}`}
-      aria-label="My Food Sorted"
-    >
-      <span className="logomark__top">my food.</span>
-      <span className="logomark__bottom">SORTED.</span>
+    <span className="landing-logo" aria-label="My Food Sorted">
+      <span>my food.</span>
+      <strong>SORTED.</strong>
     </span>
   )
 }
 
-function recipePreview(dish, eyebrow = 'From the Canon') {
-  return {
-    id: dish.id,
-    eyebrow,
-    title: dish.title,
-    blurb: dish.blurb,
-    image: dish.image,
-    mealPlan: dish.mealPlan,
-  }
-}
+const HOW_IT_WORKS = [
+  {
+    step: '01',
+    title: 'Find a recipe or start from your own idea',
+    body: 'Pick a trusted recipe from the library, or tell the kitchen what you want to cook tonight.',
+  },
+  {
+    step: '02',
+    title: 'Personalise everything for your life',
+    body: 'Set servings, budget, timing, pantry items, and dietary preferences so the plan fits you.',
+  },
+  {
+    step: '03',
+    title: 'Save, organise and shop in one flow',
+    body: 'Keep recipes in collections, generate a shopping list, and open Tesco or Sainsbury’s directly.',
+  },
+]
+
+const DIFFERENCE_POINTS = [
+  'Most food tools make you adapt to their format. We do the opposite: the plan adapts to your life.',
+  'You are not stuck scrolling and comparing recipes for ages, and you are not boxed into fixed meal-delivery menus.',
+  'Our base starts with trusted classics and ingredient knowledge across cuisines, then reshapes them to your budget and preferences.',
+]
+
+const BENEFIT_POINTS = [
+  'Choose once, get a practical plan fast',
+  'Keep spend under control with budget-aware cooking',
+  'Use your cupboard first and cut waste',
+  'Walk into Tesco or Sainsbury’s with one clear list',
+]
+
+const TRUST_PROOF = [
+  { value: '60 sec', label: 'to build your first plan' },
+  { value: '£15-£40', label: 'typical weekly dinner budget range' },
+  { value: '1 list', label: 'from plan straight to supermarket' },
+]
+
+const KNOWLEDGE_BASE_VISUALS = [
+  {
+    label: 'Italian classics',
+    image: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    label: 'Asian flavours',
+    image: 'https://images.unsplash.com/photo-1512003867696-6d5ce6835040?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    label: 'Mediterranean',
+    image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    label: 'Vegan',
+    image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    label: 'Vegetarian',
+    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    label: 'Keto & low-carb',
+    image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=1200&q=80',
+  },
+]
+
+const VISUAL_STORY = [
+  {
+    title: 'Real ingredients',
+    body: 'Fresh produce, pantry staples, and classics from every cuisine.',
+    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1400&q=80',
+  },
+  {
+    title: 'Happy cooking',
+    body: 'A kitchen routine that feels easy, social, and sustainable.',
+    image: 'https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1400&q=80',
+  },
+  {
+    title: 'Healthy outcomes',
+    body: 'Balanced meals with clear nutrition and your personal constraints.',
+    image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1400&q=80',
+  },
+]
+
+const EXTRA_PREFERENCE_BADGES = [
+  'High-protein',
+  'Gluten-free',
+  'Low-sugar',
+  'Dairy-free',
+  'Family-friendly',
+  'Budget-first',
+]
 
 export default function LandingPage({
   loading,
   handleAuth,
   initialAuthMode = 'register',
-  pendingInspiration,
-  onPickInspiration,
-  onStartCooking,
 }) {
   const authRef = useRef(null)
-  const canonRef = useRef(null)
-  const exploreRef = useRef(null)
-  const [openDish, setOpenDish] = useState(null)
-  const [shelf, setShelf] = useState(null)
+  const howRef = useRef(null)
   const [authMode, setAuthMode] = useState(initialAuthMode)
-  const [heroQuery, setHeroQuery] = useState('')
 
   useEffect(() => {
     setAuthMode(initialAuthMode)
   }, [initialAuthMode])
 
-  useEffect(() => {
-    if (!openDish) return undefined
-    function onKey(event) {
-      if (event.key === 'Escape') setOpenDish(null)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [openDish])
-
-  function scrollToAuth(nextMode = 'register') {
+  function goToAuth(nextMode = 'register') {
     setAuthMode(nextMode)
-    setOpenDish(null)
     authRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
-  function scrollTo(ref) {
-    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
-  function pickInspiration(item) {
-    const dishes = dishesForCollection(item.id).map((dish) => recipePreview(dish, item.title))
-    setShelf({ title: item.title, body: item.blurb, dishes })
-    onPickInspiration?.(item)
-    requestAnimationFrame(() => scrollTo(exploreRef))
-  }
-
-  function submitHeroSearch(event) {
-    event.preventDefault()
-    const query = heroQuery.trim()
-    if (!query) return
-
-    const hits = searchCatalog(query)
-    if (hits.length === 1) {
-      setOpenDish(recipePreview(hits[0]))
-      return
-    }
-    if (hits.length > 1) {
-      setShelf({
-        title: `Results for “${query}”`,
-        body: 'Trusted dishes already in the kitchen.',
-        dishes: hits.map((dish) => recipePreview(dish)),
-      })
-      requestAnimationFrame(() => scrollTo(exploreRef))
-      return
-    }
-
-    onStartCooking?.(query)
-    scrollToAuth('register')
   }
 
   return (
     <div className="landing">
-      <header className="landing__siteHeader">
+      <header className="landing-header">
         <button
           type="button"
-          className="landing__brandBtn"
+          className="landing-header__brand"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           aria-label="My Food Sorted home"
         >
-          <LogoMark size="sm" />
+          <LogoMark />
         </button>
-
-        <nav className="landing__nav" aria-label="Main navigation">
-          <details className="landing__navMenu">
-            <summary>Recipes</summary>
-            <div className="landing__navDropdown">
-              <button type="button" onClick={() => scrollTo(canonRef)}>The Canon</button>
-              <button type="button" onClick={() => scrollTo(exploreRef)}>Cuisines</button>
-              <button type="button" onClick={() => pickInspiration(INSPIRATIONS.find((item) => item.id === 'budget'))}>
-                Budget cooking
-              </button>
-              <button type="button" onClick={() => pickInspiration(INSPIRATIONS.find((item) => item.id === 'vegetarian'))}>
-                Vegetarian
-              </button>
-            </div>
-          </details>
-          <a href="#personal-kitchen">Cook tonight</a>
-          <a href="#community">Collections</a>
-          <a href="#shopping">Shopping</a>
-          <a href="#how-it-works">How it works</a>
-        </nav>
-
-        <div className="landing__navActions">
-          <button type="button" className="landing__navLogin" onClick={() => scrollToAuth('login')}>
+        <div className="landing-header__actions">
+          <button type="button" className="landing-header__link" onClick={() => goToAuth('login')}>
             Log in
           </button>
-          <button type="button" className="btn btn--primary landing__navCta" onClick={() => scrollToAuth('register')}>
-            Build your kitchen
+          <button type="button" className="btn btn--primary" onClick={() => goToAuth('register')}>
+            Join free
           </button>
         </div>
       </header>
 
       <main>
-        <section className="landing__hero" id="personal-kitchen">
-          <div className="landing__heroCopy">
-            <p className="landing__eyebrow">A personal kitchen, not another recipe feed</p>
-            <h1 className="landing__headline">
-              Trusted recipes.<br />
-              <em>Made right for you.</em>
-            </h1>
-            <p className="landing__sub">
-              Start with a proper dish. Adapt it to your time, budget, pantry and
-              household. Keep what works, build collections, and shop one clear list.
+        <section className="landing-hero">
+          <div className="landing-hero__copy">
+            <p className="landing-kicker">A new way to plan and eat</p>
+            <h1>Stop searching. Stop being forced. Start eating better, your way.</h1>
+            <p className="landing-lede">
+              This is not a recipe library. This is not meal delivery.
+              <br />
+              You choose what you want. We turn trusted culinary knowledge into a personal plan, tailored to your budget,
+              preferences, and week, then send you shopping with one combined list.
             </p>
-            <form className="landing__search" onSubmit={submitHeroSearch}>
-              <label htmlFor="landing-search">What do you want to cook?</label>
-              <div className="landing__searchRow">
-                <input
-                  id="landing-search"
-                  type="search"
-                  value={heroQuery}
-                  onChange={(event) => setHeroQuery(event.target.value)}
-                  placeholder="Carbonara, leftover chicken, dinner under £10…"
-                />
-                <button type="submit" className="btn btn--primary">Cook tonight</button>
-              </div>
-            </form>
-            <div className="landing__quickLinks" aria-label="Quick cooking options">
-              <button type="button" onClick={() => pickInspiration(INSPIRATIONS.find((item) => item.id === 'pantry'))}>
-                Use what I have
+            <div className="landing-hero__actions">
+              <button type="button" className="btn btn--primary" onClick={() => goToAuth('register')}>
+                Start free - build my plan
               </button>
-              <button type="button" onClick={() => pickInspiration(INSPIRATIONS.find((item) => item.id === 'budget'))}>
-                Cook on a budget
-              </button>
-              <button type="button" onClick={() => pickInspiration(INSPIRATIONS.find((item) => item.id === 'wellbeing'))}>
-                High-protein
+              <button type="button" className="landing-hero__secondary" onClick={() => howRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+                See how it works
               </button>
             </div>
+            <p className="landing-hero__microcopy">
+              Personal meal plan + budget + shopping list in under 60 seconds.
+            </p>
           </div>
-
-          <div className="landing__heroMedia">
+          <div className="landing-hero__image">
             <img
-              src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1800&q=85"
-              alt="A home cook preparing dinner in a warm kitchen"
+              src="https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=1600&q=80"
+              alt="Fresh healthy meal ingredients prepared in a bright kitchen"
             />
-            <div className="landing__heroNote">
-              <span>From recipe to trolley</span>
-              <strong>One trusted cooking flow</strong>
-            </div>
-          </div>
-        </section>
-
-        <section className="landing__promise" aria-label="Product promise">
-          <p>Curated foundations</p>
-          <span aria-hidden="true">·</span>
-          <p>Personal adaptations</p>
-          <span aria-hidden="true">·</span>
-          <p>Community collections</p>
-          <span aria-hidden="true">·</span>
-          <p>Combined shopping lists</p>
-        </section>
-
-        <section className="landing__section landing__canon" ref={canonRef} id="canon">
-          <div className="landing__sectionHead">
             <div>
-              <p className="landing__eyebrow">The Canon</p>
-              <h2>Recipes worth trusting.</h2>
+              <strong>Personal plan</strong>
+              <span>Budget, nutrition, timing, and taste aligned in one flow.</span>
             </div>
-            <p>
-              A focused library of culinary foundations—from Italian classics to
-              French bistro cooking. Canon recipes will make their source and
-              adaptation status visible.
-            </p>
-          </div>
-          <ul className="landing__dishGrid">
-            {FEATURED_DISHES.map((dish) => (
-              <li key={dish.id}>
-                <button type="button" className="landing__dish" onClick={() => setOpenDish(dish)}>
-                  <span className="landing__dishMedia">
-                    <img src={dish.image} alt="" />
-                    <span className="landing__recipeBadge">Foundation</span>
-                  </span>
-                  <span className="landing__dishCopy">
-                    <span className="landing__dishEyebrow">{dish.eyebrow}</span>
-                    <span className="landing__dishName">{dish.title}</span>
-                    <span className="landing__dishBlurb">{dish.blurb}</span>
-                    <span className="landing__dishAction">Open recipe →</span>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="landing__section landing__journey" id="how-it-works">
-          <div className="landing__sectionHead">
-            <div>
-              <p className="landing__eyebrow">How your kitchen works</p>
-              <h2>See the whole journey.</h2>
-            </div>
-            <p>
-              Start with a trustworthy dish, make only the changes your household
-              needs, then turn several dinners into one practical shop.
-            </p>
-          </div>
-          <ol className="landing__journeyGrid">
-            <li className="landing__journeyCard">
-              <div className="landing__journeyVisual landing__journeyVisual--choose">
-                {FEATURED_DISHES.slice(0, 3).map((dish) => (
-                  <span key={dish.id}>
-                    <img src={dish.image} alt="" />
-                    <small>{dish.title}</small>
-                  </span>
-                ))}
-              </div>
-              <div className="landing__journeyCopy">
-                <span>01</span>
-                <div><strong>Choose a trusted recipe</strong><p>Browse clear sources, real dishes and community favourites.</p></div>
-              </div>
-            </li>
-            <li className="landing__journeyCard">
-              <div className="landing__journeyVisual landing__journeyVisual--adapt">
-                <img src={FEATURED_DISHES[0].image} alt="" />
-                <div>
-                  <strong>Make it work tonight</strong>
-                  <span><b>People</b> 4</span>
-                  <span><b>Time</b> 30 mins</span>
-                  <span><b>Budget</b> Under £12</span>
-                  <span><b>Swap</b> No dairy</span>
-                </div>
-              </div>
-              <div className="landing__journeyCopy">
-                <span>02</span>
-                <div><strong>Adapt it to your kitchen</strong><p>Change time, budget or diet while keeping the original dish visible.</p></div>
-              </div>
-            </li>
-            <li className="landing__journeyCard">
-              <div className="landing__journeyVisual landing__journeyVisual--shop">
-                <div><strong>Weeknight collection</strong><small>3 dinners · 12 ingredients</small></div>
-                <p><i>✓</i><span>Onions</span><small>In the cupboard</small></p>
-                <p><i>○</i><span>Chicken thighs</span><small>800g</small></p>
-                <p><i>○</i><span>Chopped tomatoes</span><small>2 tins</small></p>
-                <p><i>○</i><span>Fresh parsley</span><small>1 bunch</small></p>
-                <span className="landing__journeyShopAction">Open at your supermarket</span>
-              </div>
-              <div className="landing__journeyCopy">
-                <span>03</span>
-                <div><strong>Combine and shop</strong><p>Merge recipes, remove what you own and send one list to your shop.</p></div>
-              </div>
-            </li>
-          </ol>
-        </section>
-
-        <section className="landing__section" ref={exploreRef} id="explore">
-          <div className="landing__sectionHead">
-            <div>
-              <p className="landing__eyebrow">Browse your way</p>
-              <h2>Start with a cuisine, need or mood.</h2>
-            </div>
-            <p>
-              The library stays easy to explore even when you do not yet know the dish.
-            </p>
-          </div>
-          <ul className="landing__inspireGrid">
-            {INSPIRATIONS.map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  className={`landing__inspireTile ${pendingInspiration?.id === item.id ? 'landing__inspireTile--on' : ''}`}
-                  onClick={() => pickInspiration(item)}
-                >
-                  <span className="landing__inspireMedia">
-                    <img src={item.image} alt="" />
-                    <span className="landing__inspireShade" />
-                    <span className="landing__inspireOnImage">
-                      <span className="landing__inspireName">{item.title}</span>
-                      <span className="landing__inspireBlurb">{item.blurb}</span>
-                    </span>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-
-          {shelf?.dishes?.length > 0 && (
-            <div className="landing__shelf">
-              <p className="landing__eyebrow">On the shelf</p>
-              <h3>{shelf.title}</h3>
-              <p>{shelf.body}</p>
-              <ul className="landing__dishGrid">
-                {shelf.dishes.map((dish) => (
-                  <li key={dish.id}>
-                    <button type="button" className="landing__dish" onClick={() => setOpenDish(dish)}>
-                      <span className="landing__dishMedia"><img src={dish.image} alt="" /></span>
-                      <span className="landing__dishCopy">
-                        <span className="landing__dishName">{dish.title}</span>
-                        <span className="landing__dishBlurb">{dish.blurb}</span>
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </section>
-
-        <section className="landing__community" id="community">
-          <div className="landing__communityIntro">
-            <p className="landing__eyebrow">The community kitchen</p>
-            <h2>Recipe collections made to be cooked.</h2>
-            <p>
-              Save dishes into lists for a week, a budget or a mood. Share yours,
-              discover what other households actually cook, and keep the best ideas moving.
-            </p>
-          </div>
-          <div className="landing__collectionGrid">
-            {COLLECTION_PREVIEWS.map((collection) => (
-              <article className="landing__collection" key={collection.title}>
-                <div className="landing__collectionImages">
-                  <img src={collection.images[0]} alt="" />
-                  <div>
-                    <img src={collection.images[1]} alt="" />
-                    <img src={collection.images[2]} alt="" />
-                  </div>
-                </div>
-                <div className="landing__collectionCopy">
-                  <p>{collection.label}</p>
-                  <h3>{collection.title}</h3>
-                  <span>{collection.body}</span>
-                  <ul>
-                    {collection.dishes.map((dish, index) => (
-                      <li key={dish}><b>{String(index + 1).padStart(2, '0')}</b><span>{dish}</span></li>
-                    ))}
-                  </ul>
-                  <footer><span>{collection.dishes.length} dishes</span><strong>{collection.basket}</strong></footer>
-                </div>
-              </article>
-            ))}
-          </div>
-          <button type="button" className="btn landing__lightButton" onClick={() => scrollToAuth('register')}>
-            Start your first collection
-          </button>
-        </section>
-
-        <section className="landing__section landing__shopping" id="shopping">
-          <div className="landing__shoppingCopy">
-            <p className="landing__eyebrow">From plan to shop</p>
-            <h2>One list for everything you chose.</h2>
-            <p>
-              Combine ingredients across a recipe or an entire collection, check off
-              what is already in the cupboard, then take the remaining list to your
-              preferred supermarket.
-            </p>
-            <div className="landing__retailers" aria-label="Retailer support">
-              <span>Tesco</span>
-              <span>Sainsbury&apos;s</span>
-              <span>More retailers to come</span>
-            </div>
-          </div>
-          <div className="landing__listMock" aria-label="Example shopping list">
-            <div><span>Fresh produce</span><strong>4 items</strong></div>
-            <label><input type="checkbox" defaultChecked /> Onions</label>
-            <label><input type="checkbox" /> Tomatoes</label>
-            <label><input type="checkbox" /> Flat-leaf parsley</label>
-            <div><span>Pantry</span><strong>3 items</strong></div>
-            <label><input type="checkbox" /> Tinned chickpeas</label>
-            <label><input type="checkbox" defaultChecked /> Olive oil</label>
-            <p>Already have 2 · Shop 5</p>
           </div>
         </section>
 
-        <section className="landing__section landing__trust">
-          <div className="landing__sectionHead">
-            <div>
-              <p className="landing__eyebrow">Trust stays visible</p>
-              <h2>Always know what kind of recipe you are cooking.</h2>
-            </div>
-          </div>
-          <div className="landing__trustGrid">
-            {TRUST_LABELS.map((item, index) => (
-              <article key={item.title}>
-                <span>{String(index + 1).padStart(2, '0')}</span>
+        <section className="landing-proof" aria-label="Why users trust this flow">
+          {TRUST_PROOF.map((item) => (
+            <article key={item.label}>
+              <strong>{item.value}</strong>
+              <span>{item.label}</span>
+            </article>
+          ))}
+        </section>
+
+        <section className="landing-story" aria-label="Visual story">
+          {VISUAL_STORY.map((item) => (
+            <article key={item.title}>
+              <img src={item.image} alt={item.title} />
+              <div>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </div>
+            </article>
+          ))}
+        </section>
+
+        <section className="landing-section" ref={howRef}>
+          <p className="landing-kicker">How it works</p>
+          <h2>Simple flow. Real outcomes.</h2>
+          <div className="landing-steps">
+            {HOW_IT_WORKS.map((item) => (
+              <article key={item.step}>
+                <span>{item.step}</span>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
               </article>
@@ -482,22 +211,49 @@ export default function LandingPage({
           </div>
         </section>
 
-        <section className="landing__authSection" ref={authRef}>
-          <div className="landing__authPitch">
-            <p className="landing__eyebrow">
-              {pendingInspiration ? 'Your choice is ready' : 'Build your kitchen'}
-            </p>
-            <h2>
-              {pendingInspiration
-                ? `Keep exploring ${pendingInspiration.title}.`
-                : 'Keep the recipes that work for your household.'}
-            </h2>
+        <section className="landing-section landing-section--split">
+          <div>
+            <p className="landing-kicker">Why we are different</p>
+            <h2>Not search. Not delivery. Personal planning.</h2>
+            <div className="landing-narrative">
+              {DIFFERENCE_POINTS.map((point) => (
+                <p key={point}>{point}</p>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="landing-kicker">What you get</p>
+            <h2>Knowledge base in. Personal plan out.</h2>
+            <div className="landing-knowledgeGrid" aria-label="Cuisine and dietary knowledge base">
+              {KNOWLEDGE_BASE_VISUALS.map((item) => (
+                <figure key={item.label}>
+                  <img src={item.image} alt={item.label} />
+                  <figcaption>{item.label}</figcaption>
+                </figure>
+              ))}
+            </div>
+            <ul className="landing-preferenceBadges" aria-label="Additional dietary preferences">
+              {EXTRA_PREFERENCE_BADGES.map((badge) => (
+                <li key={badge}>{badge}</li>
+              ))}
+            </ul>
+            <div className="landing-benefits">
+              {BENEFIT_POINTS.map((point) => (
+                <p key={point}>{point}</p>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="landing-section landing-cta" ref={authRef}>
+          <div className="landing-cta__copy">
+            <p className="landing-kicker">Start now</p>
+            <h2>Cook with a plan that matches your time, taste and budget.</h2>
             <p>
-              Join free to adapt dishes, create collections, combine shopping lists
-              and share what you cook.
+              Join free. Pick the food you actually want to eat. Personalise it. Save it. Shop it.
             </p>
           </div>
-          <div className="landing__authCard">
+          <div className="landing-cta__auth">
             <AuthForm
               loading={loading}
               handleAuth={handleAuth}
@@ -509,50 +265,9 @@ export default function LandingPage({
           </div>
         </section>
       </main>
-
-      <footer className="landing__footer">
-        <div className="landing__footerTop">
-          <div>
-            <LogoMark size="md" tone="light" />
-            <p>Trusted recipes, made right for your kitchen.</p>
-          </div>
-          <div className="landing__footerLinks">
-            <div><strong>Cook</strong><a href="#canon">The Canon</a><a href="#explore">Cuisines</a><a href="#personal-kitchen">Cook tonight</a></div>
-            <div><strong>Keep</strong><a href="#community">Collections</a><a href="#shopping">Shopping lists</a><button type="button" onClick={() => scrollToAuth('register')}>Join free</button></div>
-            <div><strong>About</strong><a href="#how-it-works">How it works</a><span>Recipe standards</span><span>Community guidelines</span></div>
-          </div>
-        </div>
-        <div className="landing__footerBottom">
-          <span>© {new Date().getFullYear()} My Food Sorted</span>
-          <span>Privacy · Terms · Cookies</span>
-        </div>
-      </footer>
-
-      {openDish && (
-        <div className="landing__cook" role="dialog" aria-modal="true" aria-labelledby="cook-title">
-          <div className="landing__cookPanel">
-            <header className="landing__cookBar">
-              <div>
-                <p className="landing__cookEyebrow">{openDish.eyebrow}</p>
-                <h2 id="cook-title">{openDish.title}</h2>
-              </div>
-              <button type="button" className="btn btn--ghost" onClick={() => setOpenDish(null)}>
-                Close
-              </button>
-            </header>
-            <MealPlanDisplay mealPlan={openDish.mealPlan} readOnly alreadySaved />
-            <div className="landing__cookKeep">
-              <div>
-                <strong>Make this recipe yours.</strong>
-                <p>Join to adapt it, keep it in a collection and build its shopping list.</p>
-              </div>
-              <button type="button" className="btn btn--primary" onClick={() => scrollToAuth('register')}>
-                Build your kitchen
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <button type="button" className="landing-stickyCta" onClick={() => goToAuth('register')}>
+        Start free
+      </button>
     </div>
   )
 }
