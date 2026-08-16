@@ -137,60 +137,52 @@ export default function LandingPage({
           <button type="button" className="landing-header__link" onClick={() => goToAuth('login')}>
             Log in
           </button>
-          <button type="button" className="btn btn--primary" onClick={() => goToAuth('register')}>
+          <button type="button" className="btn btn--primary landing-header__cta" onClick={() => goToAuth('register')}>
             Join free
           </button>
         </div>
       </header>
 
+      <section className="landing-hero">
+        <div className="landing-hero__media">
+          <img
+            src="/hero-summer-table.jpg"
+            alt="A bright summer table with salad, grilled fish, vegetables and fresh sides"
+            className="landing-hero__bg landing-hero__bg--a"
+            fetchPriority="high"
+          />
+          <img
+            src="/hero-summer-table-close.jpg"
+            alt=""
+            className="landing-hero__bg landing-hero__bg--b"
+          />
+          <span className="landing-hero__vignette" aria-hidden="true" />
+          <span className="landing-hero__shimmer" aria-hidden="true" />
+        </div>
+        <div className="landing-hero__copy">
+          <p className="landing-kicker">A new way to plan and eat</p>
+          <h1>Stop searching. Stop being forced. Start eating better, your way.</h1>
+          <p className="landing-lede">
+            This is not a recipe library. This is not meal delivery.
+            <br />
+            You choose what you want. We turn trusted culinary knowledge into a personal plan, tailored to your budget,
+            preferences, and week. Then you save it to your lists, share it or make it public, and shop with one combined list.
+          </p>
+          <div className="landing-hero__actions">
+            <button type="button" className="btn btn--primary" onClick={() => goToAuth('register')}>
+              Start free - build my plan
+            </button>
+            <button type="button" className="landing-hero__secondary" onClick={() => howRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+              See how it works
+            </button>
+          </div>
+          <p className="landing-hero__microcopy">
+            Personal meal plan + budget + shopping list in under 60 seconds.
+          </p>
+        </div>
+      </section>
+
       <main>
-        <section className="landing-hero">
-          <div className="landing-hero__copy">
-            <p className="landing-kicker">A new way to plan and eat</p>
-            <h1>Stop searching. Stop being forced. Start eating better, your way.</h1>
-            <p className="landing-lede">
-              This is not a recipe library. This is not meal delivery.
-              <br />
-              You choose what you want. We turn trusted culinary knowledge into a personal plan, tailored to your budget,
-              preferences, and week. Then you save it to your lists, share it or make it public, and shop with one combined list.
-            </p>
-            <div className="landing-hero__actions">
-              <button type="button" className="btn btn--primary" onClick={() => goToAuth('register')}>
-                Start free - build my plan
-              </button>
-              <button type="button" className="landing-hero__secondary" onClick={() => howRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
-                See how it works
-              </button>
-            </div>
-            <p className="landing-hero__microcopy">
-              Personal meal plan + budget + shopping list in under 60 seconds.
-            </p>
-          </div>
-          <div className="landing-hero__image">
-            <img
-              src="https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=1600&q=80"
-              alt="Vegetable garden produce with natural green tones"
-              className="landing-hero__slide landing-hero__slide--1"
-            />
-            <img
-              src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1600&q=80"
-              alt="Cooking fresh ingredients in a bright kitchen"
-              className="landing-hero__slide landing-hero__slide--2"
-            />
-            <img
-              src="https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=1600&q=80"
-              alt="A beautiful shared meal on a dining table"
-              className="landing-hero__slide landing-hero__slide--3"
-            />
-            <span className="landing-hero__breeze landing-hero__breeze--one" aria-hidden="true" />
-            <span className="landing-hero__breeze landing-hero__breeze--two" aria-hidden="true" />
-            <span className="landing-hero__bee" aria-hidden="true" />
-            <div>
-              <strong>Personal plan</strong>
-              <span>Budget, nutrition, timing, and taste aligned in one flow.</span>
-            </div>
-          </div>
-        </section>
 
         <section className="landing-section" ref={howRef}>
           <p className="landing-kicker">How it works</p>
