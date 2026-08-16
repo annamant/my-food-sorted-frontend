@@ -25,7 +25,7 @@ const HOW_IT_WORKS = [
   {
     step: '03',
     title: 'Save, organise and shop in one flow',
-    body: 'Keep recipes in collections, generate a shopping list, and open Tesco or Sainsbury’s directly.',
+    body: 'Save recipes to your collections, make them private or public, share them, then shop from one combined list.',
   },
 ]
 
@@ -39,6 +39,8 @@ const BENEFIT_POINTS = [
   'Choose once, get a practical plan fast',
   'Keep spend under control with budget-aware cooking',
   'Use your cupboard first and cut waste',
+  'Save every recipe into your own lists and collections',
+  'Share your favourites or publish them publicly',
   'Walk into Tesco or Sainsbury’s with one clear list',
 ]
 
@@ -150,7 +152,7 @@ export default function LandingPage({
               This is not a recipe library. This is not meal delivery.
               <br />
               You choose what you want. We turn trusted culinary knowledge into a personal plan, tailored to your budget,
-              preferences, and week, then send you shopping with one combined list.
+              preferences, and week. Then you save it to your lists, share it or make it public, and shop with one combined list.
             </p>
             <div className="landing-hero__actions">
               <button type="button" className="btn btn--primary" onClick={() => goToAuth('register')}>
@@ -166,13 +168,41 @@ export default function LandingPage({
           </div>
           <div className="landing-hero__image">
             <img
-              src="https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=1600&q=80"
-              alt="Fresh healthy meal ingredients prepared in a bright kitchen"
+              src="https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=1600&q=80"
+              alt="Vegetable garden produce with natural green tones"
+              className="landing-hero__slide landing-hero__slide--1"
             />
+            <img
+              src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1600&q=80"
+              alt="Cooking fresh ingredients in a bright kitchen"
+              className="landing-hero__slide landing-hero__slide--2"
+            />
+            <img
+              src="https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=1600&q=80"
+              alt="A beautiful shared meal on a dining table"
+              className="landing-hero__slide landing-hero__slide--3"
+            />
+            <span className="landing-hero__breeze landing-hero__breeze--one" aria-hidden="true" />
+            <span className="landing-hero__breeze landing-hero__breeze--two" aria-hidden="true" />
+            <span className="landing-hero__bee" aria-hidden="true" />
             <div>
               <strong>Personal plan</strong>
               <span>Budget, nutrition, timing, and taste aligned in one flow.</span>
             </div>
+          </div>
+        </section>
+
+        <section className="landing-section" ref={howRef}>
+          <p className="landing-kicker">How it works</p>
+          <h2>Simple flow. Real outcomes.</h2>
+          <div className="landing-steps">
+            {HOW_IT_WORKS.map((item) => (
+              <article key={item.step}>
+                <span>{item.step}</span>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </article>
+            ))}
           </div>
         </section>
 
@@ -195,20 +225,6 @@ export default function LandingPage({
               </div>
             </article>
           ))}
-        </section>
-
-        <section className="landing-section" ref={howRef}>
-          <p className="landing-kicker">How it works</p>
-          <h2>Simple flow. Real outcomes.</h2>
-          <div className="landing-steps">
-            {HOW_IT_WORKS.map((item) => (
-              <article key={item.step}>
-                <span>{item.step}</span>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
-              </article>
-            ))}
-          </div>
         </section>
 
         <section className="landing-section landing-section--split">
@@ -250,7 +266,7 @@ export default function LandingPage({
             <p className="landing-kicker">Start now</p>
             <h2>Cook with a plan that matches your time, taste and budget.</h2>
             <p>
-              Join free. Pick the food you actually want to eat. Personalise it. Save it. Shop it.
+              Join free. Pick what you want to eat. Personalise it. Save it to your lists. Share it or make it public. Shop it.
             </p>
           </div>
           <div className="landing-cta__auth">
