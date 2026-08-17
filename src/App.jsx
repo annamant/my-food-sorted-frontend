@@ -6,6 +6,7 @@ import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
 import PlaylistPicker from './components/PlaylistPicker'
 import { defaultBrief, formatBriefForChat } from './components/MealBriefPanel'
+import { applyIntakeAnswer, pathMeta, questionsForPath, suggestInstruction } from './data/cookIntake'
 import LandingPage from './components/LandingPage'
 import SharedRecipeView from './components/SharedRecipeView'
 import AccountPage from './components/AccountPage'
@@ -103,6 +104,7 @@ function AppContent() {
   const [conversationId, setConversationId] = useState(() => crypto.randomUUID())
   const [cookStage, setCookStage] = useState('start')
   const [cookPath, setCookPath] = useState('')
+  const [intakeStep, setIntakeStep] = useState(0)
   const [dishOptions, setDishOptions] = useState([])
   const [selectedOption, setSelectedOption] = useState(null)
 
@@ -150,6 +152,7 @@ function AppContent() {
     setConversationId(crypto.randomUUID())
     setCookStage('start')
     setCookPath('')
+    setIntakeStep(0)
     setDishOptions([])
     setSelectedOption(null)
     setMealPlan(null)
@@ -402,6 +405,7 @@ function AppContent() {
   const beginCookFlow = useCallback((path) => {
     setCookPath(path)
     setCookStage('describe')
+    setIntakeStep(0)
     setDishOptions([])
     setSelectedOption(null)
     setMealPlan(null)
@@ -409,27 +413,24 @@ function AppContent() {
     setShoppingList(null)
     setCatalogHits([])
     setCatalogMiss('')
-    setMessages([])
     setInput('')
-    setMealBrief((prev) => ({ ...defaultBrief, ...prev, notes: '' }))
-  }, [])
+    setMealBrief({
+      ...defaultBrief,
+      servings: prefs?.household_size || defaultBrief.servings,
+      days: path === 'week' ? 7 : 1,
+      meal_slots: ['dinner'],
+      avoid: '',
+      notes: '',
+      mode: path,
+    })
+    setMessages([{ role: 'assistant', content: pathMeta(path).opener }])
+  }, [prefs])
 
-  const submitCookIdea = useCallback(() => {
-    const text = input.trim()
-    if (!text) return
-    setMessages((prev) => [...prev, { role: 'user', content: text }])
-    setMealBrief((prev) => ({ ...prev, notes: text }))
-    setInput('')
-    setCookStage('preferences')
-  }, [input])
-
-  const requestDishOptions = useCallback(async () => {
+  const requestDishOptions = useCallback(async (briefOverride) => {
     if (chatLoading) return
-    const idea = mealBrief.notes?.trim() || 'I am open to ideas'
-    const pathInstruction = cookPath === 'recipe'
-      ? 'Start from established, recognisable recipes from trusted cooking traditions. Do not invent novelty dishes.'
-      : 'Create three original but practical home-cooking directions from this brief.'
-    const userMessage = `${pathInstruction}\nWhat I want: ${idea}\nSuggest three options only.`
+    const brief = briefOverride ?? mealBrief
+    const idea = brief.notes?.trim() || 'I am open to ideas'
+    const userMessage = `${suggestInstruction(cookPath)}\nWhat I want: ${idea}\nSuggest three options only. Obey the kitchen brief.`
 
     setChatLoading(true)
     setCookStage('suggesting')
@@ -440,7 +441,7 @@ function AppContent() {
         body: JSON.stringify({
           user_message: userMessage,
           conversation_id: conversationId,
-          meal_brief: mealBrief,
+          meal_brief: brief,
           intent: 'suggest',
         }),
       })
@@ -461,13 +462,67 @@ function AppContent() {
       setCookStage('options')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Could not suggest dishes just now'
-      setMessages((prev) => [...prev, { role: 'assistant', content: message }])
-      setCookStage('preferences')
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: `${message} Tell me anything you’d like to change, and I’ll try again.`,
+        },
+      ])
+      setCookStage('ask')
       addToast(message, 'error')
     } finally {
       setChatLoading(false)
     }
   }, [chatLoading, mealBrief, cookPath, authHeaders, conversationId, addToast])
+
+  const submitCookTurn = useCallback(() => {
+    const text = input.trim()
+    if (!text || chatLoading) return
+
+    const questions = questionsForPath(cookPath)
+    setInput('')
+
+    if (cookStage === 'describe') {
+      setMealBrief((prev) => ({ ...prev, notes: text }))
+      setIntakeStep(0)
+      setCookStage('ask')
+      setMessages((prev) => [
+        ...prev,
+        { role: 'user', content: text },
+        { role: 'assistant', content: questions[0].prompt },
+      ])
+      return
+    }
+
+    if (cookStage !== 'ask') return
+
+    if (intakeStep >= questions.length) {
+      const nextBrief = applyIntakeAnswer(mealBrief, { field: 'extra' }, text)
+      setMealBrief(nextBrief)
+      setMessages((prev) => [...prev, { role: 'user', content: text }])
+      requestDishOptions(nextBrief)
+      return
+    }
+
+    const question = questions[intakeStep]
+    const nextBrief = applyIntakeAnswer(mealBrief, question, text)
+    const nextStep = intakeStep + 1
+    setMealBrief(nextBrief)
+    setIntakeStep(nextStep)
+
+    if (nextStep < questions.length) {
+      setMessages((prev) => [
+        ...prev,
+        { role: 'user', content: text },
+        { role: 'assistant', content: questions[nextStep].prompt },
+      ])
+      return
+    }
+
+    setMessages((prev) => [...prev, { role: 'user', content: text }])
+    requestDishOptions(nextBrief)
+  }, [input, chatLoading, cookPath, cookStage, intakeStep, mealBrief, requestDishOptions])
 
   const chooseDishOption = useCallback((option) => {
     setSelectedOption(option)
@@ -479,19 +534,28 @@ function AppContent() {
   const rejectDishOptions = useCallback(() => {
     setDishOptions([])
     setSelectedOption(null)
-    setMessages((prev) => [...prev, { role: 'user', content: 'None of these—let’s keep talking.' }])
+    setMessages((prev) => [
+      ...prev,
+      { role: 'user', content: 'None of these—let’s keep talking.' },
+      { role: 'assistant', content: 'What should I change? Add anything you want me to take into account, and I’ll give you three new options.' },
+    ])
     setInput('')
-    setCookStage('describe')
-  }, [])
+    setCookStage('ask')
+    setIntakeStep(questionsForPath(cookPath).length)
+  }, [cookPath])
 
   const finalizeDishOption = useCallback((tweak = '') => {
     if (!selectedOption || chatLoading) return
     const cleanTweak = String(tweak || '').trim()
     const raw = [
-      `Create the complete recipe for the selected dish: “${selectedOption.title}”.`,
+      cookPath === 'week'
+        ? `Create the complete week plan for this direction: “${selectedOption.title}”.`
+        : `Create the complete recipe for the selected dish: “${selectedOption.title}”.`,
       `Selected description: ${selectedOption.description}.`,
       cleanTweak ? `Final requested tweak: ${cleanTweak}.` : 'No further tweaks requested.',
-      'Keep the selected dish recognisable and obey the complete kitchen brief.',
+      cookPath === 'week'
+        ? 'Write one recipe per requested meal for each day. Keep the week recognisable and obey the complete kitchen brief.'
+        : 'Keep the selected dish recognisable and obey the complete kitchen brief.',
     ].join(' ')
     setCookStage('finalizing')
     setInput('')
@@ -500,7 +564,7 @@ function AppContent() {
       cleanTweak ? `Tweak: ${cleanTweak}` : `Make ${selectedOption.title}`,
       'finalize',
     )
-  }, [selectedOption, chatLoading, sendMessageText])
+  }, [selectedOption, chatLoading, sendMessageText, cookPath])
 
   const openCatalogDish = useCallback((dish) => {
     setMealPlan(dish.mealPlan)
@@ -580,6 +644,7 @@ function AppContent() {
     setConversationId(crypto.randomUUID())
     setCookStage('start')
     setCookPath('')
+    setIntakeStep(0)
     setDishOptions([])
     setSelectedOption(null)
     setMealPlan(null)
@@ -590,6 +655,7 @@ function AppContent() {
     setCatalogHits([])
     setCatalogMiss('')
     setActiveMood(null)
+    setMealBrief({ ...defaultBrief })
     addToast('Starting over', 'success')
   }, [addToast])
 
@@ -1287,14 +1353,10 @@ function AppContent() {
               setInput={setInput}
               loading={chatLoading}
               onClearChat={clearChat}
-              brief={mealBrief}
-              onChangeBrief={setMealBrief}
-              prefs={prefs}
               options={dishOptions}
               selectedOption={selectedOption}
               onChoosePath={beginCookFlow}
-              onSubmitIdea={submitCookIdea}
-              onRequestOptions={requestDishOptions}
+              onSubmitTurn={submitCookTurn}
               onSelectOption={chooseDishOption}
               onRejectOptions={rejectDishOptions}
               onFinalize={finalizeDishOption}

@@ -91,7 +91,7 @@ function MealPlanDisplay({
   return (
     <div className={`meal-plan-display ${embedded ? 'meal-plan-display--embedded' : ''}`}>
       <header className="meal-plan-display__header">
-        <p className="meal-plan-display__label">{readOnly ? 'Cook this' : 'Tonight'}</p>
+        <p className="meal-plan-display__label">{readOnly ? 'Cook this' : recipeCount > 1 ? 'Your week' : 'Tonight'}</p>
         <h2 className="meal-plan-display__title">{title}</h2>
         {recipeCount > 1 && (
           <p className="meal-plan-display__count">{recipeCount} dishes in this list</p>

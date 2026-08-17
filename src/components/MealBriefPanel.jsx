@@ -59,11 +59,22 @@ const defaultBrief = {
   pantry: [],
   avoid: '',
   notes: '',
+  mode: '',
 }
 
 export function formatBriefForChat(brief) {
   const value = brief ?? defaultBrief
   const lines = []
+  const isWeek = value.mode === 'week' || (Number(value.days) > 1)
+  if (isWeek) {
+    lines.push('- This is a WEEK PLAN covering multiple days. Suggest week themes first; when cooking, write one recipe per requested meal for each day.')
+  }
+  if (value.mode === 'recipe') {
+    lines.push('- Adapt a recognised classic. Keep it identifiable.')
+  }
+  if (value.mode === 'create') {
+    lines.push('- Create a practical home-cooked dish from their idea. Do not ignore what they named.')
+  }
   if (value.servings) lines.push(`- People / servings: ${value.servings}`)
   if (value.days) lines.push(`- Days: ${value.days}`)
   const slots = Array.isArray(value.meal_slots) ? value.meal_slots : []

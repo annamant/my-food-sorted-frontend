@@ -1,4 +1,5 @@
-import MealBriefPanel from './MealBriefPanel'
+import { useEffect, useRef } from 'react'
+import { COOK_PATHS, pathMeta } from '../data/cookIntake'
 import './ChatInterface.css'
 
 function messageKey(message, index) {
@@ -33,15 +34,25 @@ function flowStep(stage, recipeSaved) {
   return 'chat'
 }
 
-function Conversation({ messages, loading, stage }) {
+function Conversation({ messages, loading, stage, isWeek }) {
+  const scrollerRef = useRef(null)
+
+  useEffect(() => {
+    const node = scrollerRef.current
+    if (!node) return
+    node.scrollTop = node.scrollHeight
+  }, [messages, loading, stage])
+
   return (
-    <div className="chat-interface__messages" aria-live="polite">
-      <div className="chat-interface__message chat-interface__message--assistant">
-        <strong className="chat-interface__messageRole">Kitchen</strong>
-        <span className="chat-interface__messageContent">
-          What are we cooking? Ask anything — a classic to adapt, or your own idea. I’ll use the knowledge base, then you can keep the dish in a recipe book you own.
-        </span>
-      </div>
+    <div className="chat-interface__messages" aria-live="polite" ref={scrollerRef}>
+      {stage === 'start' && (
+        <div className="chat-interface__message chat-interface__message--assistant">
+          <strong className="chat-interface__messageRole">Kitchen</strong>
+          <span className="chat-interface__messageContent">
+            What are we cooking? Adapt a recipe, create your own, or plan a week. I’ll ask a few questions, then give you three options.
+          </span>
+        </div>
+      )}
       {messages.map((message, index) => (
         <div
           key={messageKey(message, index)}
@@ -51,27 +62,13 @@ function Conversation({ messages, loading, stage }) {
           <span className="chat-interface__messageContent">{message.content}</span>
         </div>
       ))}
-      {stage === 'describe' && (
-        <div className="chat-interface__message chat-interface__message--assistant">
-          <strong className="chat-interface__messageRole">Kitchen</strong>
-          <span className="chat-interface__messageContent">
-            Tell me the night you have — a dish, a cuisine, what’s in the cupboard, the budget, or the mood.
-          </span>
-        </div>
-      )}
-      {stage === 'preferences' && (
-        <div className="chat-interface__message chat-interface__message--assistant">
-          <strong className="chat-interface__messageRole">Kitchen</strong>
-          <span className="chat-interface__messageContent">
-            Before I suggest anything: how many people, how much time, and is there anything you cannot or do not want to eat?
-          </span>
-        </div>
-      )}
       {stage === 'tweak' && (
         <div className="chat-interface__message chat-interface__message--assistant">
           <strong className="chat-interface__messageRole">Kitchen</strong>
           <span className="chat-interface__messageContent">
-            Good choice. Any last change — cheaper, faster, a swap — or shall I write it as suggested?
+            {isWeek
+              ? 'Good choice. Any last change to this week — cheaper, simpler, more variety — or shall I write the plan as suggested?'
+              : 'Good choice. Any last change — cheaper, faster, a swap — or shall I write it as suggested?'}
           </span>
         </div>
       )}
@@ -79,7 +76,9 @@ function Conversation({ messages, loading, stage }) {
         <div className="chat-interface__message chat-interface__message--assistant">
           <strong className="chat-interface__messageRole">Kitchen</strong>
           <span className="chat-interface__messageContent">
-            Your recipe is ready below. Keep it, add it to a recipe book, then shop the list or have the supermarket deliver it.
+            {isWeek
+              ? 'Your week is ready below. Keep it, add it to a recipe book, then shop the list or have the supermarket deliver it.'
+              : 'Your recipe is ready below. Keep it, add it to a recipe book, then shop the list or have the supermarket deliver it.'}
           </span>
         </div>
       )}
@@ -96,14 +95,10 @@ export default function ChatInterface({
   setInput,
   loading,
   onClearChat,
-  brief,
-  onChangeBrief,
-  prefs,
   options,
   selectedOption,
   onChoosePath,
-  onSubmitIdea,
-  onRequestOptions,
+  onSubmitTurn,
   onSelectOption,
   onRejectOptions,
   onFinalize,
@@ -117,6 +112,9 @@ export default function ChatInterface({
   }
 
   const currentStep = flowStep(stage, recipeSaved)
+  const isWeek = path === 'week'
+  const meta = pathMeta(path)
+  const chatting = stage === 'describe' || stage === 'ask'
 
   return (
     <section className="chat-interface chat-interface--guided" aria-labelledby="kitchen-chat-title">
@@ -155,57 +153,53 @@ export default function ChatInterface({
         ))}
       </ol>
 
-      <Conversation messages={messages} loading={loading} stage={stage} />
+      <Conversation messages={messages} loading={loading} stage={stage} isWeek={isWeek} />
 
       {stage === 'start' && (
         <div className="chat-interface__pathGrid">
-          <button type="button" onClick={() => onChoosePath('recipe')} disabled={loading}>
-            <span>01</span>
-            <strong>Adapt a classic</strong>
-            <small>Start from a trusted recipe, then make it yours.</small>
-          </button>
-          <button type="button" onClick={() => onChoosePath('create')} disabled={loading}>
-            <span>02</span>
-            <strong>Start from your idea</strong>
-            <small>Time, budget, cupboard, mood — we’ll turn it into a meal.</small>
-          </button>
+          {COOK_PATHS.map((item) => (
+            <button type="button" key={item.id} onClick={() => onChoosePath(item.id)} disabled={loading}>
+              <span>{item.n}</span>
+              <strong>{item.title}</strong>
+              <small>{item.blurb}</small>
+            </button>
+          ))}
         </div>
       )}
 
-      {stage === 'describe' && (
+      {chatting && (
         <div className="chat-interface__inputWrap">
           <textarea
             rows={3}
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            onKeyDown={(event) => submitOnEnter(event, onSubmitIdea)}
-            placeholder={path === 'recipe' ? 'Carbonara, a French chicken dish, something with aubergine…' : 'Comforting, leftover chicken, under £12, 30 minutes…'}
+            onKeyDown={(event) => submitOnEnter(event, onSubmitTurn)}
+            placeholder={stage === 'ask' ? 'Type your answer…' : meta.placeholder}
             className="chat-interface__input"
-            aria-label="Tell the kitchen what you want"
+            aria-label={stage === 'ask' ? 'Answer the kitchen' : 'Tell the kitchen what you want'}
             autoFocus
           />
-          <button type="button" className="btn btn--primary" onClick={onSubmitIdea} disabled={loading || !input.trim()}>
+          <button type="button" className="btn btn--primary" onClick={onSubmitTurn} disabled={loading || !input.trim()}>
             Continue
           </button>
         </div>
       )}
 
-      {stage === 'preferences' && (
-        <div className="chat-interface__brief">
-          <MealBriefPanel brief={brief} onChange={onChangeBrief} prefs={prefs} requireNotes />
-          <button type="button" className="btn btn--primary chat-interface__primaryAction" onClick={onRequestOptions} disabled={loading}>
-            Show me three options
-          </button>
-        </div>
-      )}
-
       {(stage === 'suggesting' || stage === 'finalizing') && (
-        <p className="chat-interface__working">{stage === 'suggesting' ? 'Finding three good directions…' : 'Writing your chosen recipe…'}</p>
+        <p className="chat-interface__working">
+          {stage === 'suggesting'
+            ? (isWeek ? 'Finding three good week directions…' : 'Finding three good directions…')
+            : (isWeek ? 'Writing your week…' : 'Writing your chosen recipe…')}
+        </p>
       )}
 
       {stage === 'options' && (
-        <div className="chat-interface__options" aria-label="Dish options">
-          <p>Choose one. I’ll ask about tweaks, then write the recipe you can keep in a book.</p>
+        <div className="chat-interface__options" aria-label={isWeek ? 'Week options' : 'Dish options'}>
+          <p>
+            {isWeek
+              ? 'Choose one week direction. I’ll ask about tweaks, then write the full plan you can keep in a book.'
+              : 'Choose one. I’ll ask about tweaks, then write the recipe you can keep in a book.'}
+          </p>
           <div>
             {options.map((option, index) => (
               <button type="button" key={`${option.title}-${index}`} onClick={() => onSelectOption(option)}>
@@ -226,12 +220,12 @@ export default function ChatInterface({
       {stage === 'tweak' && selectedOption && (
         <div className="chat-interface__tweak">
           <div className="chat-interface__selected">
-            <span>Selected dish</span>
+            <span>{isWeek ? 'Selected week' : 'Selected dish'}</span>
             <strong>{selectedOption.title}</strong>
             <p>{selectedOption.description}</p>
           </div>
           <div className="chat-interface__quickTweaks">
-            {['Make it cheaper', 'Make it faster', 'More vegetables', 'Milder'].map((tweak) => (
+            {(isWeek ? ['Make it cheaper', 'Simpler weeknights', 'More variety', 'More vegetables'] : ['Make it cheaper', 'Make it faster', 'More vegetables', 'Milder']).map((tweak) => (
               <button type="button" key={tweak} onClick={() => setInput(tweak)}>{tweak}</button>
             ))}
           </div>
@@ -241,7 +235,7 @@ export default function ChatInterface({
               value={input}
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={(event) => submitOnEnter(event, () => onFinalize(input))}
-              placeholder="Any final tweak? Leave blank to use it as suggested."
+              placeholder={isWeek ? 'Any final tweak to the week? Leave blank to use it as suggested.' : 'Any final tweak? Leave blank to use it as suggested.'}
               className="chat-interface__input"
               aria-label="Final recipe tweak"
               autoFocus
