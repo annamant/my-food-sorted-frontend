@@ -9,12 +9,13 @@ export default function LandingPageSeo() {
       <header>
         <h1>Personalised meal planning, budget-friendly recipes, and one combined shopping list.</h1>
         <p>
-          Build a meal plan around what you want to cook, how much you want to spend, and how your week actually works.
+          Plan one meal, a full day, a special occasion, or your whole week — without endless recipe searching or a meal-box
+          subscription.
           <br />
-          My Food Sorted turns trusted cooking knowledge into practical weekly planning with realistic budgets, dietary filters,
-          and one shopping list you can actually use.
+          My Food Sorted draws on trusted culinary knowledge to create personalised meals around what you want to eat, how
+          much you want to spend, and your dietary needs, with one shopping list you can actually use.
         </p>
-        <p>Plan meals for your household, adjust for tastes and dietary needs, then shop from one combined list.</p>
+        <p>Get meals personalised for your household, tastes and dietary needs, then shop from one combined list.</p>
         <p>Personal meal plan + budget recipes + shopping list in under 60 seconds.</p>
       </header>
 
@@ -22,7 +23,7 @@ export default function LandingPageSeo() {
         <h2>How it works</h2>
         <ol>
           <li>
-            <strong>Choose meals based on what you want to cook</strong>
+            <strong>Tell us whether you are planning a meal, a day, an occasion, or a week</strong>
           </li>
           <li>
             <strong>Set your budget, servings, timing, and dietary preferences</strong>

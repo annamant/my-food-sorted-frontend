@@ -179,6 +179,18 @@
   padding: 7.5rem var(--space-8) clamp(3.4rem, 7vw, 5.6rem);
 }
 
+.landing-hero__promise {
+  display: inline-block;
+  margin: 0 0 var(--space-5);
+  padding: 0.8rem 1rem;
+  background: var(--primary);
+  color: var(--primary-text);
+  font-size: clamp(0.9rem, 1.8vw, 1.05rem);
+  font-weight: 600;
+  line-height: 1.4;
+  box-shadow: 0 10px 24px rgba(26, 24, 22, 0.18);
+}
+
 .landing-hero__actions {
   margin-top: var(--space-7);
   display: flex;
@@ -223,6 +235,34 @@
 
 .landing-hero .landing-lede {
   color: var(--text-secondary);
+}
+
+.landing-planningBanner {
+  overflow: hidden;
+  padding: 0.9rem 0;
+  background: var(--primary);
+  color: var(--primary-text);
+}
+
+.landing-planningBanner__track {
+  display: flex;
+  width: max-content;
+  animation: landing-planning-banner 30s linear infinite;
+}
+
+.landing-planningBanner:hover .landing-planningBanner__track {
+  animation-play-state: paused;
+}
+
+.landing-planningBanner p {
+  flex: none;
+  margin: 0;
+  padding: 0 2.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .landing-lede {
@@ -720,6 +760,10 @@
   100% { transform: translateX(280%) skewX(-18deg); opacity: 0; }
 }
 
+@keyframes landing-planning-banner {
+  to { transform: translateX(-50%); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .landing-hero__bg,
   .landing-hero__shimmer {
@@ -736,6 +780,14 @@
 
   .landing-hero__bg--b,
   .landing-hero__shimmer {
+    display: none;
+  }
+
+  .landing-planningBanner__track {
+    animation: none;
+  }
+
+  .landing-planningBanner p[aria-hidden="true"] {
     display: none;
   }
 }

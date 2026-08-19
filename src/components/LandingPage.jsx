@@ -14,8 +14,8 @@ function LogoMark() {
 const HOW_IT_WORKS = [
   {
     step: '01',
-    title: 'Find a recipe or start from your own idea',
-    body: 'Pick a trusted recipe from the library, or tell the kitchen what you want to cook tonight.',
+    title: 'Tell us what you fancy',
+    body: 'Start with a craving, an ingredient, a cuisine, or simply ask the kitchen for inspiration.',
   },
   {
     step: '02',
@@ -144,12 +144,13 @@ export default function LandingPage({
         </div>
         <div className="landing-hero__copy">
           <p className="landing-kicker">A new way to plan and eat</p>
-          <h1>Stop searching. Stop being forced. Start eating better, your way.</h1>
+          <h1>Your meals. Personalised your way.</h1>
+          <p className="landing-hero__promise">
+            Skip the endless recipe hunt and the meal-box subscription.
+          </p>
           <p className="landing-lede">
-            This is not a recipe library. This is not meal delivery.
-            <br />
-            You choose what you want. We turn trusted culinary knowledge into a personal plan, tailored to your budget,
-            preferences, and week. Then you save it to your lists, share it or make it public, and shop with one combined list.
+            We draw on trusted culinary knowledge to create personalised meals around your tastes, budget and dietary needs,
+            with one combined shopping list.
           </p>
           <div className="landing-hero__actions">
             <button type="button" className="btn btn--primary" onClick={() => goToAuth('register')}>
@@ -162,6 +163,16 @@ export default function LandingPage({
           <p className="landing-hero__microcopy">
             Personal meal plan + budget + shopping list in under 60 seconds.
           </p>
+        </div>
+      </section>
+
+      <section
+        className="landing-planningBanner"
+        aria-label="Plan one meal, a full day, a special occasion, or your whole week"
+      >
+        <div className="landing-planningBanner__track">
+          <p>Plan one meal · Plan a full day · Plan a special occasion · Plan your whole week</p>
+          <p aria-hidden="true">Plan one meal · Plan a full day · Plan a special occasion · Plan your whole week</p>
         </div>
       </section>
 
@@ -272,16 +283,17 @@ export default function LandingPage({
             <p className="landing-kicker">Why we are different</p>
             <h2>Your meals. Your recipe books.</h2>
             <div className="landing-difference">
-              <p>No delivery box. No endless recipe hunt. You create the meals.</p>
+              <p>No meal-box subscription. No endless recipe hunt. Your meals are personalised to you.</p>
               <p>Shop with our list, or have the supermarket deliver it.</p>
               <p>Save them into recipe books you actually own — keep them private, share them, or make them public.</p>
             </div>
           </div>
           <div>
             <p className="landing-kicker">What you get</p>
-            <h2>A knowledge base you can query anytime.</h2>
+            <h2>Trusted culinary knowledge, ready when you are.</h2>
             <p className="landing-lede landing-lede--compact">
-              Trusted classics across cuisines and diets sit underneath every answer. That is the base of what we do — ask whenever you cook.
+              A broad foundation of trusted classics across cuisines and diets sits underneath every answer. You get a meal
+              made personal, without searching through the recipes yourself.
             </p>
             <div className="landing-knowledgeGrid" aria-label="Culinary knowledge base">
               {KNOWLEDGE_BASE_VISUALS.map((item) => (
