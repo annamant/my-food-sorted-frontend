@@ -185,12 +185,14 @@
   display: inline-block;
   margin: 0 0 var(--space-5);
   padding: 0.8rem 1rem;
-  background: var(--primary);
-  color: var(--primary-text);
+  background: rgba(255, 253, 249, 0.76);
+  border: 1px solid rgba(26, 24, 22, 0.12);
+  color: var(--text-secondary);
   font-size: clamp(0.9rem, 1.8vw, 1.05rem);
   font-weight: 600;
   line-height: 1.4;
-  box-shadow: 0 10px 24px rgba(26, 24, 22, 0.18);
+  box-shadow: 0 10px 24px rgba(26, 24, 22, 0.08);
+  backdrop-filter: blur(6px);
 }
 
 .landing-hero__actions {
