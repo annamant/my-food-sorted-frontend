@@ -235,39 +235,39 @@ export default function LandingPage({
         <section className="landing-book" aria-labelledby="recipe-books-title">
           <div className="landing-book__copy">
             <p className="landing-kicker">Your recipe books</p>
-            <h2 id="recipe-books-title">Then keep the book.</h2>
+            <h2 id="recipe-books-title">Your cooking deserves a book.</h2>
             <p className="landing-lede">
-              Every dish you cook can live in a recipe book you own. Meals you invented, and classics you adapted.
-              Keep a book private, share it with someone, or publish it for anyone to cook from.
+              Keep the meals you created and the classics you made your own. Build a personal collection to revisit,
+              share with someone, or publish for everyone.
             </p>
             <button type="button" className="btn btn--primary" onClick={() => goToAuth('register')}>
-              Start my first recipe book
+              Build my recipe book
             </button>
           </div>
           <div className="landing-book__spread" aria-label="Example recipe book">
             <div className="landing-book__cover">
               <p>My kitchen</p>
-              <h3>Weeknight book</h3>
-              <span>12 dishes · yours</span>
+              <h3>The meals I love</h3>
+              <span>A personal collection</span>
             </div>
             <div className="landing-book__pages">
-              <p>Inside this book</p>
+              <p>Inside my collection</p>
               <ul>
                 <li>
-                  <strong>Lemon salmon, 30 min</strong>
-                  <span>Made by you</span>
+                  <strong>Lemon salmon &amp; summer vegetables</strong>
+                  <span>My recipe</span>
                 </li>
                 <li>
-                  <strong>Lighter Sunday ragu</strong>
-                  <span>Adapted from tradition</span>
+                  <strong>Slow Sunday ragù</strong>
+                  <span>My version</span>
                 </li>
                 <li>
-                  <strong>Thursday dal</strong>
-                  <span>Made by you</span>
+                  <strong>Golden coconut dal</strong>
+                  <span>My recipe</span>
                 </li>
                 <li>
-                  <strong>Nonna’s salad, extra lemon</strong>
-                  <span>Adapted from tradition</span>
+                  <strong>Nonna’s lemon salad</strong>
+                  <span>My version</span>
                 </li>
               </ul>
               <div className="landing-book__share">
