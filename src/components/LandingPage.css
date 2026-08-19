@@ -61,17 +61,19 @@
 .landing-logo {
   display: inline-flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   line-height: 1.05;
 }
 
 .landing-logo span {
-  font-size: 0.72rem;
+  font-size: 0.9rem;
   letter-spacing: 0.04em;
 }
 
 .landing-logo strong {
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: 1.85rem;
   letter-spacing: 0.02em;
 }
 
