@@ -43,6 +43,11 @@ const WEEK_QUESTIONS = [
   { id: 'servings', prompt: 'How many people are you feeding?', field: 'servings' },
   { id: 'days', prompt: 'How many days should I plan for? 5 or 7 is typical.', field: 'days' },
   { id: 'slots', prompt: 'Which meals — breakfast, lunch, dinner, or just dinners?', field: 'meal_slots' },
+  {
+    id: 'cuisine_mode',
+    prompt: 'You mentioned cuisines you like. For the whole week: do you want one cuisine all week, or mixed cuisines across the week?',
+    field: 'cuisine_mode',
+  },
   { id: 'budget', prompt: 'What’s the rough food budget for this plan, in pounds?', field: 'weekly_budget' },
   { id: 'avoid', prompt: 'Anything you cannot or do not want to eat? Say “none” if you’re open.', field: 'avoid' },
   ANYTHING_ELSE,
@@ -137,6 +142,19 @@ export function applyIntakeAnswer(brief, question, rawAnswer) {
       next.meal_slots = parseMealSlots(answer)
       break
     }
+    case 'cuisine_mode': {
+      if (looksLikeNo(answer)) break
+      const lower = answer.toLowerCase()
+      const mode = /(mixed|varied|different)/.test(lower)
+        ? 'mixed cuisines across the week'
+        : /(one|single|same|all week|whole week)/.test(lower)
+          ? 'one cuisine all week'
+          : answer
+      next.notes = next.notes?.trim()
+        ? `${next.notes.trim()}. Cuisine plan: ${mode}.`
+        : `Cuisine plan: ${mode}.`
+      break
+    }
     case 'avoid': {
       next.avoid = looksLikeNo(answer) ? '' : answer
       break
@@ -161,7 +179,7 @@ export function suggestInstruction(path) {
     return 'Start from established, recognisable recipes from trusted cooking traditions. Do not invent novelty dishes.'
   }
   if (path === 'week') {
-    return 'This is a WEEK PLAN. Suggest three distinct week themes/directions (not single dishes) that all fit the brief. Do not write full recipes yet.'
+    return 'This is a WEEK PLAN. Suggest three distinct week themes/directions (not single dishes) that all fit the brief. Do not write full recipes yet. If the brief indicates “one cuisine all week”, keep each option within a single cuisine; if it indicates “mixed cuisines across the week”, each option should blend at least 2 of the cuisines they mentioned.'
   }
   return 'Create three original but practical home-cooking directions from this brief.'
 }
