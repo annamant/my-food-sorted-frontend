@@ -36,7 +36,12 @@ function getShareFromUrl() {
 function buildShareUrl(slug, kind = 'recipe') {
   if (!slug) return ''
   const url = new URL(window.location.origin)
-  url.searchParams.set(kind === 'list' ? 'list' : 'share', slug)
+  // SEO-friendly share links use path-based routes so they can be routed/rendered
+  // for crawlers/bots (instead of query params like ?list=...).
+  url.search = ''
+  url.hash = ''
+  if (kind === 'list') url.pathname = `/share/list/${encodeURIComponent(slug)}`
+  else url.pathname = `/share/${encodeURIComponent(slug)}`
   return url.toString()
 }
 

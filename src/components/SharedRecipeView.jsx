@@ -20,7 +20,9 @@ export default function SharedRecipeView({ slug, kind = 'recipe', onClose }) {
         const path = isList
           ? `${API}/share/list/${encodeURIComponent(slug)}`
           : `${API}/share/${encodeURIComponent(slug)}`
-        const res = await fetch(path)
+        const res = await fetch(path, {
+          headers: { Accept: 'application/json' },
+        })
         const text = await res.text()
         let data = {}
         try {
