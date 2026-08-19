@@ -1,0 +1,11 @@
+name = "soft-term-7b46"
+main = "worker.js"
+compatibility_date = "2024-08-19"
+
+[[routes]]
+pattern = "www.myfoodsorted.com/share/*"
+zone_name = "myfoodsorted.com"
+
+[[routes]]
+pattern = "myfoodsorted.com/*"
+zone_name = "myfoodsorted.com"

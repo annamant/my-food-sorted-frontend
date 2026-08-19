@@ -7,37 +7,37 @@ export default function LandingPageSeo() {
   return (
     <div className="landing">
       <header>
-        <h1>Stop searching. Stop being forced. Start eating better, your way.</h1>
+        <h1>Personalised meal planning, budget-friendly recipes, and one combined shopping list.</h1>
         <p>
-          This is not a recipe library. This is not meal delivery.
+          Build a meal plan around what you want to cook, how much you want to spend, and how your week actually works.
           <br />
-          You choose what you want. We turn trusted culinary knowledge into a personal plan, tailored to your budget,
-          preferences, and week.
+          My Food Sorted turns trusted cooking knowledge into practical weekly planning with realistic budgets, dietary filters,
+          and one shopping list you can actually use.
         </p>
-        <p>Then you save it to your lists, share it or make it public, and shop with one combined list.</p>
-        <p>Personal meal plan + budget + shopping list in under 60 seconds.</p>
+        <p>Plan meals for your household, adjust for tastes and dietary needs, then shop from one combined list.</p>
+        <p>Personal meal plan + budget recipes + shopping list in under 60 seconds.</p>
       </header>
 
       <section aria-label="How it works">
         <h2>How it works</h2>
         <ol>
           <li>
-            <strong>Find a recipe or start from your own idea</strong>
+            <strong>Choose meals based on what you want to cook</strong>
           </li>
           <li>
-            <strong>Personalise everything for your life</strong>
+            <strong>Set your budget, servings, timing, and dietary preferences</strong>
           </li>
           <li>
-            <strong>Save, organise and shop in one flow</strong>
+            <strong>Get a personalised meal plan with practical recipes</strong>
           </li>
           <li>
-            <strong>Build your own recipe books</strong>
+            <strong>Shop from one combined grocery list</strong>
           </li>
         </ol>
       </section>
 
       <section aria-label="Dietary filters">
-        <h2>Ask about any of these</h2>
+        <h2>Plan around real-life constraints</h2>
         <ul>
           <li>Vegan</li>
           <li>Vegetarian</li>
