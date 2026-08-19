@@ -107,6 +107,8 @@ function AppContent() {
   const [intakeStep, setIntakeStep] = useState(0)
   const [dishOptions, setDishOptions] = useState([])
   const [selectedOption, setSelectedOption] = useState(null)
+  // Preserve per-option tweak drafts so users can go back and keep editing.
+  const [tweakDraftByOptionTitle, setTweakDraftByOptionTitle] = useState({})
 
   /* ── Meal plan ── */
   const [mealPlan,    setMealPlan]    = useState(null)
@@ -155,6 +157,7 @@ function AppContent() {
     setIntakeStep(0)
     setDishOptions([])
     setSelectedOption(null)
+    setTweakDraftByOptionTitle({})
     setMealPlan(null)
     setSavedPlanId(null)
     setShoppingList(null)
@@ -408,6 +411,7 @@ function AppContent() {
     setIntakeStep(0)
     setDishOptions([])
     setSelectedOption(null)
+    setTweakDraftByOptionTitle({})
     setMealPlan(null)
     setSavedPlanId(null)
     setShoppingList(null)
@@ -452,6 +456,7 @@ function AppContent() {
         throw new Error('The kitchen did not return any dish options. Please try again.')
       }
       setDishOptions(data.options.slice(0, 3))
+      setTweakDraftByOptionTitle({})
       setMessages((prev) => [
         ...prev,
         {
@@ -527,9 +532,24 @@ function AppContent() {
   const chooseDishOption = useCallback((option) => {
     setSelectedOption(option)
     setMessages((prev) => [...prev, { role: 'user', content: `I choose ${option.title}.` }])
-    setInput('')
+    setInput(tweakDraftByOptionTitle?.[option.title] ?? '')
     setCookStage('tweak')
-  }, [])
+  }, [tweakDraftByOptionTitle])
+
+  const backToDishOptions = useCallback(() => {
+    if (chatLoading) return
+    const title = selectedOption?.title
+    if (title) {
+      setTweakDraftByOptionTitle((prev) => ({ ...prev, [title]: input }))
+    }
+    setSelectedOption(null)
+    setInput('')
+    setCookStage('options')
+    setMessages((prev) => [
+      ...prev,
+      { role: 'assistant', content: 'No problem — pick one of the other options.' },
+    ])
+  }, [chatLoading, selectedOption, input])
 
   const rejectDishOptions = useCallback(() => {
     setDishOptions([])
@@ -1361,6 +1381,7 @@ function AppContent() {
               onRejectOptions={rejectDishOptions}
               onFinalize={finalizeDishOption}
               onTweakRecipe={sendMessage}
+            onBackToOptions={backToDishOptions}
               recipeSaved={Boolean(savedPlanId)}
             />
 

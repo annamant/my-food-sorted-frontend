@@ -103,6 +103,7 @@ export default function ChatInterface({
   onRejectOptions,
   onFinalize,
   onTweakRecipe,
+  onBackToOptions,
   recipeSaved = false,
 }) {
   const submitOnEnter = (event, action) => {
@@ -219,6 +220,14 @@ export default function ChatInterface({
 
       {stage === 'tweak' && selectedOption && (
         <div className="chat-interface__tweak">
+          <button
+            type="button"
+            className="btn btn--secondary"
+            onClick={onBackToOptions}
+            disabled={loading}
+          >
+            Choose a different option
+          </button>
           <div className="chat-interface__selected">
             <span>{isWeek ? 'Selected week' : 'Selected dish'}</span>
             <strong>{selectedOption.title}</strong>
