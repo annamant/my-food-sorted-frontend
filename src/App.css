@@ -312,3 +312,30 @@
   }
   .app__footer nav { justify-content: flex-start; }
 }
+
+.app__journalTabs {
+  display: flex;
+  gap: 0.4rem;
+  max-width: 720px;
+  margin: 0 auto 1rem;
+  border-bottom: 1px solid var(--border, #e6e2da);
+}
+
+.app__journalTab {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted, #6b6b6b);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.app__journalTab:hover {
+  color: var(--text, #2a2a2a);
+}
+.app__journalTab--active {
+  color: var(--text, #2a2a2a);
+  border-bottom-color: var(--accent, #8a7a5a);
+}

@@ -37,10 +37,10 @@ export function resolvePlanningProfile({ prefs, mealBrief } = {}) {
   const b = mealBrief && typeof mealBrief === 'object' ? mealBrief : {}
 
   const dietary = toList(p.dietary_preferences).concat(toList(b.dietary_preferences))
-  const cuisines = toList(b.cuisines)
+  const cuisines = toList(b.cuisines).concat(toList(p.cuisines))
   const methods = toList(b.cooking_methods)
   const proteins = toList(b.proteins)
-  const pantry = toList(b.pantry)
+  const pantry = toList(b.pantry).concat(toList(p.kitchen_equipment))
 
   const avoidRaw = toList(p.allergies).concat(toList(b.avoid))
   const avoid = [...new Set(avoidRaw.map((s) => s.toLowerCase()))]
@@ -49,7 +49,7 @@ export function resolvePlanningProfile({ prefs, mealBrief } = {}) {
 
   const householdSize = Number(b.servings || p.household_size || DEFAULT_HOUSEHOLD)
   const budgetPerDay = Number(b.budget_per_day ?? p.default_budget) || null
-  const maxCookMinutes = Number(b.max_cook_minutes) || DEFAULT_MAX_COOK_MINUTES
+  const maxCookMinutes = Number(b.max_cook_minutes ?? p.max_cook_minutes) || DEFAULT_MAX_COOK_MINUTES
 
   return {
     dietary,
@@ -62,6 +62,11 @@ export function resolvePlanningProfile({ prefs, mealBrief } = {}) {
     householdSize: clamp(householdSize, 1, 20),
     budgetPerDay,
     maxCookMinutes: clamp(maxCookMinutes, 5, 240),
+    cookingSkill: p.cooking_skill || null,
+    cooksFor: p.cooks_for || null,
+    ageRange: p.age_range || null,
+    sex: p.sex || null,
+    activityLevel: p.activity_level || null,
   }
 }
 

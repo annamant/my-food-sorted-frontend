@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { ToastProvider, useToast } from './context/ToastContext'
 import ChatInterface from './components/ChatInterface'
 import CompanionChat from './components/CompanionChat'
+import FoodLog from './components/FoodLog'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
@@ -92,7 +93,8 @@ function AppContent() {
   const [shareFrom, setShareFrom] = useState(() => getShareFromUrl())
 
   /* ── Navigation ── */
-  const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'account'
+  const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'journal' | 'account'
+  const [journalTab, setJournalTab] = useState('chat') // 'chat' | 'log'
   const recipeRef = useRef(null)
 
   useEffect(() => {
@@ -1393,11 +1395,36 @@ function AppContent() {
           </>
         ) : view === 'journal' ? (
           <section className="app__panel">
-            <CompanionChat
-              apiBase={API}
-              accessToken={token}
-              onToast={addToast}
-            />
+            <div className="app__journalTabs" role="tablist">
+              <button
+                type="button"
+                role="tab"
+                className={`app__journalTab ${journalTab === 'chat' ? 'app__journalTab--active' : ''}`}
+                onClick={() => setJournalTab('chat')}
+              >
+                Chat
+              </button>
+              <button
+                type="button"
+                role="tab"
+                className={`app__journalTab ${journalTab === 'log' ? 'app__journalTab--active' : ''}`}
+                onClick={() => setJournalTab('log')}
+              >
+                Food log
+              </button>
+            </div>
+            {journalTab === 'chat' ? (
+              <CompanionChat
+                apiBase={API}
+                accessToken={token}
+                onToast={addToast}
+              />
+            ) : (
+              <FoodLog
+                accessToken={token}
+                onToast={addToast}
+              />
+            )}
           </section>
         ) : (
           <div ref={recipeRef} className="app__conversation">

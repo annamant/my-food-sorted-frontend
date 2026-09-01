@@ -1,0 +1,185 @@
+.food-log {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.food-log__header {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border, #e6e2da);
+}
+
+.food-log__label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent, #8a7a5a);
+}
+
+.food-log__title {
+  margin: 0.2rem 0 0.3rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text, #2a2a2a);
+}
+
+.food-log__sub {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-muted, #6b6b6b);
+  max-width: 520px;
+}
+
+.food-log__entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.food-log__photoRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.food-log__fileInput {
+  display: none;
+}
+
+.food-log__photoBtn {
+  cursor: pointer;
+}
+.food-log__photoBtn--busy {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.food-log__preview {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border, #e6e2da);
+}
+
+.food-log__textRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.food-log__text {
+  flex: 1;
+  resize: none;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--text, #2a2a2a);
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e0dccf);
+  border-radius: 10px;
+  line-height: 1.45;
+}
+.food-log__text:focus {
+  outline: none;
+  border-color: var(--accent, #8a7a5a);
+}
+.food-log__text:disabled {
+  opacity: 0.6;
+}
+
+.food-log__sendBtn {
+  flex-shrink: 0;
+}
+
+.food-log__summary {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted, #6b6b6b);
+}
+
+.food-log__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.food-log__empty {
+  text-align: center;
+  color: var(--text-muted, #6b6b6b);
+  font-size: 0.95rem;
+  padding: 1.5rem 0;
+}
+
+.food-log__item {
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--border, #e6e2da);
+  border-radius: 12px;
+  background: var(--surface-muted, #faf8f3);
+}
+
+.food-log__itemHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.3rem;
+}
+
+.food-log__itemTime {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent, #8a7a5a);
+}
+
+.food-log__delete {
+  border: none;
+  background: none;
+  font-size: 1.2rem;
+  color: var(--text-muted, #6b6b6b);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 0.2rem;
+}
+.food-log__delete:hover {
+  color: var(--danger, #b04040);
+}
+
+.food-log__itemDesc {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+  color: var(--text, #2a2a2a);
+}
+
+.food-log__items {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.food-log__items li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text, #2a2a2a);
+}
+.food-log__itemMacros {
+  color: var(--text-muted, #6b6b6b);
+  font-variant-numeric: tabular-nums;
+}
+
+.food-log__coach {
+  margin: 0.3rem 0 0;
+  padding-top: 0.3rem;
+  border-top: 1px dashed var(--border, #e6e2da);
+  font-size: 0.85rem;
+  color: var(--text-muted, #6b6b6b);
+  font-style: italic;
+}
