@@ -1,0 +1,122 @@
+.journal-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.journal-entries__header {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border, #e6e2da);
+}
+
+.journal-entries__label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent, #8a7a5a);
+}
+
+.journal-entries__title {
+  margin: 0.2rem 0 0.3rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text, #2a2a2a);
+}
+
+.journal-entries__sub {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-muted, #6b6b6b);
+  max-width: 520px;
+}
+
+.journal-entries__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.journal-entries__form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.journal-entries__draft {
+  flex: 1;
+  resize: vertical;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--text, #2a2a2a);
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e0dccf);
+  border-radius: 10px;
+  line-height: 1.45;
+  min-height: 70px;
+}
+.journal-entries__draft:focus {
+  outline: none;
+  border-color: var(--accent, #8a7a5a);
+}
+.journal-entries__draft:disabled {
+  opacity: 0.6;
+}
+
+.journal-entries__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.journal-entries__empty {
+  text-align: center;
+  color: var(--text-muted, #6b6b6b);
+  font-size: 0.95rem;
+  padding: 1.5rem 0;
+}
+
+.journal-entries__item {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border, #e6e2da);
+  border-radius: 12px;
+  background: var(--surface-muted, #faf8f3);
+}
+
+.journal-entries__itemHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.journal-entries__itemMeta {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent, #8a7a5a);
+}
+
+.journal-entries__delete {
+  border: none;
+  background: none;
+  font-size: 1.2rem;
+  color: var(--text-muted, #6b6b6b);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 0.2rem;
+}
+.journal-entries__delete:hover {
+  color: var(--danger, #b04040);
+}
+
+.journal-entries__body {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--text, #2a2a2a);
+  white-space: pre-wrap;
+}

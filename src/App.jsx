@@ -3,6 +3,7 @@ import { ToastProvider, useToast } from './context/ToastContext'
 import ChatInterface from './components/ChatInterface'
 import CompanionChat from './components/CompanionChat'
 import FoodLog from './components/FoodLog'
+import JournalEntries from './components/JournalEntries'
 import Tailor from './components/Tailor'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
@@ -95,8 +96,9 @@ function AppContent() {
 
   /* ── Navigation ── */
   const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'journal' | 'account'
-  const [journalTab, setJournalTab] = useState('chat') // 'chat' | 'log'
+  const [journalTab, setJournalTab] = useState('chat') // 'chat' | 'log' | 'entries'
   const [tailorOpen, setTailorOpen] = useState(false)
+  const [companionConversationId, setCompanionConversationId] = useState(() => crypto.randomUUID())
   const recipeRef = useRef(null)
 
   useEffect(() => {
@@ -1421,17 +1423,35 @@ function AppContent() {
               >
                 Food log
               </button>
+              <button
+                type="button"
+                role="tab"
+                className={`app__journalTab ${journalTab === 'entries' ? 'app__journalTab--active' : ''}`}
+                onClick={() => setJournalTab('entries')}
+              >
+                Journal
+              </button>
             </div>
             {journalTab === 'chat' ? (
               <CompanionChat
                 apiBase={API}
                 accessToken={token}
                 onToast={addToast}
+                conversationId={companionConversationId}
+                setConversationId={setCompanionConversationId}
               />
-            ) : (
+            ) : journalTab === 'log' ? (
               <FoodLog
                 accessToken={token}
                 onToast={addToast}
+              />
+            ) : (
+              <JournalEntries
+                apiBase={API}
+                accessToken={token}
+                onToast={addToast}
+                conversationId={companionConversationId}
+                onConversationReset={() => setCompanionConversationId(crypto.randomUUID())}
               />
             )}
           </section>

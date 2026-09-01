@@ -24,12 +24,11 @@ function getErrorMsg(data, fallback = 'Something went wrong') {
  * Separate conversation from the kitchen planner. Prompts come from recent
  * saved meals + feedback so the journal stays grounded in what the user cooked.
  */
-function CompanionChat({ apiBase, accessToken, onToast }) {
+function CompanionChat({ apiBase, accessToken, onToast, conversationId, setConversationId }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [prompts, setPrompts] = useState([])
-  const [conversationId, setConversationId] = useState(() => crypto.randomUUID())
   const scrollRef = useRef(null)
 
   const loadPrompts = useCallback(async () => {
