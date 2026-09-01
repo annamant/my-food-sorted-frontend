@@ -9,6 +9,8 @@ import DiscoverPage from './components/DiscoverPage'
 import AboutPage from './components/AboutPage'
 import BlogIndex from './components/BlogIndex'
 import BlogPost from './components/BlogPost'
+import AdminCohortPage from './components/AdminCohortPage'
+import { isFounderAdminEmail } from './data/adminAccess'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
@@ -100,7 +102,7 @@ function AppContent() {
   const [shareFrom, setShareFrom] = useState(() => getShareFromUrl())
 
   /* ── Navigation ── */
-  const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'journal' | 'discover' | 'about' | 'blog' | 'account'
+  const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'journal' | 'discover' | 'about' | 'blog' | 'admin' | 'account'
   const [blogSlug, setBlogSlug] = useState(null)
   const [journalTab, setJournalTab] = useState('chat') // 'chat' | 'log' | 'entries'
   const [tailorOpen, setTailorOpen] = useState(false)
@@ -1467,6 +1469,12 @@ function AppContent() {
               }}
             />
           )
+        ) : view === 'admin' ? (
+          <AdminCohortPage
+            apiBase={API}
+            accessToken={token}
+            onHome={() => setView('tonight')}
+          />
         ) : view === 'journal' ? (
           <section className="app__panel">
             <div className="app__journalTabs" role="tablist">
@@ -1625,6 +1633,9 @@ function AppContent() {
           <button type="button" onClick={() => setView('discover')}>Community</button>
           <button type="button" onClick={() => setView('about')}>About</button>
           <button type="button" onClick={() => { setBlogSlug(null); setView('blog') }}>Blog</button>
+          {isFounderAdminEmail(prefs?.email) && (
+            <button type="button" onClick={() => setView('admin')}>Admin</button>
+          )}
           <button type="button" onClick={() => setView('account')}>Preferences</button>
         </nav>
       </footer>
