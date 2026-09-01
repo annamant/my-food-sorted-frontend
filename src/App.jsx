@@ -6,6 +6,7 @@ import FoodLog from './components/FoodLog'
 import JournalEntries from './components/JournalEntries'
 import Tailor from './components/Tailor'
 import DiscoverPage from './components/DiscoverPage'
+import AboutPage from './components/AboutPage'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
@@ -97,7 +98,7 @@ function AppContent() {
   const [shareFrom, setShareFrom] = useState(() => getShareFromUrl())
 
   /* ── Navigation ── */
-  const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'journal' | 'discover' | 'account'
+  const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'journal' | 'discover' | 'about' | 'account'
   const [journalTab, setJournalTab] = useState('chat') // 'chat' | 'log' | 'entries'
   const [tailorOpen, setTailorOpen] = useState(false)
   const [companionConversationId, setCompanionConversationId] = useState(() => crypto.randomUUID())
@@ -1441,6 +1442,11 @@ function AppContent() {
             authToken={token}
             onBrowseIdeas={() => setView('library')}
           />
+        ) : view === 'about' ? (
+          <AboutPage
+            onHome={() => setView('tonight')}
+            onOpenKitchen={() => setView('tonight')}
+          />
         ) : view === 'journal' ? (
           <section className="app__panel">
             <div className="app__journalTabs" role="tablist">
@@ -1596,6 +1602,8 @@ function AppContent() {
           <button type="button" onClick={() => setView('tonight')}>Cook tonight</button>
           <button type="button" onClick={() => setView('library')}>Recipe books</button>
           <button type="button" onClick={() => setView('journal')}>Journal</button>
+          <button type="button" onClick={() => setView('discover')}>Community</button>
+          <button type="button" onClick={() => setView('about')}>About</button>
           <button type="button" onClick={() => setView('account')}>Preferences</button>
         </nav>
       </footer>
