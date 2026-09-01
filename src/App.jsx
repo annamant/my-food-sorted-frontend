@@ -19,6 +19,7 @@ import { searchCatalog, dishesForCollection } from './data/catalog'
 import { REMIX_ACTIONS } from './components/MealPlanDisplay'
 import { hydrateMealFeedback } from './data/mealFeedback'
 import { rankCatalogDishes, rankChatOptions, resolveProfileContext } from './algorithms/suitabilityScore'
+import { optimizeWeekPlan } from './algorithms/weekPlanOptimizer'
 import './App.css'
 
 const API = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
@@ -398,7 +399,11 @@ function AppContent() {
         setMessages(prev => [...prev, { role: 'assistant', content }])
       }
       if (data.meal_plan) {
-        setMealPlan(data.meal_plan)
+        const optimized = optimizeWeekPlan(data.meal_plan, {
+          brief: mealBrief,
+          profileSources: prefs,
+        })
+        setMealPlan(optimized.mealPlan)
         setCookStage('recipe')
         setSavedPlanId(null)
         setShoppingList(null)
@@ -418,7 +423,7 @@ function AppContent() {
     } finally {
       setChatLoading(false)
     }
-  }, [chatLoading, authHeaders, conversationId, mealBrief, loadPrefs, addToast])
+  }, [chatLoading, authHeaders, conversationId, mealBrief, prefs, loadPrefs, addToast])
 
   const beginCookFlow = useCallback((path) => {
     setCookPath(path)
