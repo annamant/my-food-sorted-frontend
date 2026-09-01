@@ -194,6 +194,7 @@ function PreferencesSection({ prefs, onSave, loading }) {
   const [ageRange, setAgeRange] = useState('')
   const [sex, setSex] = useState('')
   const [activity, setActivity] = useState('')
+  const [weight, setWeight] = useState('')
   const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
@@ -211,6 +212,7 @@ function PreferencesSection({ prefs, onSave, loading }) {
     setAgeRange(prefs.age_range ?? '')
     setSex(prefs.sex ?? '')
     setActivity(prefs.activity_level ?? '')
+    setWeight(prefs.weight_kg != null ? String(prefs.weight_kg) : '')
     setDirty(false)
   }, [prefs])
 
@@ -231,6 +233,7 @@ function PreferencesSection({ prefs, onSave, loading }) {
       age_range: ageRange || null,
       sex: sex || null,
       activity_level: activity || null,
+      weight_kg: weight !== '' && !Number.isNaN(Number(weight)) ? Math.round(Number(weight) * 10) / 10 : null,
     })
     setDirty(false)
   }
@@ -394,6 +397,18 @@ function PreferencesSection({ prefs, onSave, loading }) {
             <option value="active">Active</option>
             <option value="very_active">Very active</option>
           </select>
+        </label>
+        <label className="account-section__field">
+          <span>Weight (kg)</span>
+          <input
+            type="number"
+            min="30"
+            max="300"
+            step="0.1"
+            value={weight}
+            onChange={(e) => { setWeight(e.target.value); setDirty(true) }}
+            placeholder="optional"
+          />
         </label>
       </div>
 

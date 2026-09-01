@@ -38,6 +38,7 @@ function Tailor({ apiBase, accessToken, prefs, onComplete, onClose }) {
     age_range: prefs?.age_range || null,
     sex: prefs?.sex || null,
     activity_level: prefs?.activity_level || null,
+    weight_kg: prefs?.weight_kg ?? null,
   }))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -96,6 +97,7 @@ function Tailor({ apiBase, accessToken, prefs, onComplete, onClose }) {
       age_range: draft.age_range || null,
       sex: draft.sex || null,
       activity_level: draft.activity_level || null,
+      weight_kg: draft.weight_kg != null && draft.weight_kg !== '' ? Math.round(Number(draft.weight_kg) * 10) / 10 : null,
     }
     try {
       const res = await fetch(`${apiBase.replace(/\/$/, '')}/me`, {
@@ -208,6 +210,23 @@ function Tailor({ apiBase, accessToken, prefs, onComplete, onClose }) {
                 </select>
               </label>
             ))}
+            <label className="tailor__aboutField">
+              <span>Weight (kg)</span>
+              <input
+                type="number"
+                min="30"
+                max="300"
+                step="0.1"
+                value={draft.weight_kg ?? ''}
+                onChange={(e) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    weight_kg: e.target.value === '' ? null : Math.round(Number(e.target.value) * 10) / 10,
+                  }))
+                }
+                placeholder="optional"
+              />
+            </label>
           </div>
         )}
 

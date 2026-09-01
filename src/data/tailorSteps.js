@@ -142,7 +142,7 @@ export const TAILOR_STEPS = [
     title: 'A bit about you (optional)',
     sub: 'Helps size portions and pick realistic meals. No medical info, no medication. Skip if you like.',
     type: 'about',
-    fields: ['age_range', 'sex', 'activity_level'],
+    fields: ['age_range', 'sex', 'activity_level', 'weight_kg'],
     required: false,
   },
 ]
