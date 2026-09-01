@@ -7,6 +7,8 @@ import JournalEntries from './components/JournalEntries'
 import Tailor from './components/Tailor'
 import DiscoverPage from './components/DiscoverPage'
 import AboutPage from './components/AboutPage'
+import BlogIndex from './components/BlogIndex'
+import BlogPost from './components/BlogPost'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
@@ -98,7 +100,8 @@ function AppContent() {
   const [shareFrom, setShareFrom] = useState(() => getShareFromUrl())
 
   /* ── Navigation ── */
-  const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'journal' | 'discover' | 'about' | 'account'
+  const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'journal' | 'discover' | 'about' | 'blog' | 'account'
+  const [blogSlug, setBlogSlug] = useState(null)
   const [journalTab, setJournalTab] = useState('chat') // 'chat' | 'log' | 'entries'
   const [tailorOpen, setTailorOpen] = useState(false)
   const [companionConversationId, setCompanionConversationId] = useState(() => crypto.randomUUID())
@@ -1446,7 +1449,24 @@ function AppContent() {
           <AboutPage
             onHome={() => setView('tonight')}
             onOpenKitchen={() => setView('tonight')}
+            onBlog={() => setView('blog')}
           />
+        ) : view === 'blog' ? (
+          blogSlug ? (
+            <BlogPost
+              slug={blogSlug}
+              onHome={() => setView('tonight')}
+              onOpenBlog={() => setBlogSlug(null)}
+            />
+          ) : (
+            <BlogIndex
+              onHome={() => setView('tonight')}
+              onOpenPost={(slug) => {
+                setBlogSlug(slug)
+                window.scrollTo(0, 0)
+              }}
+            />
+          )
         ) : view === 'journal' ? (
           <section className="app__panel">
             <div className="app__journalTabs" role="tablist">
@@ -1604,6 +1624,7 @@ function AppContent() {
           <button type="button" onClick={() => setView('journal')}>Journal</button>
           <button type="button" onClick={() => setView('discover')}>Community</button>
           <button type="button" onClick={() => setView('about')}>About</button>
+          <button type="button" onClick={() => { setBlogSlug(null); setView('blog') }}>Blog</button>
           <button type="button" onClick={() => setView('account')}>Preferences</button>
         </nav>
       </footer>
