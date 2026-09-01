@@ -81,6 +81,7 @@ function MealPlanDisplay({
   onShareFacebook,
   onShareInstagram,
   onCopyShareLink,
+  onUpdate,
   savedPlanId,
   apiBase,
   accessToken,
@@ -251,9 +252,21 @@ function MealPlanDisplay({
 
           {alreadySaved ? (
             embedded ? null : (
-              <p className="meal-plan-display__savedNote">
-                Saved · add it to a recipe book, or shop the list below
-              </p>
+              <div className="meal-plan-display__savedRow">
+                <p className="meal-plan-display__savedNote">
+                  Saved · add it to a recipe book, or shop the list below
+                </p>
+                {onUpdate && (
+                  <button
+                    type="button"
+                    onClick={onUpdate}
+                    disabled={loading}
+                    className="btn btn--ghost meal-plan-display__updateBtn"
+                  >
+                    {loading ? 'Saving…' : 'Update recipe'}
+                  </button>
+                )}
+              </div>
             )
           ) : (
             <button

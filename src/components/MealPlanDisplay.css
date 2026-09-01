@@ -198,6 +198,18 @@
   text-align: center;
 }
 
+.meal-plan-display__savedRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.meal-plan-display__updateBtn {
+  font-size: var(--text-sm);
+}
+
 .meal-plan-display__shareStatus {
   margin: var(--space-3) 0 0;
   font-size: var(--text-xs);

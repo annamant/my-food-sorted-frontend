@@ -719,10 +719,28 @@ function AppContent() {
 
   /* ── Save plan ── */
   const persistRecipe = useCallback(async ({ openPicker = false } = {}) => {
-    if (savedPlanId) return savedPlanId
     if (!mealPlan || planLoading) return null
     setPlanLoading(true)
     try {
+      if (savedPlanId) {
+        const res = await fetch(`${API}/meal-plan/${savedPlanId}`, {
+          method: 'PATCH',
+          headers: authHeaders(),
+          body: JSON.stringify(mealPlan),
+        })
+        const { data, error } = await parseRes(res, 'Cannot reach server.')
+        if (error) throw new Error(error)
+        if (!res.ok) throw new Error(getErrorMsg(data, 'Update failed'))
+        await loadSavedPlans()
+        await loadPlaylists()
+        const listRes = await fetch(`${API}/shopping-list/${savedPlanId}`, {
+          headers: authHeaders(),
+        })
+        const listParsed = await parseRes(listRes, 'Cannot load shopping list.')
+        if (!listParsed.error && listRes.ok) setShoppingList(listParsed.data)
+        return savedPlanId
+      }
+
       const res = await fetch(`${API}/meal-plan`, {
         method: 'POST',
         headers: authHeaders(),
@@ -757,8 +775,8 @@ function AppContent() {
 
   const savePlan = useCallback(async () => {
     const planId = await persistRecipe({ openPicker: true })
-    if (planId) addToast('Recipe saved. Add it to a recipe book, or shop the list below.', 'success')
-  }, [persistRecipe, addToast])
+    if (planId) addToast(savedPlanId ? 'Recipe updated.' : 'Recipe saved. Add it to a recipe book, or shop the list below.', 'success')
+  }, [persistRecipe, addToast, savedPlanId])
 
   const publishShareLink = useCallback(async (planId) => {
     const res = await fetch(`${API}/meal-plan/${planId}/share`, {
@@ -1505,6 +1523,7 @@ function AppContent() {
                   mealPlan={mealPlan}
                   alreadySaved
                   onRemix={(prompt, label) => handleRemix(prompt, label)}
+                  onUpdate={savePlan}
                   onShare={() => publishAndCopyShare(savedPlanId)}
                   onUnshare={() => unsharePlan(savedPlanId)}
                   onAddToList={() => {
