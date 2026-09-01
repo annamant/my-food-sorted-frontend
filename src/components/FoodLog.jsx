@@ -47,6 +47,8 @@ function FoodLog({ accessToken, onToast }) {
   const [busy, setBusy] = useState(false)
   const [photoBusy, setPhotoBusy] = useState(false)
   const [photoPreview, setPhotoPreview] = useState(null)
+  const [editingId, setEditingId] = useState(null)
+  const [editDraft, setEditDraft] = useState(null)
   const fileRef = useRef(null)
 
   const loadLogs = useCallback(async () => {
@@ -177,6 +179,52 @@ function FoodLog({ accessToken, onToast }) {
     submitPhoto(file)
   }
 
+  const startEdit = (log) => {
+    setEditingId(log.id)
+    setEditDraft({
+      estimated_protein_g: log.estimated_protein_g ?? '',
+      estimated_calories: log.estimated_calories ?? '',
+      estimated_carbs_g: log.estimated_carbs_g ?? '',
+      estimated_fat_g: log.estimated_fat_g ?? '',
+    })
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setEditDraft(null)
+  }
+
+  const saveEdit = useCallback(async (id) => {
+    if (!editDraft) return
+    const { from, to } = dayRange()
+    try {
+      const res = await fetch(`${API}/companion/food-log/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          estimated_protein_g: editDraft.estimated_protein_g === '' ? null : Number(editDraft.estimated_protein_g),
+          estimated_calories: editDraft.estimated_calories === '' ? null : Number(editDraft.estimated_calories),
+          estimated_carbs_g: editDraft.estimated_carbs_g === '' ? null : Number(editDraft.estimated_carbs_g),
+          estimated_fat_g: editDraft.estimated_fat_g === '' ? null : Number(editDraft.estimated_fat_g),
+          from,
+          to,
+        }),
+      })
+      const { data, error } = await parseRes(res, 'Cannot save those edits.')
+      if (error) throw new Error(error)
+      if (!res.ok) throw new Error(getErrorMsg(data, 'Could not save those edits'))
+      if (data.log) setLogs((prev) => prev.map((l) => (l.id === id ? data.log : l)))
+      if (data.summary) setSummary(data.summary)
+      cancelEdit()
+      onToast?.('Updated.', 'success')
+    } catch (err) {
+      onToast?.(err.message, 'error')
+    }
+  }, [editDraft, accessToken, onToast])
+
   return (
     <div className="food-log">
       <header className="food-log__header">
@@ -247,16 +295,52 @@ function FoodLog({ accessToken, onToast }) {
           <article key={l.id} className="food-log__item">
             <div className="food-log__itemHead">
               <p className="food-log__itemTime">{fmtTime(l.logged_at)}</p>
-              <button
-                type="button"
-                className="food-log__delete"
-                onClick={() => deleteLog(l.id)}
-                aria-label="Delete entry"
-              >
-                ×
-              </button>
+              <div className="food-log__itemActions">
+                <button
+                  type="button"
+                  className="food-log__edit"
+                  onClick={() => (editingId === l.id ? cancelEdit() : startEdit(l))}
+                  aria-label="Edit entry"
+                >
+                  ✎
+                </button>
+                <button
+                  type="button"
+                  className="food-log__delete"
+                  onClick={() => deleteLog(l.id)}
+                  aria-label="Delete entry"
+                >
+                  ×
+                </button>
+              </div>
             </div>
             <p className="food-log__itemDesc">{l.description}</p>
+            {editingId === l.id && editDraft && (
+              <div className="food-log__editForm">
+                {[
+                  { key: 'estimated_calories', label: 'kcal' },
+                  { key: 'estimated_protein_g', label: 'P g' },
+                  { key: 'estimated_carbs_g', label: 'C g' },
+                  { key: 'estimated_fat_g', label: 'F g' },
+                ].map((f) => (
+                  <label key={f.key} className="food-log__editField">
+                    <span>{f.label}</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={editDraft[f.key] ?? ''}
+                      onChange={(e) =>
+                        setEditDraft((prev) => ({ ...prev, [f.key]: e.target.value === '' ? '' : Number(e.target.value) }))
+                      }
+                    />
+                  </label>
+                ))}
+                <div className="food-log__editActions">
+                  <button type="button" className="btn btn--ghost" onClick={cancelEdit}>Cancel</button>
+                  <button type="button" className="btn btn--primary" onClick={() => saveEdit(l.id)}>Save</button>
+                </div>
+              </div>
+            )}
             {l.items?.length > 0 && (
               <ul className="food-log__items">
                 {l.items.map((it, i) => (

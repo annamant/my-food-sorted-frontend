@@ -50,6 +50,28 @@ function CompanionChat({ apiBase, accessToken, onToast, conversationId, setConve
     loadPrompts()
   }, [loadPrompts])
 
+  const loadHistory = useCallback(async () => {
+    if (!apiBase || !accessToken || !conversationId) return
+    try {
+      const res = await fetch(
+        `${apiBase.replace(/\/$/, '')}/companion/messages?conversation_id=${encodeURIComponent(conversationId)}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      )
+      if (res.status === 401) return
+      const { data, error } = await parseRes(res, 'Cannot load chat history.')
+      if (error || !res.ok) return
+      if (Array.isArray(data.messages) && data.messages.length > 0) {
+        setMessages(data.messages.map((m) => ({ role: m.role, content: m.content })))
+      }
+    } catch {
+      /* non-blocking */
+    }
+  }, [apiBase, accessToken, conversationId])
+
+  useEffect(() => {
+    loadHistory()
+  }, [loadHistory])
+
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [messages, loading])
@@ -99,12 +121,25 @@ function CompanionChat({ apiBase, accessToken, onToast, conversationId, setConve
     }
   }, [loading, apiBase, accessToken, conversationId, onToast])
 
-  const startNewConversation = useCallback(() => {
+  const startNewConversation = useCallback(async () => {
+    if (loading) return
+    try {
+      await fetch(`${apiBase.replace(/\/$/, '')}/companion/reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ conversation_id: conversationId }),
+      })
+    } catch {
+      /* non-blocking; local reset still works */
+    }
     setMessages([])
     setInput('')
     setConversationId(crypto.randomUUID())
     loadPrompts()
-  }, [loadPrompts])
+  }, [loading, apiBase, accessToken, conversationId, setConversationId, loadPrompts])
 
   return (
     <div className="companion-chat">
