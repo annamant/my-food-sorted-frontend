@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { ToastProvider, useToast } from './context/ToastContext'
 import ChatInterface from './components/ChatInterface'
+import CompanionChat from './components/CompanionChat'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
@@ -13,6 +14,8 @@ import AccountPage from './components/AccountPage'
 import { INSPIRATION_FILTERS } from './data/inspirations'
 import { searchCatalog, dishesForCollection } from './data/catalog'
 import { REMIX_ACTIONS } from './components/MealPlanDisplay'
+import { hydrateMealFeedback } from './data/mealFeedback'
+import { rankCatalogDishes, rankChatOptions, resolveProfileContext } from './algorithms/suitabilityScore'
 import './App.css'
 
 const API = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
@@ -250,6 +253,7 @@ function AppContent() {
     loadPrefs()
     loadSavedPlans()
     loadPlaylists()
+    hydrateMealFeedback(API, token)
   }, [token, loadPrefs, loadSavedPlans, loadPlaylists])
 
   useEffect(() => {
@@ -460,7 +464,8 @@ function AppContent() {
       if (!Array.isArray(data.options) || data.options.length === 0) {
         throw new Error('The kitchen did not return any dish options. Please try again.')
       }
-      setDishOptions(data.options.slice(0, 3))
+      const ranked = rankChatOptions(data.options.slice(0, 3), { prefs, mealBrief })
+      setDishOptions(ranked)
       setTweakDraftByOptionTitle({})
       setMessages((prev) => [
         ...prev,
@@ -484,7 +489,7 @@ function AppContent() {
     } finally {
       setChatLoading(false)
     }
-  }, [chatLoading, mealBrief, cookPath, authHeaders, conversationId, addToast])
+  }, [chatLoading, mealBrief, cookPath, authHeaders, conversationId, addToast, prefs])
 
   const submitCookTurn = useCallback(() => {
     const text = input.trim()
@@ -615,7 +620,8 @@ function AppContent() {
       return
     }
     if (hits.length > 1) {
-      setCatalogHits(hits)
+      const ranked = rankCatalogDishes(hits, { prefs, mealBrief })
+      setCatalogHits(ranked)
       setCatalogMiss('')
       setMealPlan(null)
       return
@@ -627,7 +633,7 @@ function AppContent() {
       ...prev,
       notes: prev.notes?.trim() ? prev.notes : text,
     }))
-  }, [input, chatLoading, openCatalogDish])
+  }, [input, chatLoading, openCatalogDish, prefs, mealBrief])
 
   const sendMessage = useCallback(() => {
     const text = input.trim()
@@ -1202,6 +1208,15 @@ function AppContent() {
     }
   }, [authHeaders, addToast])
 
+  const setPreferredRetailer = useCallback(async (retailerId) => {
+    try {
+      localStorage.setItem('myFoodSortedRetailer', retailerId)
+    } catch {
+      /* ignore */
+    }
+    if (token) savePrefs({ preferred_retailer: retailerId })
+  }, [savePrefs, token])
+
   /* ── Render ── */
   if (shareFrom?.slug) {
     return (
@@ -1264,6 +1279,13 @@ function AppContent() {
                 onClick={() => setView('library')}
               >
                 Recipe books
+              </button>
+              <button
+                type="button"
+                className={`app__navItem ${view === 'journal' ? 'app__navItem--active' : ''}`}
+                onClick={() => setView('journal')}
+              >
+                Journal
               </button>
               <button
                 type="button"
@@ -1363,11 +1385,20 @@ function AppContent() {
                   onToggleItem={toggleShoppingItem}
                   onClearChecks={clearChecks}
                   onOpenRetailer={openRetailer}
+                  onSetPreferredRetailer={setPreferredRetailer}
                   preferredRetailer={prefs?.preferred_retailer}
                 />
               </section>
             )}
           </>
+        ) : view === 'journal' ? (
+          <section className="app__panel">
+            <CompanionChat
+              apiBase={API}
+              accessToken={token}
+              onToast={addToast}
+            />
+          </section>
         ) : (
           <div ref={recipeRef} className="app__conversation">
             <ChatInterface
@@ -1437,6 +1468,10 @@ function AppContent() {
                     activePlanFromLibrary?.share_slug ||
                     mealPlan.share_slug
                   )}
+                  savedPlanId={savedPlanId}
+                  apiBase={API}
+                  accessToken={token}
+                  onToast={addToast}
                 />
               </section>
             )}
@@ -1450,6 +1485,7 @@ function AppContent() {
                   onToggleItem={toggleShoppingItem}
                   onClearChecks={clearChecks}
                   onOpenRetailer={openRetailer}
+                  onSetPreferredRetailer={setPreferredRetailer}
                   preferredRetailer={prefs?.preferred_retailer}
                 />
               </section>
@@ -1465,6 +1501,7 @@ function AppContent() {
         <nav aria-label="Footer">
           <button type="button" onClick={() => setView('tonight')}>Cook tonight</button>
           <button type="button" onClick={() => setView('library')}>Recipe books</button>
+          <button type="button" onClick={() => setView('journal')}>Journal</button>
           <button type="button" onClick={() => setView('account')}>Preferences</button>
         </nav>
       </footer>

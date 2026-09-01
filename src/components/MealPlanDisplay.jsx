@@ -1,4 +1,5 @@
 import './MealPlanDisplay.css'
+import MealFeedbackBar from './MealFeedbackBar'
 
 function fmtPrice(p) {
   return (Number(p) || 0).toFixed(2)
@@ -80,6 +81,10 @@ function MealPlanDisplay({
   onShareFacebook,
   onShareInstagram,
   onCopyShareLink,
+  savedPlanId,
+  apiBase,
+  accessToken,
+  onToast,
 }) {
   if (!mealPlan?.recipes?.length) return null
 
@@ -157,6 +162,19 @@ function MealPlanDisplay({
                     ))}
                   </ol>
                 </div>
+              )}
+
+              {alreadySaved && savedPlanId && (
+                <MealFeedbackBar
+                  planId={savedPlanId}
+                  recipeTitle={r.title}
+                  day={r.day_of_week}
+                  slot={r.meal_slot}
+                  calories={r.calories}
+                  apiBase={apiBase}
+                  accessToken={accessToken}
+                  onToast={onToast}
+                />
               )}
             </article>
           )
