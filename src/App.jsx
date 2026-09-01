@@ -5,6 +5,7 @@ import CompanionChat from './components/CompanionChat'
 import FoodLog from './components/FoodLog'
 import JournalEntries from './components/JournalEntries'
 import Tailor from './components/Tailor'
+import DiscoverPage from './components/DiscoverPage'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
@@ -96,7 +97,7 @@ function AppContent() {
   const [shareFrom, setShareFrom] = useState(() => getShareFromUrl())
 
   /* ── Navigation ── */
-  const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'journal' | 'account'
+  const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'journal' | 'discover' | 'account'
   const [journalTab, setJournalTab] = useState('chat') // 'chat' | 'log' | 'entries'
   const [tailorOpen, setTailorOpen] = useState(false)
   const [companionConversationId, setCompanionConversationId] = useState(() => crypto.randomUUID())
@@ -1311,6 +1312,13 @@ function AppContent() {
               </button>
               <button
                 type="button"
+                className={`app__navItem ${view === 'discover' ? 'app__navItem--active' : ''}`}
+                onClick={() => setView('discover')}
+              >
+                Community
+              </button>
+              <button
+                type="button"
                 className={`app__navItem ${view === 'journal' ? 'app__navItem--active' : ''}`}
                 onClick={() => setView('journal')}
               >
@@ -1427,6 +1435,12 @@ function AppContent() {
               </section>
             )}
           </>
+        ) : view === 'discover' ? (
+          <DiscoverPage
+            apiBase={API}
+            authToken={token}
+            onBrowseIdeas={() => setView('library')}
+          />
         ) : view === 'journal' ? (
           <section className="app__panel">
             <div className="app__journalTabs" role="tablist">

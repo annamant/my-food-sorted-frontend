@@ -1,0 +1,50 @@
+.discover-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.discover-page__hero {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border, #e6e2da);
+}
+
+.discover-page__kicker {
+  margin: 0 0 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent, #8a7a5a);
+}
+
+.discover-page__hero h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  line-height: 1.05;
+}
+
+.discover-page__lede {
+  margin: 0 0 1rem;
+  max-width: 40rem;
+  color: var(--text-muted, #6b6b6b);
+  line-height: 1.6;
+}
+
+.discover-page__aside {
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: var(--surface-muted, #faf8f3);
+}
+
+.discover-page__aside h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.1rem;
+}
+
+.discover-page__aside p {
+  margin: 0 0 0.8rem;
+  font-size: 0.9rem;
+  color: var(--text-muted, #6b6b6b);
+  line-height: 1.5;
+}
