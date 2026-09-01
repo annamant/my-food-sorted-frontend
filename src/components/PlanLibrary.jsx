@@ -27,6 +27,7 @@ export default function PlanLibrary({
   onDeletePlaylist,
   onSharePlaylist,
   onUnsharePlaylist,
+  onPrintBook,
   onRemoveTrack,
   onMoveTrack,
   onOpenTrack,
@@ -165,6 +166,16 @@ export default function PlanLibrary({
                   onClick={() => onDeletePlaylist?.(activePlaylist.id)}
                 >
                   Delete list
+                </button>
+              )}
+              {onPrintBook && activePlaylist.kind !== 'liked' && (
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  disabled={loading || !activePlaylist.tracks?.length}
+                  onClick={() => onPrintBook(activePlaylist)}
+                >
+                  Print book
                 </button>
               )}
             </div>

@@ -11,6 +11,7 @@ import BlogIndex from './components/BlogIndex'
 import BlogPost from './components/BlogPost'
 import AdminCohortPage from './components/AdminCohortPage'
 import { isFounderAdminEmail } from './data/adminAccess'
+import { printPlaylistBook } from './utils/printBook'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
@@ -1084,6 +1085,22 @@ function AppContent() {
     }
   }, [shareBusy, authHeaders, addToast, loadPlaylists])
 
+  const printBook = useCallback(async (playlist) => {
+    if (!playlist) return
+    const fetchPlan = async (planId) => {
+      try {
+        const res = await fetch(`${API}/meal-plan/${planId}`, { headers: authHeaders() })
+        const { data, error } = await parseRes(res, 'Cannot load a recipe for printing.')
+        if (error || !res.ok) return null
+        return data
+      } catch {
+        return null
+      }
+    }
+    const ok = await printPlaylistBook({ playlist, fetchPlan, brandName: 'My Food SORTED' })
+    if (!ok) addToast('Could not print this book. Add a recipe first.', 'error')
+  }, [authHeaders, addToast])
+
   const changePassword = useCallback(async ({ current_password, new_password }) => {
     const res = await fetch(`${API}/me/password`, {
       method: 'POST',
@@ -1385,6 +1402,7 @@ function AppContent() {
                 onDeletePlaylist={deletePlaylist}
                 onSharePlaylist={publishAndCopyPlaylist}
                 onUnsharePlaylist={unsharePlaylist}
+                onPrintBook={printBook}
                 onRemoveTrack={removeTrack}
                 onMoveTrack={moveTrack}
                 onOpenTrack={(planId) => {
