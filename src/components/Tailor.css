@@ -1,0 +1,164 @@
+.tailor {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--bg, #f7f4ec);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.tailor__progress {
+  width: 100%;
+  max-width: 520px;
+  height: 4px;
+  background: var(--border, #e6e2da);
+  border-radius: 999px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.tailor__progressBar {
+  height: 100%;
+  background: var(--accent, #8a7a5a);
+  transition: width 0.25s ease;
+}
+
+.tailor__card {
+  width: 100%;
+  max-width: 520px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e6e2da);
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+}
+
+.tailor__title {
+  margin: 0 0 0.4rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text, #2a2a2a);
+}
+
+.tailor__sub {
+  margin: 0 0 1.4rem;
+  font-size: 0.92rem;
+  color: var(--text-muted, #6b6b6b);
+  line-height: 1.45;
+}
+
+.tailor__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.4rem;
+}
+
+.tailor__chip {
+  padding: 0.55rem 1rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text, #2a2a2a);
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e0dccf);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.tailor__chip:hover {
+  border-color: var(--accent, #8a7a5a);
+}
+.tailor__chip--active {
+  background: var(--accent, #8a7a5a);
+  border-color: var(--accent, #8a7a5a);
+  color: #fff;
+}
+
+.tailor__text {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--text, #2a2a2a);
+  background: var(--surface-muted, #faf8f3);
+  border: 1px solid var(--border, #e0dccf);
+  border-radius: 10px;
+  resize: vertical;
+  min-height: 80px;
+  margin-bottom: 1.4rem;
+}
+.tailor__text:focus {
+  outline: none;
+  border-color: var(--accent, #8a7a5a);
+}
+
+.tailor__numberRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1.4rem;
+}
+
+.tailor__prefix {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text, #2a2a2a);
+}
+
+.tailor__number {
+  flex: 1;
+  padding: 0.6rem 0.8rem;
+  font-size: 1.1rem;
+  color: var(--text, #2a2a2a);
+  background: var(--surface-muted, #faf8f3);
+  border: 1px solid var(--border, #e0dccf);
+  border-radius: 10px;
+}
+.tailor__number:focus {
+  outline: none;
+  border-color: var(--accent, #8a7a5a);
+}
+
+.tailor__about {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 1.4rem;
+}
+
+.tailor__aboutField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text, #2a2a2a);
+}
+.tailor__aboutField select {
+  padding: 0.5rem 0.7rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--text, #2a2a2a);
+  background: var(--surface-muted, #faf8f3);
+  border: 1px solid var(--border, #e0dccf);
+  border-radius: 8px;
+}
+
+.tailor__error {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+  color: var(--danger, #b04040);
+  background: rgba(176, 64, 64, 0.08);
+  border-radius: 8px;
+}
+
+.tailor__actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+}

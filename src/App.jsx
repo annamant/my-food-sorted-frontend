@@ -3,6 +3,7 @@ import { ToastProvider, useToast } from './context/ToastContext'
 import ChatInterface from './components/ChatInterface'
 import CompanionChat from './components/CompanionChat'
 import FoodLog from './components/FoodLog'
+import Tailor from './components/Tailor'
 import MealPlanDisplay from './components/MealPlanDisplay'
 import ShoppingListDisplay from './components/ShoppingListDisplay'
 import PlanLibrary from './components/PlanLibrary'
@@ -95,6 +96,7 @@ function AppContent() {
   /* ── Navigation ── */
   const [view, setView] = useState('tonight') // 'tonight' | 'library' | 'journal' | 'account'
   const [journalTab, setJournalTab] = useState('chat') // 'chat' | 'log'
+  const [tailorOpen, setTailorOpen] = useState(false)
   const recipeRef = useRef(null)
 
   useEffect(() => {
@@ -1291,6 +1293,13 @@ function AppContent() {
               </button>
               <button
                 type="button"
+                className="app__navItem app__navItem--tailor"
+                onClick={() => setTailorOpen(true)}
+              >
+                Build my profile
+              </button>
+              <button
+                type="button"
                 className={`app__avatarBtn ${view === 'account' ? 'app__avatarBtn--active' : ''}`}
                 onClick={() => setView('account')}
                 aria-label="Open your account"
@@ -1540,6 +1549,19 @@ function AppContent() {
         onPick={handlePickPlaylist}
         onCreate={handleCreateAndAdd}
       />
+      {tailorOpen && (
+        <Tailor
+          apiBase={API}
+          accessToken={token}
+          prefs={prefs}
+          onClose={() => setTailorOpen(false)}
+          onComplete={(patch) => {
+            setPrefs((prev) => ({ ...(prev || {}), ...patch }))
+            setTailorOpen(false)
+            addToast('Profile saved.', 'success')
+          }}
+        />
+      )}
     </div>
   )
 }
